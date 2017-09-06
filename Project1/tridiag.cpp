@@ -51,8 +51,8 @@ int main(int argc, char* argv[]){
 
         /* ---------------------------------------------------------------------------------------------- */
         /* Solving the linear system: Choose which algorithm you want by uncommenting one of the two below. */
-        tridiag_general(a, b, c, g, N, interior);         // Get solution in interior with general algorithm
-        //tridiag_specialized(g, N, interior);            // Get solution in interior with specialized algorithm
+        //tridiag_general(a, b, c, g, N, interior);         // Get solution in interior with general algorithm
+        tridiag_specialized(g, N, interior);            // Get solution in interior with specialized algorithm
         /* ---------------------------------------------------------------------------------------------- */
 
         clock_t end_time = clock();
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]){
 void tridiag_general(double* a, double* b, double* c, double* y, int N, double* solution){
     /* STEP 1: Forward substitution and decomposition. */
     for (int i = 1; i < N; i++){
-        b[i] = b[i] - a[i-1]*a[i-1]/b[i-1];     // Eliminating lower diagonal
+        b[i] = b[i] - a[i-1]*c[i-1]/b[i-1];     // Eliminating lower diagonal
         y[i] = y[i] - (a[i-1]/b[i-1])*y[i-1];   // Corresponding change to RHS of eq.
     }
 
@@ -100,8 +100,8 @@ void tridiag_general(double* a, double* b, double* c, double* y, int N, double* 
  * all elements along lower and upper diag equal to -1, while the main diag has all values equal to
  * 2. Further y is the known right-hand-side vector and solution is the array to hold the solution x. */
 void tridiag_specialized(double* y, int N, double* solution){
-    double* b = new double[N];
-    b[0] = 2;
+    double* b = new double[N];  // To hold substituted values along main diag
+    b[0] = 2;                   // First substituted lement is "itself" (2)
 
     for (int i = 1; i < N; i++){
         b[i] = (i + 2)/((double)(i + 1));
