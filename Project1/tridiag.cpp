@@ -12,6 +12,7 @@ void tridiag_general(double*, double*, double*, double*, int, double*);
 void tridiag_specialized(double*, int, double*);
 double source_term(double);
 double exact(double);
+void time_general(int, int);
 void write_results_to_file(const char*, double*, double*, int);
 
 int main(int argc, char* argv[]){
@@ -56,6 +57,7 @@ int main(int argc, char* argv[]){
         delete[] interior; delete[] numerical;                          // Free up memory
     }
 
+    time_general(20, 20);
     return 0;   // End of main function
 }
 
@@ -129,6 +131,30 @@ double exact(double x){
     return 1 - (1 - exp(-10.0))*x - exp(-10.0*x);
 }
 
+
+void time_general(int num_Ns, int num_runs_per_N){
+    for (int i = 0; i < num_Ns; i++){
+        int N = (int)pow(2.0, (double)(i+2));
+        double h = 1.0/((double)(N + 1));   // Step size between each grid point
+        double time_total = 0.0;
+        double *a, *b, *c, *x, *g, *solution;
+
+        initialize(a, b, c, x, g, solution, N, h);
+
+        for (int j = 0; j < num_runs_per_N; j++){
+            clock_t start_time = clock();
+            tridiag_general(a, b, c, g, N, solution); // General algorithm
+            clock_t end_time = clock();
+            double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+            time_total += time_used;
+        }
+
+        double time_average = time_total/num_runs_per_N;
+        std::cout << "N = " << std::setw(8) << N << " | Average exec. time: " << std::setw(10) << time_average << " s" << std::endl;
+        delete[] a; delete[] b; delete[] c; delete[] x; delete[] g; delete[] solution;
+        // Write to file per N-value
+    }
+}
 
 /* Function that writes results x, numerical, analytical and reslative error to file filename. */
 void write_results_to_file(const char* filename, double* x, double* numerical, int N){
