@@ -1,4 +1,7 @@
 
+# Script for plotting time usage of the general and
+# special algorithm up to n = 10^6 for the grid points.
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,11 +25,11 @@ if (__name__ == "__main__"):
 
     plt.figure(figsize = (8, 7))
     plt.style.use("seaborn")
-    plt.plot(N_gen, time_gen, linewidth = 2, label = "General")
-    plt.plot(N_spe, time_spe, linewidth = 2, label = "Special")
-    plt.title("Time usage for the two algorithms", fontname = "serif", fontsize = 18)
-    plt.xlabel("Size of matrix (NxN)", fontname = "serif", fontsize = 16)
-    plt.ylabel("Runtime of algorithm [s]", fontname = "serif", fontsize = 16)
+    plt.plot(np.array(N_gen)[:-3], np.array(time_gen)[:-3], linewidth = 2, label = "General")
+    plt.plot(np.array(N_spe)[:-3], np.array(time_spe)[:-3], linewidth = 2, label = "Special")
+    plt.title("Time usage for the two algorithms", fontname = "serif", fontsize = 17)
+    plt.xlabel("Size of matrix (NxN)", fontname = "serif", fontsize = 14)
+    plt.ylabel("Runtime of algorithm [s]", fontname = "serif", fontsize = 14)
     plt.legend()
 
 

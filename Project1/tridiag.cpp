@@ -6,11 +6,13 @@
 # include <cmath>
 # include <ctime>
 # include <string>
+# include <armadillo>
 
 /* Functions defined (with description) further below in the program. */
 void initialize(double *&, double *&, double *&, double *&, double *&, double *&, int);
 void tridiag_general(double*, double*, double*, double*, int, double*);
 void tridiag_special(double*, double*, int, double*);
+void lu_solver();
 double source_term(double);
 double exact(double);
 void benchmark(std::string, int, int);
@@ -44,7 +46,7 @@ int main(int argc, char* argv[]){
         write_results_to_file(fileout.c_str(), x, numerical, N+2);    // Save results to file
 
         /* Computing and writing stats to screen. */
-        int FLOP = 9*(N - 1) + 1;
+        int FLOP = 5*(N - 1) + 1;
         double FLOPS = FLOP/time_used;
         std::cout << "N = " << N << ":" << std::endl;
         std::cout << "--------------------------------" << std::endl;
@@ -56,8 +58,10 @@ int main(int argc, char* argv[]){
         delete[] interior; delete[] numerical;                          // Free up memory
     }
 
-    benchmark("general", 24, 10);   // Run timing benchmarks for general algorithm
-    benchmark("special", 24, 10);   // Run timing benchmarks for special algorith,
+    benchmark("general", 22, 5);   // Run timing benchmarks for general algorithm
+    benchmark("special", 22, 5);   // Run timing benchmarks for special algorithm
+
+    //lu_solver();
     return 0;   // End of main function
 }
 
@@ -107,7 +111,7 @@ void tridiag_general(double* a, double* b, double* c, double* y, int N, double* 
 void tridiag_special(double* b, double* y, int N, double* solution){
     /* STEP 1: Forward substitution. */
     for (int i = 1; i < N; i++){
-        b[i] = (i + 1)/((double)(i));       // Eliminating lower diagonal
+        b[i] = (i + 2)/((double)(i + 1));       // Eliminating lower diagonal
         y[i] = y[i] + (y[i-1]/b[i-1]);      // Corresponding change to RHS of eq.
     }
 
@@ -116,6 +120,79 @@ void tridiag_special(double* b, double* y, int N, double* solution){
 
     for (int i = N-2; i >= 0; i--){
         solution[i] = (y[i] + solution[i+1])/b[i];  // Eliminating upper diag and dividing by main diag
+    }
+}
+
+
+/* Function that solves the linear algebra problem through LU-decpmosition using the Armadillo
+ * library. This functions is designed to compare runtime with the tridiagonal algorithms. */
+void lu_solver(){
+    std::cout << std::endl << "Benchmarking Armadillo solve algorithm" << std::endl;
+    std::cout << "---------------------------------------------------------" << std::endl;
+    int upper_exponent = 4;     // 10^upper_exponent is upper limit for N
+
+    for (int k = 1; k < upper_exponent; k++){
+        int N = (int)pow(10.0, (double)(k));    // Increase N by factor 10
+        int N_full = N + 2;                     // Full domain size
+        double h = 1.0/((double)(N_full - 1));  // Step size for current N
+        double h_squared = h*h;                 // To ease computaitons for g
+
+        arma::mat A(N, N);      // To hold full matrix
+        arma::vec x(N_full);    // To hold x-coordinates
+        arma::vec g(N);         // To hold source term on right-hand-side of eq.
+
+        /* Initialize x at all points and g at interior points. */
+        for (int i = 0; i < N_full; i++) x[i] = i*h;
+        for (int i = 0; i < N; i++) g[i] = h_squared*source_term(x[i+1]);
+
+        /* Initialize matrix with correct elements. */
+        for (int i = 0; i < N; i++){
+            for (int j = 0; j < N; j++){
+                if (i == j){
+                    A(i, j) = 2.0;              // Initialize main diagonal
+                }
+
+                else if (fabs(i - j) == 1){
+                    A(i, j) = -1.0;             // Initialize upper/lower diagonal
+                }
+
+                else {
+                    A(i, j) = 0.0;      // Initialize zero everywhere else
+                }
+            }
+        }
+
+        arma::vec v;    // Array to hold solution from Armadillo solve algorithm
+
+        double num_runs_per_N = 100;
+        double time_total = 0.0;
+        clock_t start_time, end_time;
+
+        /* Using Armadillo algorithm many times to find representative average runtime. */
+        for (int i = 0; i < num_runs_per_N; i++){
+            start_time = clock();           // Start timing
+            v = arma::solve(A, g);          // Solve uses LU decomposition internally
+            end_time = clock();             // End timing
+            double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+            time_total += time_used;
+
+        }
+
+        double time_average = time_total/num_runs_per_N;
+        std::cout << "N = " << std::setw(10) << N << "  |  Average execution time: "
+                  << std::setw(12) << std::setprecision(8) << time_average << " s" << std::endl;
+
+        /* Testing that Armadillo gives correct solution by
+         * writing to file and then plotting with Python. */
+        double* numerical = new double[N_full];
+        numerical[0] = numerical[N_full-1] = 0.0;   // Boundary conditions
+
+        for (int i = 1; i < N_full-1; i++){
+            numerical[i] = v[i-1];              // Fill interior solution to full solution
+        }
+
+        write_results_to_file("arma_results.txt", x.memptr(), numerical, N);    // Write solution to file
+        delete[] numerical;
     }
 }
 
@@ -134,7 +211,7 @@ double analytical(double x){
 /* Function that runs the requested algorithm for a series
  * of N-values and then writes the runtime to file. */
 void benchmark(std::string algorithm, int num_Ns, int num_runs_per_N){
-    std::cout << std::endl << "Benchmarking the " << algorithm << " algorithm" << std::endl;
+    std::cout << std::endl << "Benchmarking the " << algorithm << " tridiagonal algorithm" << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
 
     std::ofstream outfile;                  // File object for output
@@ -172,7 +249,7 @@ void benchmark(std::string algorithm, int num_Ns, int num_runs_per_N){
 
         double time_average = time_total/num_runs_per_N;    // Take evareg of num_runs_per_N
         std::cout << "N = " << std::setw(10) << N << "  |  Average execution time: "
-                  << std::setw(12) << time_average << " s" << std::endl;
+                  << std::setw(12) << std::setprecision(8) << time_average << " s" << std::endl;
 
         /* Write time data to file. */
         outfile << std::setw(10) << N;

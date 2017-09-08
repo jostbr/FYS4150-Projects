@@ -1,4 +1,6 @@
 
+# Script for plotting the numerical vs. the analytical solution.
+
 import os
 import sys
 import numpy as np
@@ -6,10 +8,11 @@ import matplotlib.pyplot as plt
 
 problem_sizes = np.logspace(1, 3, 3, endpoint = True).astype(int)
 #problem_sizes = np.arange(10, 101, 10)
+#problem_sizes = np.arange(7, 84, 7)
 num_boundary_points = 2
 
 plt.figure(figsize = (8, 7))
-plt.style.use("ggplot")
+plt.style.use("seaborn")
 
 for size in problem_sizes:
     full_system_size = size + num_boundary_points     # Account for boundary points
@@ -28,12 +31,12 @@ for size in problem_sizes:
                 #rel_error[line_num-1] = float(words[3])
 
         plt.plot(x, numerical, linewidth = 2,
-            label = "Numerical, N = {}, h = {:.2e}".format(full_system_size, 1/(full_system_size-1)))
+            label = "Numerical: N = {}, h = {:.2e}".format(full_system_size, 1/(full_system_size-1)))
 
-plt.plot(x, analytical, linewidth = 2, label = "Analytical")
-plt.xlabel("$x$-coordinate [dim-less]", fontname = "serif", fontsize = 16)
-plt.ylabel("$u(x)$ [dim-less]", fontname = "serif", fontsize = 16)
-plt.title("Solution to 1D Poisson equation",
-    fontname = "serif", fontsize = 18)
+plt.plot(x, analytical, linewidth = 2, label = "Analytical: $u(x)=1-(1-e^{-10})x-e^{-10x}$")
+plt.xlabel("$x$-coordinate [dim-less]", fontname = "serif", fontsize = 15)
+plt.ylabel("$u(x)$ [dim-less]", fontname = "serif", fontsize = 15)
+plt.title("Solution to 1D Poisson equation, source: $g(x)=100e^{-10x}$",
+    fontname = "serif", fontsize = 16)
 plt.legend()
 plt.show()
