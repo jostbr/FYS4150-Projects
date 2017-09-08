@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
         write_results_to_file(fileout.c_str(), x, numerical, N+2);    // Save results to file
 
         /* Computing and writing stats to screen. */
-        int FLOP = 5*(N - 1) + 1;
+        int FLOP = 9*(N - 1) + 1;
         double FLOPS = FLOP/time_used;
         std::cout << "N = " << N << ":" << std::endl;
         std::cout << "--------------------------------" << std::endl;
@@ -58,10 +58,10 @@ int main(int argc, char* argv[]){
         delete[] interior; delete[] numerical;                          // Free up memory
     }
 
-    benchmark("general", 22, 5);   // Run timing benchmarks for general algorithm
-    benchmark("special", 22, 5);   // Run timing benchmarks for special algorithm
+    benchmark("general", 3, 100);   // Run timing benchmarks for general algorithm
+    benchmark("special", 3, 100);   // Run timing benchmarks for special algorithm
+    lu_solver();
 
-    //lu_solver();
     return 0;   // End of main function
 }
 
@@ -223,7 +223,7 @@ void benchmark(std::string algorithm, int num_Ns, int num_runs_per_N){
     outfile << std::setw(8) << "N" << std::setw(20) << "time" << std::endl;  // Header
 
     for (int i = 0; i < num_Ns; i++){
-        int N = (int)pow(2.0, (double)(i+2));       // Doubling N every iteration
+        int N = (int)pow(10.0, (double)(i+1));       // Doubling N every iteration
         //double h = 1.0/((double)(N + 1));
         double time_total = 0.0;                    // To keep compute average of num_runs_per_N
 
@@ -274,7 +274,7 @@ void write_results_to_file(const char* filename, double* x, double* numerical, i
         ofile << std::setw(20) << std::setprecision(8) << x_val;
         ofile << std::setw(20) << std::setprecision(8) << numerical[i];
         ofile << std::setw(20) << std::setprecision(8) << exact_val;
-        ofile << std::setw(20) << std::setprecision(8) << log10(rel_error) << std::endl;
+        ofile << std::setw(20) << std::setprecision(8) << rel_error << std::endl;
     }
 
     ofile.close();

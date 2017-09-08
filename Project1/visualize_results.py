@@ -19,7 +19,6 @@ for size in problem_sizes:
     x = np.zeros(full_system_size)
     numerical = np.zeros(full_system_size)
     analytical = np.zeros(full_system_size)
-    #rel_error = np.zeros(size)
 
     with open("../build-Project1/result{}.txt".format(size), "r") as results:
         for line_num, line_string in enumerate(results):
@@ -28,7 +27,6 @@ for size in problem_sizes:
                 x[line_num-1] = float(words[0])
                 numerical[line_num-1] = float(words[1])
                 analytical[line_num-1] = float(words[2])
-                #rel_error[line_num-1] = float(words[3])
 
         plt.plot(x, numerical, linewidth = 2,
             label = "Numerical: N = {}, h = {:.2e}".format(full_system_size, 1/(full_system_size-1)))
