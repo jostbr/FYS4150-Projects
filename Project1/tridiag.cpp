@@ -7,15 +7,17 @@
 # include <ctime>
 # include <string>
 # include <armadillo>
+# include "assert.h"
 
 /* Functions defined (with description) further below in the program. */
 void initialize(double *&, double *&, double *&, double *&, double *&, double *&, int);
 void tridiag_general(double*, double*, double*, double*, int, double*);
 void tridiag_special(double*, double*, int, double*);
+void test_tridiag_general();
 void lu_solver();
 double source_term(double);
 double exact(double);
-void benchmark(std::string, int, int);
+void time_algorithm(std::string, int, int);
 void write_results_to_file(const char*, double*, double*, int);
 
 int main(int argc, char* argv[]){
@@ -58,9 +60,10 @@ int main(int argc, char* argv[]){
         delete[] interior; delete[] numerical;                          // Free up memory
     }
 
-    benchmark("general", 3, 100);   // Run timing benchmarks for general algorithm
-    benchmark("special", 3, 100);   // Run timing benchmarks for special algorithm
+    time_algorithm("general", 3, 5);   // Run timing benchmarks for general algorithm
+    time_algorithm("special", 3, 5);   // Run timing benchmarks for special algorithm
     lu_solver();
+    test_tridiag_general();     // Unit test on the general algorithm
 
     return 0;   // End of main function
 }
@@ -123,6 +126,45 @@ void tridiag_special(double* b, double* y, int N, double* solution){
     }
 }
 
+/* Function that acts as a unit test for the general tridiag solver. The test is based on using small
+ * arbitrary tridiagonal matrix (3x3) with a arbitrary known right-hand-side. We use values for which
+ * we've already found a solution by hand. Wwe compare the computed values by tridiag_general() and
+ * conclude whether or not the function works as it should. This test function can be helpful during
+ * development of the algorithm; to see that any changes made doesn't result in failing the test. */
+void test_tridiag_general(){
+    int N = 3;
+    double* a = new double[N-1];        // Lower diagonal
+    double* b = new double[N];          // Main diagonal
+    double* c = new double[N-1];        // Upper diagonal
+    double* g = new double[N];          // Right hand side of Av = g
+    double* solution = new double[N];   // To hold solution from algorithm
+
+    /* Testing with an abitrary matrix for the general algorithm. */
+    a[0] = a[1] = c[0] = c[1] = 1.0;
+    b[0] = 1.0;
+    b[1] = 2.0;
+    b[2] = 3.0;
+    g[0] = g[1] = g[2] = -1.0;      // Right hand side fortest of general
+
+    std::cout << std::endl << "Running unit test on general tridiagonal algorithm" << std::endl;
+    std::cout << "-----------------------------------------------------" << std::endl;
+
+    tridiag_general(a, b, c, g, N, solution);   // Call the general algorithm
+
+    /* Examine results and see if results are as expected. Here we chose to use if/else,
+     * but we could have used the assert function that auto-terminates program when test fails. */
+    if (solution[0] == -1.5 && solution[1] == 0.5 && solution[2] == -0.5){
+        std::cout << "Test for general algorithm passed! Behaviour "
+                  << "is as expected for the sample matrix." << std::endl << std::endl;
+    }
+
+    else {
+        std::cout << "Test failed for general algorithm!" << std::endl << std::endl;
+    }
+
+    delete[] a; delete[] b; delete[] c; delete[] solution;
+}
+
 
 /* Function that solves the linear algebra problem through LU-decpmosition using the Armadillo
  * library. This functions is designed to compare runtime with the tridiagonal algorithms. */
@@ -164,7 +206,7 @@ void lu_solver(){
 
         arma::vec v;    // Array to hold solution from Armadillo solve algorithm
 
-        double num_runs_per_N = 100;
+        double num_runs_per_N = 5;
         double time_total = 0.0;
         clock_t start_time, end_time;
 
@@ -210,7 +252,7 @@ double analytical(double x){
 
 /* Function that runs the requested algorithm for a series
  * of N-values and then writes the runtime to file. */
-void benchmark(std::string algorithm, int num_Ns, int num_runs_per_N){
+void time_algorithm(std::string algorithm, int num_Ns, int num_runs_per_N){
     std::cout << std::endl << "Benchmarking the " << algorithm << " tridiagonal algorithm" << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
 
