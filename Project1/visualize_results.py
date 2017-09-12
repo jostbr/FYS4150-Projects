@@ -1,5 +1,6 @@
 
 # Script for plotting the numerical vs. the analytical solution.
+# Depends on having generated result10,txt, result100.txt and result1000.txt.
 
 import os
 import sys

@@ -1,6 +1,8 @@
 
 # Script for plotting time usage of the general and
 # special algorithm up to n = 10^6 for the grid points.
+# Depends on having generated timing results through the
+# benchamrk() function in tridiag.cpp.
 
 import numpy as np
 import matplotlib.pyplot as plt

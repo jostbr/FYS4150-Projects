@@ -1,4 +1,8 @@
 
+# Script for plotting max relative error per problem size.
+# Depends on having generated result10.txt,..., result10000000.txt
+# ouput files.
+
 import numpy as np
 import matplotlib.pyplot as plt
 
