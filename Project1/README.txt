@@ -2,7 +2,7 @@
 This project has been done by Trude Hjelmeland and Jostein Brændshøi.
 
 Comment: In the report there is referrence to a function becnhmark() in
-src/tridiag.cpp. This function has been renamed to time_algorithm in src/tridiag.cpp.
+src/tridiag.cpp. This function has been renamed to time_algorithm() in src/tridiag.cpp.
 
 Directory overview:
 --------------------
