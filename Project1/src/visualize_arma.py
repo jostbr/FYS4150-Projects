@@ -2,6 +2,8 @@
 # Script for plotting the numerical Armadillo solution vs. the analytical.
 # Depends on having generated results with the armadillo solve() algorithm.
 
+# You might have to change file path for result files depending on your build settings.
+
 import numpy as np
 import matplotlib.pyplot as plt
 

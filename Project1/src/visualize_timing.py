@@ -4,6 +4,9 @@
 # Depends on having generated timing results through the
 # benchamrk() function in tridiag.cpp.
 
+# You might have to change file path for result files
+# depending on your build settings.
+
 import numpy as np
 import matplotlib.pyplot as plt
 

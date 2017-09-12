@@ -3,6 +3,9 @@
 # Depends on having generated result10.txt,..., result10000000.txt
 # ouput files.
 
+# You might have to change file path for result files
+# depending on your vuild settings.
+
 import numpy as np
 import matplotlib.pyplot as plt
 

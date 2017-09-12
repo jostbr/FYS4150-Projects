@@ -2,6 +2,8 @@
 # Script for plotting the numerical vs. the analytical solution.
 # Depends on having generated result10,txt, result100.txt and result1000.txt.
 
+# You might have to change file path for result files depending on your build settings.
+
 import os
 import sys
 import numpy as np
