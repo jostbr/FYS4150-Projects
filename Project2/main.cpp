@@ -5,6 +5,6 @@ int main(){
     return 0;
 }
 
-void square(double arg){
+double square(double arg){
     return arg*arg;
 }
