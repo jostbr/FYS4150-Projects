@@ -5,8 +5,11 @@
 # include "jacobi.h"
 
 int main(){
-    /* Start with all unit tests for verification. */
+    std::cout << "EXECUTING UNIT TESTS..." << std::endl
+              << "============================================" << std::endl;
     test_max_non_diag();
+    // Do some more tests
+    std::cout << "============================================" << std::endl;
 
     return 0;
 }
