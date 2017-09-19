@@ -4,3 +4,8 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp
+
+INCLUDEPATH = \home\trude\Downloads
+
+LIBS += -llapack -lblas -larmadillo
+
