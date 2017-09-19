@@ -4,10 +4,12 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    jacobi.cpp
+    jacobi.cpp \
+    unit_tests.cpp \
 
 HEADERS += \
-    jacobi.h
+    jacobi.h \
+    unit_tests.h
 
 INCLUDEPATH += /usr/local/include
 LIBS += -L/usr/local/lib
