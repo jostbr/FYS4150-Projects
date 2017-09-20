@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <armadillo>
+#include <ctime>
 
 using namespace std;
 using namespace arma;
@@ -42,6 +43,7 @@ int main()
 
     int k, l;
     double max = 0.0;
+    clock_t start_time = clock();
     for (int i = 0; i < n; i++){
         for (int j = i+1; j < n; j++){
             if (fabs(A(i,j)) > max){
@@ -58,13 +60,13 @@ int main()
     cout << "l=" << l << endl;
 
     double epsilon = 1.0e-8;
-    double max_number_iterations =  3*n;
+    double max_number_iterations =  n*n*n;
     int iterations = 0;
     double s, c;
     double t, tau;
 
     while ( fabs(max) > epsilon && (double) iterations < max_number_iterations ){
-        cout << "Max value 1=" << max << endl;
+        //cout << "Max value 1=" << max << endl;
         if ( A(k,l) != 0.0 ) {
             tau = (A(l,l) - A(k,k))/(2*A(k,l));
             if ( tau > 0 ) {
@@ -81,13 +83,13 @@ int main()
         double a_kk, a_ll, a_ik, a_il, r_ik, r_il;
         a_kk = A(k,k);
         a_ll = A(l,l);
-        A.print("A= ");
+        //A.print("A= ");
         // changing the matrix elements with indices k and l
         A(k,k) = c*c*a_kk - 2.0*c*s*A(k,l) + s*s*a_ll;
         A(l,l) = s*s*a_kk + 2.0*c*s*A(k,l) + c*c*a_ll;
         A(k,l) = 0.0; // hard-coding of the zeros
         A(l,k) = 0.0;
-        A.print("A= ");
+        //A.print("A= ");
         // and then we change the remaining elements
         for ( int i = 0; i < n; i++ ) {
             if ( i != k && i != l ) {
@@ -104,10 +106,10 @@ int main()
                 R(i,k) = c*r_ik - s*r_il;
                 R(i,l) = c*r_il + s*r_ik;
                 }
-        A.print("A= ");
-        R.print("R= ");
+        //A.print("A= ");
+        //R.print("R= ");
         max = 10e-9;
-        cout << "Max value 2=" << max << endl;
+        //cout << "Max value 2=" << max << endl;
         for (int i = 0; i < n; i++){
             for (int j = i+1; j < n; j++){
                 if (fabs(A(i,j)) > max){
@@ -121,15 +123,60 @@ int main()
 
                 }
                 else{
-                    cout << "Jacobi rotational algorithm converged" << endl;
+                    //cout << "Jacobi rotational algorithm converged" << endl;
                 }
             }
         }
         iterations++;
     }
+    clock_t end_time = clock();
+    double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+
+    cout << "Time used = " << time_used << endl;
     cout << "Number of iterations: " << iterations << endl;
+    //R.print("R= ");
+    //A.print("A= ");
+    for (int i=0; i<n; i++){
+        for (int j=0; j<n; j++){
+            if (A(i,j) < 10e-10){
+                A(i,j)= 0.0;
+            }
+        }
+    }
     R.print("R= ");
     A.print("A= ");
+
+    //Test Armadillos Eigen solver
+    mat B(n,n);
+    B(0,0) = 3.0;
+    B(0,1) = -1.0;
+    B(0,2) = 0.0;
+    B(1,0) = -1.0;
+    B(1,1) = 2.0;
+    B(1,2) = -1.0;
+    B(2,0) = 0.0;
+    B(2,1) = -1.0;
+    B(2,2) = 3.0;
+
+    vec eigval;
+    mat eigvec;
+
+    eig_sym(eigval, eigvec, B);
+
+    cout << "Armadillo found eigenvalues: " << eigval << endl;
+    cout << "Armadillo found eigenvectors: " << eigvec << endl;
+
+    /*clock_t start_time_2 = clock();
+    double result_Armadillo = eigsys(B);
+    clock_t end_time = clock();
+    double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;*/
+
+
+
+
+
+
+
 
 
     return 0;
