@@ -14,7 +14,7 @@ int main()
 {
     int n = 3;
     mat A(n,n);
-    A(0,0) = 3.0;
+    /*A(0,0) = 3.0;
     A(0,1) = 1.0;
     A(0,2) = -1.0;
     A(1,0) = 1.0;
@@ -22,9 +22,20 @@ int main()
     A(1,2) = -1.0;
     A(2,0) = -1.0;
     A(2,1) = -1.0;
-    A(2,2) = 5.0;
-    A.print("A= ");
+    A(2,2) = 5.0;*/
     //R should return 2,3,6 along the diagonal
+
+    A(0,0) = 3.0;
+    A(0,1) = -1.0;
+    A(0,2) = 0.0;
+    A(1,0) = -1.0;
+    A(1,1) = 2.0;
+    A(1,2) = -1.0;
+    A(2,0) = 0.0;
+    A(2,1) = -1.0;
+    A(2,2) = 3.0;
+    A.print("A= ");
+    //R should return 1,4,3 along the diagonal
 
     mat R = eye(n,n);
     R.print("R= ");
@@ -95,7 +106,7 @@ int main()
                 }
         A.print("A= ");
         R.print("R= ");
-        double max = 10e-9;
+        max = 10e-9;
         cout << "Max value 2=" << max << endl;
         for (int i = 0; i < n; i++){
             for (int j = i+1; j < n; j++){
@@ -111,14 +122,10 @@ int main()
                 }
                 else{
                     cout << "Jacobi rotational algorithm converged" << endl;
-
                 }
-
-
             }
         }
         iterations++;
-
     }
     cout << "Number of iterations: " << iterations << endl;
     R.print("R= ");
