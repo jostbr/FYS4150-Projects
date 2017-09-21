@@ -11,7 +11,7 @@ using namespace std;
 
 void fill_array(arma::mat& A, int n){
     double rho_0 = 0.0;
-    double rho_n = 10.0;
+    double rho_n = 5.0;
     arma::vec rho(n+1);
     rho(0) = rho_0;
     rho(n) = rho_n;
@@ -52,9 +52,9 @@ void max_element(arma::mat& A, int n, int& k, int& l, double& max){
                     max = (fabs(A(i,j)));
                 k=i;
                 l=j;
-                cout << "Max = " << max << endl;
-                cout << "k = " << k << endl;
-                cout << "l = " << l << endl;
+                //cout << "Max = " << max << endl;
+                //cout << "k = " << k << endl;
+                //cout << "l = " << l << endl;
                 }
             }
             else{max = max;}
@@ -126,16 +126,52 @@ void JacobiRotation(arma::mat& A, arma::mat& V, double& max, double& epsilon, in
                 }
             }
         }
-    cout << "Number of iterations was: " << iterations << endl;
+    //cout << "Number of iterations was: " << iterations << endl;
+}
+
+
+/*UNIT TEST TO CHECK IF RIGHT MAX OFF DIAGONAL ELEMENT IS RETURNED
+ * In this test the function max_element should return max element off-diagonal in a
+ * known matrix B.
+ * B(0,2) should be return, giving index k=0, l=2
+ * If test is passed, a positiv comment is prompt in the terminal window
+ */
+
+void test_max(){
+    int N = 3;
+    arma::mat B(N,N);
+    B(0,0) = 3.0;
+    B(0,1) = 1.0;
+    B(0,2) = 5.0;
+    B(1,0) = 1.0;
+    B(1,1) = 3.0;
+    B(1,2) = -1.0;
+    B(2,0) = -1.0;
+    B(2,1) = -1.0;
+    B(2,2) = 5.0;
+
+    int k,l;
+    double max = 0.0;
+
+    max_element(B,N, k,l,max);
+    //cout << "k= " << k << endl;
+    if (k == 0 && l==2){
+        cout << "Max element test passed" << endl;
+    }
 }
 
 
 
+
+
 int main(int argc, char* argv[]){
+    test_max();
+
     string filename = argv[1];
     int n = atoi(argv[2]);
 
-    double epsilon = 1.0e-9;
+
+    double epsilon = 1.0e-6;
 
     arma::mat A = arma::zeros(n,n);
     arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors
@@ -147,26 +183,32 @@ int main(int argc, char* argv[]){
 
     fill_array(A, n);
 
-    //Test Armadillos Eigen solver
+    /*
+     * //Test Armadillos Eigen solver
     arma::vec eigval;
     arma::mat eigvec;
-
     arma::eig_sym(eigval, eigvec, A);
-
-    cout << "Armadillo found eigenvalues: " << eigval << endl;
-    cout << "Armadillo found eigenvectors: " << eigvec << endl;
+    //cout << "Armadillo found eigenvalues: " << eigval << endl;
+    //cout << "Armadillo found eigenvectors: " << eigvec << endl;
+    */
 
 
 
     double max = 0.0;
     max_element(A, n, k, l, max);
 
+    clock_t start_time = clock();
+
     JacobiRotation(A, V, max, epsilon, n, k, l);
 
-    A.print("A = ");            //Should contain eigenvalues along the diagonal
-    V.print("V = ");            //Should contain eigenvectors as columns
+    clock_t end_time = clock();
+    double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+    cout << "Time used: " << time_used << endl;
 
-
+    //A.print("A = ");            //Should contain eigenvalues along the diagonal
+    //V.print("V = ");            //Should contain eigenvectors as columns
+    arma::vec eig = arma::sort(A.diag());
+    eig.print();
     return 0;
 }
 
