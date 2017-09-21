@@ -11,7 +11,7 @@ using namespace arma;
 
 //int argc, char* argv[]
 //int n = atoi(argv[1]);
-int main()
+//int main()
 {
     int n = 3;
     mat A(n,n);
@@ -40,6 +40,8 @@ int main()
 
     mat R = eye(n,n);
     R.print("R= ");
+
+
 
     int k, l;
     double max = 0.0;
@@ -171,14 +173,6 @@ int main()
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;*/
 
-
-
-
-
-
-
-
-
     return 0;
-
 }
+
