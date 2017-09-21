@@ -119,6 +119,8 @@ void JacobiRotation(arma::mat& A, arma::mat& V, double& max, double& epsilon, in
         max_element(A, n, k, l, max);
         iterations++;
     }
+    //Forces all elements to be 0.0 below a treshold,
+    //But will also change diagonal elements if they are less the treshold
     for (int i=0; i<n; i++){
             for (int j=0; j<n; j++){
                 if (A(i,j) < 1.0e-10){
