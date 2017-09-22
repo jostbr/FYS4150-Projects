@@ -5,13 +5,17 @@
 #include <cmath>
 #include <armadillo>
 #include <ctime>
+#include <fstream>
+#include <string>
+#include <iomanip>
+
 
 using namespace std;
 //using namespace arma;
 
 void fill_array(arma::mat& A, int n){
     double rho_0 = 0.0;
-    double rho_n = 5.0;
+    double rho_n = 4.0;
     arma::vec rho(n+1);
     rho(0) = rho_0;
     rho(n) = rho_n;
@@ -24,9 +28,56 @@ void fill_array(arma::mat& A, int n){
     }
 
     arma::vec diag_el(n+1);
-    for (int i=0; i<n; i++){
+    for (int i=0; i<n+1; i++){
         diag_el(i)= (2.0/hh) + (rho(i)*rho(i));
     }
+
+    double off_const = -1.0/hh;
+
+    for (int i=0; i<n; i++){
+        for (int j=0; j<n; j++){
+            if (i==j){A(i,j)=diag_el(i);}
+            if (fabs(i-j) == 1){A(i,j)=off_const;}
+
+        }
+    }
+
+    //A.print("A= ");
+
+}
+
+void fill_array_interactive(arma::mat& A, int n){
+    double rho_0 = 0.0;
+    //Rho max scales with the frequency omega
+    double rho_n = 10.0;
+    arma::vec rho(n+1);
+    rho(0) = rho_0;
+    rho(n) = rho_n;
+
+    double h_step = (rho_n - rho_0)/n;
+
+    //cout << "h= " << h_step << endl;
+
+    double hh =h_step*h_step;
+
+    for (int i=1; i<n; i++){
+        rho(i) = rho_0 + i*h_step;
+    }
+
+    //cout << "rho_1= " << rho(1) << endl;
+
+
+    //Defining the frequency, 0.01, 0.5, 1, 5
+    double omega = 0.5;
+    double omega_squared = omega*omega;
+
+
+    arma::vec diag_el(n+1);
+    for (int i=0; i<n+1; i++){
+        diag_el(i)= (2.0/hh) + (rho(i)*rho(i))*omega_squared + (1.0/rho(i));
+    }
+
+    diag_el.print();
 
     double off_const = -1.0/hh;
 
@@ -162,7 +213,37 @@ void test_max(){
     }
 }
 
+void write_results_to_file(string fileout, arma::vec eig, arma::mat V, int n){
+    ofstream ofile;    // File object for output file
+    ofile.open(fileout);
+    ofile << setiosflags(ios::showpoint | ios::uppercase);
+    ofile << "       lamda:             eigenvectors:          " << endl;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j<n; j++){
+            ofile << setw(20) << setprecision(8) << eig(i);
+            ofile << setw(20) << setprecision(8) << V(i,j) << endl;
+        }
 
+    }
+
+    ofile.close();
+}
+
+void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec, int n){
+    ofstream ofile;    // File object for output file
+    ofile.open(fileout);
+    ofile << setiosflags(ios::showpoint | ios::uppercase);
+    ofile << "       lamda:             eigenvectors:          " << endl;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j<n; j++){
+            ofile << setw(20) << setprecision(8) << eig(i);
+            ofile << setw(20) << setprecision(8) << eig_vec(j) << endl;
+        }
+
+    }
+
+    ofile.close();
+}
 
 
 
@@ -171,6 +252,8 @@ int main(int argc, char* argv[]){
 
     string filename = argv[1];
     int n = atoi(argv[2]);
+
+    string fileout = filename;
 
 
     double epsilon = 1.0e-6;
@@ -184,6 +267,7 @@ int main(int argc, char* argv[]){
     //V.print("V= ");
 
     fill_array(A, n);
+    //fill_array_interactive(A, n);
 
     /*
      * //Test Armadillos Eigen solver
@@ -193,8 +277,6 @@ int main(int argc, char* argv[]){
     //cout << "Armadillo found eigenvalues: " << eigval << endl;
     //cout << "Armadillo found eigenvectors: " << eigvec << endl;
     */
-
-
 
     double max = 0.0;
     max_element(A, n, k, l, max);
@@ -211,6 +293,25 @@ int main(int argc, char* argv[]){
     //V.print("V = ");            //Should contain eigenvectors as columns
     arma::vec eig = arma::sort(A.diag());
     eig.print();
+
+
+    arma::vec eig_vec_1(n);
+    arma::vec eig_vec_2(n);
+    arma::vec eig_vec_3(n);
+
+    //Defining the wavefunction from the eigenvectors
+    for (int j=0; j<n; j++){
+        eig_vec_1(j) = V(1,j)*V(1,j);
+        eig_vec_2(j) = V(2,j)*V(2,j);
+        eig_vec_3(j) = V(3,j)*V(3,j);
+    }
+
+    //write_results_to_file(fileout, eig, V, n);
+    write_results_to_file_plot(fileout, eig, eig_vec_1, n);
+
+    //delete [] & A, delete [] & V, delete[] & eig;
+
     return 0;
 }
+
 
