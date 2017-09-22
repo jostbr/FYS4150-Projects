@@ -229,18 +229,19 @@ void write_results_to_file(string fileout, arma::vec eig, arma::mat V, int n){
     ofile.close();
 }
 
-void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec, int n){
+void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec_1, arma::vec eig_vec_2, arma::vec eig_vec_3, int n){
     ofstream ofile;    // File object for output file
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "       lamda:             eigenvectors:          " << endl;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j<n; j++){
-            ofile << setw(20) << setprecision(8) << eig(i);
-            ofile << setw(20) << setprecision(8) << eig_vec(j) << endl;
-        }
+    ofile << "      eigenvector1:              eigenvector2:                eigenvector3:" << endl;
+    for (int j = 0; j<n; j++){
+        ofile << setw(20) << setprecision(8) << eig_vec_1(j);
+        ofile << setw(20) << setprecision(8) << eig_vec_2(j);
+        ofile << setw(20) << setprecision(8) << eig_vec_3(j) << endl;
 
-    }
+     }
+
+
 
     ofile.close();
 }
@@ -307,7 +308,7 @@ int main(int argc, char* argv[]){
     }
 
     //write_results_to_file(fileout, eig, V, n);
-    write_results_to_file_plot(fileout, eig, eig_vec_1, n);
+    write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
 
     //delete [] & A, delete [] & V, delete[] & eig;
 
