@@ -233,7 +233,7 @@ void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec
     ofstream ofile;    // File object for output file
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "      eigenvector1:              eigenvector2:                eigenvector3:" << endl;
+    ofile << "      eigenvector1:        eigenvector2:           eigenvector3:" << endl;
     for (int j = 0; j<n; j++){
         ofile << setw(20) << setprecision(8) << eig_vec_1(j);
         ofile << setw(20) << setprecision(8) << eig_vec_2(j);
