@@ -49,7 +49,7 @@ void fill_array(arma::mat& A, int n){
 void fill_array_interactive(arma::mat& A, int n){
     double rho_0 = 0.0;
     //Rho max scales with the frequency omega
-    double rho_n = 10.0;
+    double rho_n = 4.0;
     arma::vec rho(n+1);
     rho(0) = rho_0;
     rho(n) = rho_n;
@@ -59,6 +59,8 @@ void fill_array_interactive(arma::mat& A, int n){
     //cout << "h= " << h_step << endl;
 
     double hh =h_step*h_step;
+
+    cout << "hh = " << hh << endl;
 
     for (int i=1; i<n; i++){
         rho(i) = rho_0 + i*h_step;
@@ -74,10 +76,11 @@ void fill_array_interactive(arma::mat& A, int n){
 
     arma::vec diag_el(n+1);
     for (int i=0; i<n+1; i++){
-        diag_el(i)= (2.0/hh) + (rho(i)*rho(i))*omega_squared + (1.0/rho(i));
+        if (i==0){diag_el(i)=(2.0/hh);}
+        else {diag_el(i)= (2.0/hh) + (rho(i)*rho(i))*omega_squared + (1.0/rho(i));}
     }
 
-    //diag_el.print("Diag element = ");
+    diag_el.print("Diag element = ");
 
     double off_const = -1.0/hh;
 
@@ -265,15 +268,15 @@ void write_results_to_file(string fileout, arma::vec eig, arma::mat V, int n){
     ofile.close();
 }
 
-void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec_1, arma::vec eig_vec_2, arma::vec eig_vec_3, int n){
+void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec_1, arma::vec eig_vec_2_2, arma::vec eig_vec_3_3, int n){
     ofstream ofile;    // File object for output file
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
     ofile << "      eigenvector1:        eigenvector2:           eigenvector3:" << endl;
     for (int j = 0; j<n; j++){
         ofile << setw(20) << setprecision(8) << eig_vec_1(j);
-        ofile << setw(20) << setprecision(8) << eig_vec_2(j);
-        ofile << setw(20) << setprecision(8) << eig_vec_3(j) << endl;
+        ofile << setw(20) << setprecision(8) << eig_vec_2_2(j);
+        ofile << setw(20) << setprecision(8) << eig_vec_3_3(j) << endl;
 
      }
 
@@ -327,8 +330,8 @@ int main(int argc, char* argv[]){
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
     cout << "Time used: " << time_used << endl;
 
-    A.print("A = ");            //Should contain eigenvalues along the diagonal
-    V.print("V = ");            //Should contain eigenvectors as columns
+    //A.print("A = ");            //Should contain eigenvalues along the diagonal
+    //V.print("V = ");            //Should contain eigenvectors as columns
     arma::vec eig = arma::sort(A.diag());
     eig.print();
 
@@ -360,22 +363,32 @@ int main(int argc, char* argv[]){
     arma::vec eig_vec_3(n);
 
     arma::vec eig_vec_1_1(n);
+    arma::vec eig_vec_2_2(n);
+    arma::vec eig_vec_3_3(n);
 
     //Defining the wavefunction from the eigenvectors
     //The eigenvalues and corresponding eigenvector do not correspond
     for (int j=0; j<n; j++){
-        eig_vec_1(j) = V(w,j)*V(w,j);
-        eig_vec_2(j) = V(1,j)*V(1,j);
-        eig_vec_3(j) = V(2,j)*V(2,j);
+        eig_vec_1(j) = V(j,w)*V(j,w);
+        //eig_vec_1(j) = eigvec(0,j);
+        //eig_vec_1(0) = eigvec(0,j)*eigvec(0,j);
+        //eig_vec_1 = eigvec(0) % eigvec(0);
+        eig_vec_2(j) = eigvec(1,j);
+        eig_vec_3(j) = eigvec(2, j);
     }
+    //eigvec.print("Eigvec = ");
 
-    //eig_vec_1.print("wavefunc brute = ");
-    //eig_vec_1_1 = eig_vec_1 % eig_vec_1;
-    //eig_vec_1_1.print("wavefunction finess = ");
+    //eig_vec_1.print("Armadillo = ");
+    eig_vec_1_1 = eig_vec_1 % eig_vec_1;
+    eig_vec_1_1.print("wavefunction finess wv1= ");
+    eig_vec_2_2 = eig_vec_2 % eig_vec_2;
+    eig_vec_2_2.print("wavefunction finess wv2= ");
+    eig_vec_3_3 = eig_vec_3 % eig_vec_3;
+    eig_vec_3_3.print("wavefunction finess wv2= ");
 
     //write_results_to_file(fileout, eig, V, n);
-    write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
-
+    //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
+    write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2_2, eig_vec_3_3, n);
     //delete [] & A, delete [] & V, delete[] & eig;
 
     return 0;
