@@ -268,15 +268,15 @@ void write_results_to_file(string fileout, arma::vec eig, arma::mat V, int n){
     ofile.close();
 }
 
-void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec_1, arma::vec eig_vec_2_2, arma::vec eig_vec_3_3, int n){
+void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec_1, arma::vec eig_vec_2, arma::vec eig_vec_3, int n){
     ofstream ofile;    // File object for output file
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
     ofile << "      eigenvector1:        eigenvector2:           eigenvector3:" << endl;
     for (int j = 0; j<n; j++){
         ofile << setw(20) << setprecision(8) << eig_vec_1(j);
-        ofile << setw(20) << setprecision(8) << eig_vec_2_2(j);
-        ofile << setw(20) << setprecision(8) << eig_vec_3_3(j) << endl;
+        ofile << setw(20) << setprecision(8) << eig_vec_2(j);
+        ofile << setw(20) << setprecision(8) << eig_vec_3(j) << endl;
 
      }
 
@@ -358,13 +358,52 @@ int main(int argc, char* argv[]){
     cout << w << endl;
     cout << A(w,v) << endl;
 
+    double min_eigval_2 = 10.0e4;
+    int w_2, v_2;
+
+    for (int i=0; i < n; i++){
+        for (int j=0; j < n; j++){
+            if(i==j){
+                if (fabs(A(i,j)) > min_eigval && fabs(A(i,j)) < min_eigval_2 ){
+                    min_eigval_2 = fabs(A(i,j));
+                    w_2 = i;
+                    v_2 = j;
+                }
+            }
+        }
+    }
+
+    cout << w_2 << endl;
+    cout << A(w_2,v_2) << endl;
+
+    double min_eigval_3 = 10.0e4;
+    int w_3, v_3;
+
+    for (int i=0; i < n; i++){
+        for (int j=0; j < n; j++){
+            if(i==j){
+                if (fabs(A(i,j)) > min_eigval_2 && fabs(A(i,j)) < min_eigval_3 ){
+                    min_eigval_3 = fabs(A(i,j));
+                    w_3 = i;
+                    v_3 = j;
+                }
+            }
+        }
+    }
+
+    cout << w_3 << endl;
+    cout << A(w_3,v_3) << endl;
+
+
+
+
     arma::vec eig_vec_1(n);
     arma::vec eig_vec_2(n);
     arma::vec eig_vec_3(n);
 
-    arma::vec eig_vec_1_1(n);
-    arma::vec eig_vec_2_2(n);
-    arma::vec eig_vec_3_3(n);
+    //arma::vec eig_vec_1_1(n);
+    //arma::vec eig_vec_2_2(n);
+    //arma::vec eig_vec_3_3(n);
 
     //Defining the wavefunction from the eigenvectors
     //The eigenvalues and corresponding eigenvector do not correspond
@@ -373,22 +412,24 @@ int main(int argc, char* argv[]){
         //eig_vec_1(j) = eigvec(0,j);
         //eig_vec_1(0) = eigvec(0,j)*eigvec(0,j);
         //eig_vec_1 = eigvec(0) % eigvec(0);
-        eig_vec_2(j) = eigvec(1,j);
-        eig_vec_3(j) = eigvec(2, j);
+        //eig_vec_2(j) = eigvec(1,j);
+        eig_vec_2(j) = V(j,w_2)*V(j,w_2);
+        eig_vec_3(j) = V(j,w_3)*V(j,w_3);
+        //eig_vec_3(j) = eigvec(2, j);
     }
     //eigvec.print("Eigvec = ");
 
     //eig_vec_1.print("Armadillo = ");
-    eig_vec_1_1 = eig_vec_1 % eig_vec_1;
-    eig_vec_1_1.print("wavefunction finess wv1= ");
-    eig_vec_2_2 = eig_vec_2 % eig_vec_2;
-    eig_vec_2_2.print("wavefunction finess wv2= ");
-    eig_vec_3_3 = eig_vec_3 % eig_vec_3;
-    eig_vec_3_3.print("wavefunction finess wv2= ");
+    //eig_vec_1_1 = eig_vec_1 % eig_vec_1;
+    //eig_vec_1_1.print("wavefunction finess wv1= ");
+    //eig_vec_2_2 = eig_vec_2 % eig_vec_2;
+    //eig_vec_2_2.print("wavefunction finess wv2= ");
+    //eig_vec_3_3 = eig_vec_3 % eig_vec_3;
+    //eig_vec_3_3.print("wavefunction finess wv2= ");
 
     //write_results_to_file(fileout, eig, V, n);
     //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
-    write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2_2, eig_vec_3_3, n);
+    write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     //delete [] & A, delete [] & V, delete[] & eig;
 
     return 0;
