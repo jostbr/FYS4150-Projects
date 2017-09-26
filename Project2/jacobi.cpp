@@ -13,7 +13,7 @@ double get_max_non_diag(arma::mat A, int N, int* k, int* l){
     for (int i = 0; i < N; i++){
         for (int j = i+1; j < N; j++){      // Ensures i < j --> k < l
             if (fabs(A(i,j)) > fabs(max_val)){
-                max_val = fabs(A(i,j));          // Collect max val
+                max_val = fabs(A(i,j));
                 *k = i;                     // Store row index for max val
                 *l = j;                     // Store column index for max val
             }
@@ -23,20 +23,20 @@ double get_max_non_diag(arma::mat A, int N, int* k, int* l){
     return max_val;
 }
 
+/* Function that computes the values for cosine(theta) and sine(theta) needed for
+ * the transformation matrix. The values are computed by requiring the transformed
+ * element B(k,l) to be zero. This puts a constraint on theta. */
+void get_trig_values(arma::mat A, int k, int l, double* cosine, double* sine){
+    if (A(k,l) != 0.0){         // More work needed if A(k,l) != 0
+        double tau = (A(l,l) - A(k,k))/(2*A(k,l));              // Collecting variables
+        double tangent_1 = -tau + sqrt(1 + pow(tau, 2.0));      // Largest root
+        double tangent_2 = -tau - sqrt(1 + pow(tau, 2.0));      // Smallest root
 
-void get_angles(arma::mat A, int k, int l, double* cosine, double* sine){
-    if (A(k,l) != 0.0){
-        double tau = (A(l,l) - A(k,k))/(2*A(k,l));
-        double tangent_1 = -tau + sqrt(1 + pow(tau, 2.0));
-        double tangent_2 = -tau - sqrt(1 + pow(tau, 2.0));
-        double tangent_min = std::min(tangent_1, tangent_2);
-        std::cout << tangent_2 << std::endl;
-
-        *cosine = 1/(sqrt(1 + pow(tangent_min, 2.0)));
-        *sine = tangent_min*(*cosine);
+        *cosine = 1/(sqrt(1 + pow(tangent_2, 2.0)));    // Trig identity for cosine
+        *sine = tangent_2*(*cosine);                    // Trig identity for sine
     }
 
-    else {
+    else {      // Otherwise the values simplify
         *cosine = 1.0;
         *sine = 0.0;
     }
@@ -55,5 +55,5 @@ void jacobi_master(arma::mat A, int N){
     double eps = pow(10.0, -8);
     int max_iter = (double)(N*N*N);
     double curr_max = get_max_non_diag(A, N, &k ,&l);
-    get_angles(A, k, l, &cosine, &sine);
+    get_trig_values(A, k, l, &cosine, &sine);
 }

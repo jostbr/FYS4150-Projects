@@ -52,7 +52,7 @@ void TEST_get_max_non_diag(){
 /* Function that acts as a unit test for get_angles() function. It uses a 3x3 matrix
  * with known (hand computed) angle for first iteration in the jacobi algorithm. Then
  * checks if get_trig_values() computes the same values for sine and cosine. */
-void TEST_get_angles(){
+void TEST_get_trig_values(){
     int N = 3;
     arma::mat A = arma::zeros(N, N);
     A(0,0) = 2.0; A(1,1) = 4.0; A(2,2) = 1.0;
@@ -60,13 +60,13 @@ void TEST_get_angles(){
     A(0,2) = -1.0; A(2,0) = -1.0;
     A(1,2) = -2.0; A(2,1) = -2.0;
 
-    double tolerance = 0.00001;
+    double eps = pow(10.0, -8.0);   // Some tolerance in case values aren't exact
     double k = 1, l = 2;            // Known indices for max non-diag element
     double sine, cosine;            // To hold return values from get_trig_values()
 
-    get_angles(A, k, l, &cosine, &sine);    // Compute angles
+    get_trig_values(A, k, l, &cosine, &sine);    // Compute angles
 
-    if ((cosine == 1.0/sqrt(5)) && (sine == -2.0/sqrt(5))){     // If function behaves nicely
+    if ((cosine - 1.0/sqrt(5) < eps) && (sine - (-2.0/sqrt(5)) < eps)){     // If function behaves nicely
         std::cout << "Correct angles found ====> TEST PASSED!" << std::endl;
     }
 
