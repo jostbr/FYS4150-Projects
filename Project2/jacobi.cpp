@@ -1,6 +1,7 @@
 
 # include <iostream>
 # include <armadillo>
+# include <cmath>
 
 /* Function that assumes a symmetric matrix A of dimensions NxN. Then finds the
  * maximum value in the matrix excluding values along the diagonal. */
@@ -32,4 +33,9 @@ void transform(&A, s, c, k, l){
 
 void jacobi_master(arma::mat A, int N){
     A.print("A = ");
+
+    int k, l;
+    double eps = pow(10.0, -8);
+    int max_iter = (double)(N*N*N);
+    double curr_max = get_max_non_diag(A, N, &k ,&l);
 }
