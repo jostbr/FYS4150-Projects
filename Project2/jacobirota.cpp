@@ -70,7 +70,7 @@ void fill_array_interactive(arma::mat& A, int n){
 
 
     //Defining the frequency, 0.01, 0.5, 1, 5
-    double omega = 0.5;
+    double omega = 0.50;
     double omega_squared = omega*omega;
 
 
@@ -306,8 +306,8 @@ int main(int argc, char* argv[]){
     //A.print("A= ");
     //V.print("V= ");
 
-    fill_array(A, n);
-    //fill_array_interactive(A, n);
+    //fill_array(A, n);
+    fill_array_interactive(A, n);
 
 
      //Test Armadillos Eigen solver
@@ -430,7 +430,7 @@ int main(int argc, char* argv[]){
     //write_results_to_file(fileout, eig, V, n);
     //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
-    //delete [] & A, delete [] & V, delete[] & eig;
+    delete [] & A, delete [] & V, delete[] & eig, delete[] & rho;
 
     return 0;
 }
