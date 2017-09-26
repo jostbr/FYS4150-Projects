@@ -45,19 +45,24 @@ void get_trig_values(arma::mat A, int k, int l, double* cosine, double* sine){
 void ortho_transform(arma::mat* A, int N, int k, int l, double sine, double cosine){
     double a_kk = (*A)(k,k);
     double a_ll = (*A)(l,l);
+    double a_ik, a_il;
 
     for (int i = 0; i < N; i++){
         if ((i != k) && (i != l)){
-            double a_ik = (*A)(i,k);
-            double a_il = (*A)(i,l);
+            a_ik = (*A)(i,k);
+            a_il = (*A)(i,l);
             (*A)(i,i) = (*A)(i,i);
             (*A)(i,k) = a_ik*cosine - a_il*sine;
+            (*A)(k,i) = (*A)(i,k);
             (*A)(i,l) = a_il*cosine + a_ik*sine;
+            (*A)(l,i) = (*A)(i,l);
         }
     }
 
     (*A)(k,k) = a_kk*pow(cosine, 2.0) - 2*(*A)(k,l)*cosine*sine + a_ll*pow(sine, 2.0);
     (*A)(l,l) = a_ll*pow(cosine, 2.0) + 2*(*A)(k,l)*cosine*sine + a_kk*pow(sine, 2.0);
+    (*A)(k,l) = 0.0;
+    (*A)(l,k) = 0.0;
 }
 
 void jacobi_eigen(arma::mat A, int N){
@@ -65,11 +70,20 @@ void jacobi_eigen(arma::mat A, int N){
 
     int k, l;
     double sine, cosine;
+    double curr_max_nd = pow(10.0, 10.0);       // Start with something big
 
-    double eps = pow(10.0, -8);
-    int max_iter = (double)(N*N*N);
-    double curr_max = get_max_non_diag(A, N, &k ,&l);
-    get_trig_values(A, k, l, &cosine, &sine);
-    ortho_transform(&A, N, k, l, cosine, sine);
-    A.print();
+    double eps = pow(10.0, -8.0);
+
+    int curr_iter = 0;
+    int max_iter = N*N*N;
+
+    while ((curr_max_nd > eps) || ((double)curr_iter < (double)max_iter)){
+        curr_max_nd = get_max_non_diag(A, N, &k ,&l);
+        get_trig_values(A, k, l, &cosine, &sine);
+        ortho_transform(&A, N, k, l, cosine, sine);
+        curr_iter++;
+    }
+
+    std::cout << "Number of iterations done: " << curr_iter << std::endl;
+    A.print("D = ");
 }
