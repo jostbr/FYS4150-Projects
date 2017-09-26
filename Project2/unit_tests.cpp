@@ -81,13 +81,14 @@ void TEST_jacobi_eigen(){
     double eig_2 = 1.59642;     // Correct values for the eigenvalues
     double eps = 1.0E-5;        // Some tolerance in case values aren't exact
 
-    arma::mat A = arma::zeros(N, N);
+    arma::mat A = arma::zeros(N, N);    // To hold diagonal matrix with eigvals
+    arma::mat V = arma::zeros(N, N);    // Not used in this function
     A(0,0) = 2.0; A(1,1) = 4.0; A(2,2) = 1.0;
     A(0,1) = 1.0; A(1,0) = 1.0;
     A(0,2) = -1.0; A(2,0) = -1.0;
     A(1,2) = -2.0; A(2,1) = -2.0;
 
-    jacobi_eigen(&A, N);    // Solve for eigenvalues
+    jacobi_eigen(&A, &V, N);    // Solve for eigenvalues
 
     if (A(0,0) - eig_0 > eps){
         std::cout << "Eigenvalue A(0,0) is wrong ==== > TEST FAILED!" << std::endl;
