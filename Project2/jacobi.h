@@ -1,6 +1,7 @@
 #ifndef JACOBI_H
 #define JACOBI_H
 
-double max_non_diag(arma::mat, int, int*, int*);
+void jacobi_master(arma::mat A, int N);
+double get_max_non_diag(arma::mat A, int N, int* k, int* l);
 
 #endif // JACOBI_H
