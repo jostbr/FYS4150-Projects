@@ -8,6 +8,7 @@ int main(){
     std::cout << "EXECUTING UNIT TESTS..." << std::endl
               << "============================================" << std::endl;
     TEST_get_max_non_diag();
+    TEST_get_angles();
     // Do some more tests
     std::cout << "============================================" << std::endl;
 

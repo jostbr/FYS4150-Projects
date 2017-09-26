@@ -3,5 +3,6 @@
 
 void jacobi_master(arma::mat A, int N);
 double get_max_non_diag(arma::mat A, int N, int* k, int* l);
+void get_angles(arma::mat A, int k, int l, double* cosine, double* sine);
 
 #endif // JACOBI_H
