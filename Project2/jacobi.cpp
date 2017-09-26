@@ -42,6 +42,10 @@ void get_trig_values(arma::mat A, int k, int l, double* cosine, double* sine){
     }
 }
 
+
+/* Function that computes the orthogonal transformation B = S^T*A*S with orthogonal matrix
+ * S (a rotation matrix). Due to S being sparse, only some elements in B differ (and thus
+ * need to be updated) from those in A. Near the diagonal and around indices k and l. */
 void ortho_transform(arma::mat* A, int N, int k, int l, double cosine, double sine){
     double a_kk = (*A)(k,k);    // To avoid using overwritten value below
     double a_ll = (*A)(l,l);    // To avoid using overwritten value below
@@ -53,7 +57,6 @@ void ortho_transform(arma::mat* A, int N, int k, int l, double cosine, double si
         if ((i != k) && (i != l)){
             a_ik = (*A)(i,k);       // To avoid using overwritten value below
             a_il = (*A)(i,l);       // To avoid using overwritten value below
-            (*A)(i,i) = (*A)(i,i);
             (*A)(i,k) = a_ik*cosine - a_il*sine;
             (*A)(k,i) = (*A)(i,k);      // Dealing with a symmetric matrix
             (*A)(i,l) = a_il*cosine + a_ik*sine;
@@ -70,25 +73,28 @@ void ortho_transform(arma::mat* A, int N, int k, int l, double cosine, double si
     (*A)(l,k) = 0.0;    // Defined cosine, sine require this to be zero
 }
 
-void jacobi_eigen(arma::mat A, int N){
-    A.print("A = ");
+/* Function that operates as a master function which oversees and executes the
+ * jacobi rotation algorithm by calling on the other functions in this file. */
+void jacobi_eigen(arma::mat* A, int N){
+    (*A).print("A = ");
 
-    int k, l;
-    double sine, cosine;
+    //arma::mat V = arma::zeros(N, N);
+
+    int k, l;                           // Indices for transf. matrix
+    double sine, cosine;                // Trig values for transf. matrix
     double curr_max_nd = 1.0E+10;       // Start with something big
 
-    double eps = 1.0E-10;
-
+    double eps = 1.0E-10;   // Tolerance for max non-diag element
     int curr_iter = 0;
     int max_iter = N*N*N;
 
     while ((curr_max_nd > eps) && ((double)curr_iter < (double)max_iter)){
-        curr_max_nd = get_max_non_diag(A, N, &k ,&l);
-        get_trig_values(A, k, l, &cosine, &sine);
-        ortho_transform(&A, N, k, l, cosine, sine);
+        curr_max_nd = get_max_non_diag(*A, N, &k ,&l);
+        get_trig_values(*A, k, l, &cosine, &sine);
+        ortho_transform(A, N, k, l, cosine, sine);
         curr_iter++;
     }
 
     std::cout << "\nNumber of iterations done: " << curr_iter << std::endl;
-    A.print("\nD = ");
+    (*A).print("\nD = ");
 }
