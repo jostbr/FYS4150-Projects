@@ -19,7 +19,7 @@ int main(){
     A(0,2) = -1.0; A(2,0) = -1.0;
     A(1,2) = -2.0; A(2,1) = -2.0;
 
-    jacobi_master(A, N);
+    jacobi_eigen(A, N);
 
     return 0;
 }

@@ -42,11 +42,25 @@ void get_trig_values(arma::mat A, int k, int l, double* cosine, double* sine){
     }
 }
 
-/*void transform(&A, s, c, k, l){
-    // Function that performs orthogonal transformation
-}*/
+void ortho_transform(arma::mat* A, int N, int k, int l, double sine, double cosine){
+    double a_kk = (*A)(k,k);
+    double a_ll = (*A)(l,l);
 
-void jacobi_master(arma::mat A, int N){
+    for (int i = 0; i < N; i++){
+        if ((i != k) && (i != l)){
+            double a_ik = (*A)(i,k);
+            double a_il = (*A)(i,l);
+            (*A)(i,i) = (*A)(i,i);
+            (*A)(i,k) = a_ik*cosine - a_il*sine;
+            (*A)(i,l) = a_il*cosine + a_ik*sine;
+        }
+    }
+
+    (*A)(k,k) = a_kk*pow(cosine, 2.0) - 2*(*A)(k,l)*cosine*sine + a_ll*pow(sine, 2.0);
+    (*A)(l,l) = a_ll*pow(cosine, 2.0) + 2*(*A)(k,l)*cosine*sine + a_kk*pow(sine, 2.0);
+}
+
+void jacobi_eigen(arma::mat A, int N){
     A.print("A = ");
 
     int k, l;
@@ -56,4 +70,6 @@ void jacobi_master(arma::mat A, int N){
     int max_iter = (double)(N*N*N);
     double curr_max = get_max_non_diag(A, N, &k ,&l);
     get_trig_values(A, k, l, &cosine, &sine);
+    ortho_transform(&A, N, k, l, cosine, sine);
+    A.print();
 }
