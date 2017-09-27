@@ -309,7 +309,11 @@ int main(int argc, char* argv[]){
     //V.print("V= ");
 
     //fill_array(A, n);
-    fill_array_interactive(A, n);
+    //fill_array_interactive(A, n);
+    A(0,0) = 2.0; A(1,1) = 4.0; A(2,2) = 1.0;
+    A(0,1) = 1.0; A(1,0) = 1.0;
+    A(0,2) = -1.0; A(2,0) = -1.0;
+    A(1,2) = -2.0; A(2,1) = -2.0;
 
 
      //Test Armadillos Eigen solver
