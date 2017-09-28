@@ -20,24 +20,24 @@ void fill_array(arma::mat& A, int n){
     rho(0) = rho_0;
     rho(n) = rho_n;
 
-    double h_step = (rho_n - rho_0)/(n+1);
+    double h_step = (rho_n - rho_0)/n;
     double hh =h_step*h_step;
 
-    for (int i=1; i<n+1; i++){
+    for (int i=1; i<n; i++){
         rho(i) = rho_0 + i*h_step;
     }
 
     arma::vec diag_el(n+1);
-    for (int i=1; i<n+1; i++){
+    for (int i=0; i<n+1; i++){
         diag_el(i)= (2.0/hh) + (rho(i)*rho(i));
     }
 
     double off_const = -1.0/hh;
 
-    //I am not including rho_0
+    //I am including rho_0
     for (int i=0; i<n; i++){
         for (int j=0; j<n; j++){
-            if (i==j){A(i,j)=diag_el(i+1);}
+            if (i==j){A(i,j)=diag_el(i);}
             if (fabs(i-j) == 1){A(i,j)=off_const;}
 
         }
@@ -50,12 +50,12 @@ void fill_array(arma::mat& A, int n){
 void fill_array_interactive(arma::mat& A, int n){
     double rho_0 = 0.0;
     //Rho max scales with the frequency omega
-    double rho_n = 60.0;
+    double rho_n = 8.0;
     arma::vec rho(n+1);
     rho(0) = rho_0;
     rho(n) = rho_n;
 
-    double h_step = (rho_n - rho_0)/n+1;
+    double h_step = (rho_n - rho_0)/n;
 
     //cout << "h= " << h_step << endl;
 
@@ -71,24 +71,24 @@ void fill_array_interactive(arma::mat& A, int n){
 
 
     //Defining the frequency, 0.01, 0.5, 1, 5
-    double omega = 0.010;
+    double omega = 0.50;
     double omega_squared = omega*omega;
 
 
     arma::vec diag_el(n+1);
-
+    //may try to start at i=0
     for (int i=0; i<n+1; i++){
         if (i==0){diag_el(i)=(2.0/hh);}   //Else we get trouble with 1/0=inf
         else {diag_el(i)= (2.0/hh) + (rho(i)*rho(i))*omega_squared + (1.0/rho(i));}
     }
 
-    //diag_el.print("Diag element = ");
+    diag_el.print("Diag element = ");
 
     double off_const = -1.0/hh;
 
     for (int i=0; i<n; i++){
         for (int j=0; j<n; j++){
-            if (i==j){A(i,j)=diag_el(i+1);}
+            if (i==j){A(i,j)=diag_el(i);}
             if (fabs(i-j) == 1){A(i,j)=off_const;}
 
         }
@@ -204,9 +204,7 @@ void JacobiRotation(arma::mat& A, arma::mat& V, double& max, double& epsilon, in
         max = 0.0;
         max_element(A, n, k, l, max);
         //max_element_tridiag(A, n, k, l, max);
-        //cout << iterations << endl;
         iterations++;
-
     }
 
     //Forces all elements to be 0.0 below a treshold,
@@ -311,22 +309,22 @@ int main(int argc, char* argv[]){
     fill_array(A, n);
     //fill_array_interactive(A, n);
 
-
-    /* Just a test array with known eig_val and eig_vec
+    /*
     A(0,0) = 2.0; A(1,1) = 4.0; A(2,2) = 1.0;
     A(0,1) = 1.0; A(1,0) = 1.0;
     A(0,2) = -1.0; A(2,0) = -1.0;
     A(1,2) = -2.0; A(2,1) = -2.0;
     */
 
+    //A.print("A= ");
 
 
      //Test Armadillos Eigen solver
     arma::vec eigval;
     arma::mat eigvec;
     arma::eig_sym(eigval, eigvec, A);
-    //cout << "Armadillo found eigenvalues: " << eigval << endl;
-    //cout << "Armadillo found eigenvectors: " << eigvec << endl;
+    cout << "Armadillo found eigenvalues: " << eigval << endl;
+    cout << "Armadillo found eigenvectors: " << eigvec << endl;
 
 
     double max = 0.0;
@@ -341,13 +339,16 @@ int main(int argc, char* argv[]){
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
     cout << "Time used: " << time_used << endl;
 
-    //A.print("A = ");            //Should contain eigenvalues along the diagonal
-    //V.print("V = ");            //Should contain eigenvectors as columns
-
+    A.print("A = ");            //Should contain eigenvalues along the diagonal
+    V.print("V = ");            //Should contain eigenvectors as columns
     arma::vec eig = arma::sort(A.diag());
     eig.print();
 
-    //Find index of three first wavefunc
+    //Find index of first wavefunc
+    //uword w = A.index_max();
+    //arma::urowvec ii;
+    //arma::urowvec ii = index_max(A);
+    //arma::urowvec ii = A.index_max();
     double min_eigval = 10.0e4;
     int w, v;
 
@@ -402,22 +403,44 @@ int main(int argc, char* argv[]){
     cout << w_3 << endl;
     cout << A(w_3,v_3) << endl;
 
+
+
+
     arma::vec eig_vec_1(n);
     arma::vec eig_vec_2(n);
     arma::vec eig_vec_3(n);
 
+    //arma::vec eig_vec_1_1(n);
+    //arma::vec eig_vec_2_2(n);
+    //arma::vec eig_vec_3_3(n);
+
     //Defining the wavefunction from the eigenvectors
+    //The eigenvalues and corresponding eigenvector do not correspond
     for (int j=0; j<n; j++){
         eig_vec_1(j) = V(j,w)*V(j,w);
+        //eig_vec_1(j) = eigvec(0,j);
+        //eig_vec_1(0) = eigvec(0,j)*eigvec(0,j);
+        //eig_vec_1 = eigvec(0) % eigvec(0);
+        //eig_vec_2(j) = eigvec(1,j);
         eig_vec_2(j) = V(j,w_2)*V(j,w_2);
         eig_vec_3(j) = V(j,w_3)*V(j,w_3);
+        //eig_vec_3(j) = eigvec(2, j);
     }
+    //eigvec.print("Eigvec = ");
 
+    //eig_vec_1.print("Armadillo = ");
+    //eig_vec_1_1 = eig_vec_1 % eig_vec_1;
+    //eig_vec_1_1.print("wavefunction finess wv1= ");
+    //eig_vec_2_2 = eig_vec_2 % eig_vec_2;
+    //eig_vec_2_2.print("wavefunction finess wv2= ");
+    //eig_vec_3_3 = eig_vec_3 % eig_vec_3;
+    //eig_vec_3_3.print("wavefunction finess wv2= ");
 
     //write_results_to_file(fileout, eig, V, n);
     //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     delete [] & A, delete [] & V, delete[] & eig;
+    //delete[] & rho
 
     return 0;
 }
