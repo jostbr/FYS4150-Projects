@@ -27,6 +27,7 @@ temp*
 # eclipse files:
 *.cproject
 *.project
+*.user
 # misc:
 .DS_Store
 Trash
