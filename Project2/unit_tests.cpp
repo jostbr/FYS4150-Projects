@@ -106,3 +106,10 @@ void TEST_jacobi_eigen(){
         std::cout << "Correct eigenvalues found ==== > TEST PASSED!" << std::endl;
     }
 }
+
+
+/*void TEST_orthogonality(arma::mat V, int N){
+    for (int i = 0; i < N; i++){
+
+    }
+}*/

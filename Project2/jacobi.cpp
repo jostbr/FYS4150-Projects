@@ -85,16 +85,16 @@ void jacobi_eigen(arma::mat* A, arma::mat* V, int N){
     double sine, cosine;                // Trig values for transf. matrix
     double curr_max_nd = 1.0E+10;       // Start with something big
 
-    double eps = 1.0E-10;   // Tolerance for max non-diag element
+    double eps = 10.0E-10;   // Tolerance for max non-diag element
     int curr_iter = 0;
     int max_iter = N*N*N;
 
-    while ((curr_max_nd > eps) && ((double)curr_iter < (double)max_iter)){
+    while ((curr_max_nd > eps) && (curr_iter < max_iter)){
         curr_max_nd = get_max_non_diag(*A, N, &k ,&l);  // Find max non-diag element
         get_trig_values(*A, k, l, &cosine, &sine);      // Find transformation matrix
         ortho_transform(A, V, N, k, l, cosine, sine);   // Execute transformation
         curr_iter++;
     }
 
-    //std::cout << "\nNumber of iterations done: " << curr_iter << std::endl;
+    std::cout << "\nNumber of iterations done: " << curr_iter << std::endl;
 }
