@@ -16,19 +16,24 @@ using namespace std;
 void fill_array(arma::mat& A, int n){
     double rho_0 = 0.0;
     double rho_n = 4.0;
-    arma::vec rho(n+1);
+    arma::vec rho(n+2);
     rho(0) = rho_0;
-    rho(n) = rho_n;
+    rho(n+1) = rho_n;
 
     double h_step = (rho_n - rho_0)/(n+1);
     double hh =h_step*h_step;
+
+    //cout << "h_step= " << h_step << endl;
+    //cout << "hh = " << hh << endl;
 
     for (int i=1; i<n+1; i++){
         rho(i) = rho_0 + i*h_step;
     }
 
+    //cout << "rho" << rho << endl;
+
     arma::vec diag_el(n+1);
-    for (int i=1; i<n+1; i++){
+    for (int i=0; i<n+1; i++){
         diag_el(i)= (2.0/hh) + (rho(i)*rho(i));
     }
 
@@ -43,43 +48,38 @@ void fill_array(arma::mat& A, int n){
         }
     }
     //diag_el.print("Diag element");
-    //A.print("A= ");
-
 }
 
 void fill_array_interactive(arma::mat& A, int n){
     double rho_0 = 0.0;
     //Rho max scales with the frequency omega
-    double rho_n = 60.0;
-    arma::vec rho(n+1);
+    double rho_n = 7.0;
+    arma::vec rho(n+2);
     rho(0) = rho_0;
-    rho(n) = rho_n;
+    rho(n+1) = rho_n;
 
-    double h_step = (rho_n - rho_0)/n+1;
+    double h_step = (rho_n - rho_0)/(n+1);
 
-    //cout << "h= " << h_step << endl;
+    cout << "h_step= " << h_step << endl;
 
     double hh =h_step*h_step;
 
     cout << "hh = " << hh << endl;
 
-    for (int i=1; i<n; i++){
+    for (int i=1; i<n+1; i++){
         rho(i) = rho_0 + i*h_step;
     }
-
-    //cout << "rho_1= " << rho(1) << endl;
-
+    //cout << "rho= " << rho << endl;
 
     //Defining the frequency, 0.01, 0.5, 1, 5
-    double omega = 0.010;
+    double omega = 0.500;
     double omega_squared = omega*omega;
 
 
-    arma::vec diag_el(n+1);
+    arma::vec diag_el(n);
 
-    for (int i=0; i<n+1; i++){
-        if (i==0){diag_el(i)=(2.0/hh);}   //Else we get trouble with 1/0=inf
-        else {diag_el(i)= (2.0/hh) + (rho(i)*rho(i))*omega_squared + (1.0/rho(i));}
+    for (int i=0; i<n; i++){
+        diag_el(i)= (2.0/hh) + (rho(i+1)*rho(i+1))*omega_squared + (1.0/rho(i+1));
     }
 
     //diag_el.print("Diag element = ");
@@ -88,7 +88,7 @@ void fill_array_interactive(arma::mat& A, int n){
 
     for (int i=0; i<n; i++){
         for (int j=0; j<n; j++){
-            if (i==j){A(i,j)=diag_el(i+1);}
+            if (i==j){A(i,j)=diag_el(i);}
             if (fabs(i-j) == 1){A(i,j)=off_const;}
 
         }
@@ -274,7 +274,7 @@ void write_results_to_file_plot(string fileout, arma::vec eig, arma::vec eig_vec
     ofstream ofile;    // File object for output file
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "      eigenvector1:        eigenvector2:           eigenvector3:" << endl;
+    ofile << "      Wavevector1:        Wavevector2:           Wavevector3:" << endl;
     for (int j = 0; j<n; j++){
         ofile << setw(20) << setprecision(8) << eig_vec_1(j);
         ofile << setw(20) << setprecision(8) << eig_vec_2(j);
@@ -298,10 +298,11 @@ int main(int argc, char* argv[]){
     string fileout = filename;
 
 
-    double epsilon = 1.0e-10;
+    double epsilon = 10.0e-10;
 
     arma::mat A = arma::zeros(n,n);
-    arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors
+    arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors, Orthonormal!!
+
 
     int k, l;       //Indexes for max element
 
@@ -321,10 +322,15 @@ int main(int argc, char* argv[]){
 
 
 
-     //Test Armadillos Eigen solver
+    //Test Armadillos Eigen solver
+    //clock_t start_time = clock();
     arma::vec eigval;
     arma::mat eigvec;
     arma::eig_sym(eigval, eigvec, A);
+
+    //clock_t end_time = clock();
+    //double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+
     //cout << "Armadillo found eigenvalues: " << eigval << endl;
     //cout << "Armadillo found eigenvectors: " << eigvec << endl;
 
@@ -345,7 +351,7 @@ int main(int argc, char* argv[]){
     //V.print("V = ");            //Should contain eigenvectors as columns
 
     arma::vec eig = arma::sort(A.diag());
-    eig.print();
+    //eig.print();
 
     //Find index of three first wavefunc
     double min_eigval = 10.0e4;
