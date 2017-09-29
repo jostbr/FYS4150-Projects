@@ -96,5 +96,5 @@ void jacobi_eigen(arma::mat* A, arma::mat* V, int N){
         curr_iter++;
     }
 
-    std::cout << "\nNumber of iterations done: " << curr_iter << std::endl;
+    //std::cout << "\nNumber of iterations done: " << curr_iter << std::endl;
 }
