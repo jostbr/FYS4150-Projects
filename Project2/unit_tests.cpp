@@ -108,11 +108,14 @@ void TEST_jacobi_eigen(){
 }
 
 
+/* Functioj that acts as a unit test in order to check if the jacobi implementation
+ * preserves orthogonality through the transformations performed in jacobi_eigen(). */
 void TEST_orthogonality(){
     int N = 5;
-    arma::mat A = arma::zeros(N, N);
-    arma::mat V = arma::eye(N, N);
+    arma::mat A = arma::zeros(N, N);    // Matrix to solve for
+    arma::mat V = arma::eye(N, N);      // Matrix to hold eigenvectors
 
+    /* Fill A with some values. */
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
             if (i == j){
@@ -126,18 +129,19 @@ void TEST_orthogonality(){
         }
     }
 
-    jacobi_eigen(&A, &V, N);
+    jacobi_eigen(&A, &V, N);    // Solve eigenvalue problem
 
     bool test_failed = false;
-    double eps = 1.0E-10;
+    double eps = 1.0E-10;       // Tolerance for "close-to-zero"
     double inner_prod = 0.0;
 
-    for (int c_1 = 0; c_1 < N; c_1++){
-        for (int c_2 = 0; c_2 < N; c_2++){
+
+    for (int c_1 = 0; c_1 < N; c_1++){      // Loop through cols in V.
+        for (int c_2 = 0; c_2 < N; c_2++){  // Loop through cols in V per col in V
             inner_prod = 0.0;
 
             for (int k = 0; k < N; k++){
-                inner_prod += V(k,c_1)*V(k,c_2);
+                inner_prod += V(k,c_1)*V(k,c_2);    // Compute inne product
             }
 
             if (inner_prod > eps && c_1 != c_2){
@@ -147,7 +151,6 @@ void TEST_orthogonality(){
             if (inner_prod - 1 > eps && c_1 == c_2){
                 test_failed = true;
             }
-            //std::cout << "Inner prod: "<< inner_prod << "  c1: " << c1 << "  c2: " << c2 << std::endl;
         }
     }
 
