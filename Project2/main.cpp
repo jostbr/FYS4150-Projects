@@ -18,12 +18,12 @@ void write_results_to_file_plot(std::string fileout, arma::vec eig_vec_1, arma::
  * extracted (for corresponding eigenvalues) and then are written to file. */
 int main(int argc, char* argv[]){
     std::cout << "\nEXECUTING UNIT TESTS..." << std::endl
-              << "============================================" << std::endl;
+              << "==================================================" << std::endl;
     TEST_get_max_non_diag();
     TEST_get_trig_values();
     TEST_jacobi_eigen();
     TEST_orthogonality();
-    std::cout << "============================================\n" << std::endl;
+    std::cout << "==================================================\n" << std::endl;
 
     std::string filename = argv[1];
     int n = atoi(argv[2]);
@@ -36,24 +36,27 @@ int main(int argc, char* argv[]){
     fill_array(A, n);
     //fill_array_interactive(A, n);
 
-    // Test Armadillos Eigen solver.
+    // Time Armadillos Eigen solver.
     arma::vec eigval;
     arma::mat eigvec;
     clock_t start_time_ARMA = clock();
     arma::eig_sym(eigval, eigvec, A);
     clock_t end_time_ARMA = clock();
     double time_used_ARMA = (double)(end_time_ARMA - start_time_ARMA)/CLOCKS_PER_SEC;
-    std::cout << "Time used ARMADILLO: " << time_used_ARMA << std::endl;
 
     // Time jacobi implementation.
     clock_t start_time = clock();
-    jacobi_eigen(&A, &V, n);
+    jacobi_eigen(&A, &V, n);        // Solve eigenvalue problem
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+
+    std::cout << "Timing for " << n << "x" << n << " matrix:" << std::endl;
+    std::cout << "-------------------------------" << std::endl;
+    std::cout << "Time used ARMADILLO: " << time_used_ARMA << std::endl;
     std::cout << "Time used Jacobi: " << time_used << std::endl;
 
-    arma::vec eig = arma::sort(A.diag());
-    eig.print();
+    arma::vec eig = arma::sort(A.diag());   // Sort eigenvalues in increasing order
+    eig.print("\nEigenvalues= ");           // Recomend only print for small n
 
     //Find index of three first wavefunc
     double min_eigval = 10.0e4;
@@ -126,6 +129,7 @@ int main(int argc, char* argv[]){
     //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     write_results_to_file_plot(fileout, eig_vec_1, eig_vec_2, eig_vec_3, n);
 
+    std::cout << "\nThree first wavefunctions written to " << fileout << std::endl << std::endl;
 
     return 0;
 }

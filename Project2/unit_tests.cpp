@@ -35,11 +35,11 @@ void TEST_get_max_non_diag(){
     //A.print("A = ");
 
     if (get_max_non_diag(A, N, &k, &l) == fabs(max_val)){
-        std::cout << "Max non-diag found ====> TEST PASSED!" << std::endl;
+        std::cout << "Max non-diagonal element found ====> TEST PASSED!" << std::endl;
     }
 
     else {
-        std::cout << "Max non-diag NOT found ==== > TEST FAILED!" << std::endl;
+        std::cout << "Max non-diagonal element NOT found ==== > TEST FAILED!" << std::endl;
     }
 }
 
@@ -61,11 +61,11 @@ void TEST_get_trig_values(){
     get_trig_values(A, k, l, &cosine, &sine);    // Compute trig values for transf. matrix
 
     if ((cosine - 1.0/sqrt(5) < eps) && (sine - (-2.0/sqrt(5)) < eps)){
-        std::cout << "Correct angles found ====> TEST PASSED!" << std::endl;
+        std::cout << "Correct transf. matrix found ======> TEST PASSED!" << std::endl;
     }
 
     else {
-        std::cout << "Correct angles NOT found ==== > TEST FAILED!" << std::endl;
+        std::cout << "Correct transf. matrix NOT found ======> TEST FAILED!" << std::endl;
     }
 }
 
@@ -91,19 +91,19 @@ void TEST_jacobi_eigen(){
     jacobi_eigen(&A, &V, N);    // Solve for eigenvalues
 
     if (A(0,0) - eig_0 > eps){
-        std::cout << "Eigenvalue A(0,0) is wrong ==== > TEST FAILED!" << std::endl;
+        std::cout << "Eigenvalue A(0,0) is wrong ====> TEST FAILED!" << std::endl;
     }
 
     else if (A(1,1) - eig_1 > eps){
-        std::cout << "Eigenvalue A(1,1) is wrong ==== > TEST FAILED!" << std::endl;
+        std::cout << "Eigenvalue A(1,1) is wrong ====> TEST FAILED!" << std::endl;
     }
 
     else if (A(2,2) - eig_2 > eps){
-        std::cout << "Eigenvalue A(2,2) is wrong ==== > TEST FAILED!" << std::endl;
+        std::cout << "Eigenvalue A(2,2) is wrong ====> TEST FAILED!" << std::endl;
     }
 
     else {
-        std::cout << "Correct eigenvalues found ====> TEST PASSED!" << std::endl;
+        std::cout << "Correct eigenvalues found =========> TEST PASSED!" << std::endl;
     }
 }
 
@@ -155,10 +155,10 @@ void TEST_orthogonality(){
     }
 
     if (test_failed){
-        std::cout << "Orthogonality is NOT preserved ====> TEST FAILED" << std::endl;
+        std::cout << "Orthogonality is NOT preserved ========> TEST FAILED" << std::endl;
     }
 
     else {
-        std::cout << "Orthogonality is preserved ====> TEST PASSED!" << std::endl;
+        std::cout << "Orthogonality is preserved ========> TEST PASSED!" << std::endl;
     }
 }
