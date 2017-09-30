@@ -11,6 +11,11 @@
 
 void write_results_to_file_plot(std::string fileout, arma::vec eig_vec_1, arma::vec eig_vec_2, arma::vec eig_vec_3, int n);
 
+/* Main function initially runs some unit tests to verify that everything works as it should.
+ * Then sets up matrices and calls on functions in initialize.cpp to initialize the matrices
+ * either for the single electron case or the interacting case. Then it calls on jacobi_eigen()
+ * in jacobi.cpp in order to solve for eigenvalues and eigenvectors. At last eigenvectors are
+ * extracted (for corresponding eigenvalues) and then are written to file. */
 int main(int argc, char* argv[]){
     std::cout << "\nEXECUTING UNIT TESTS..." << std::endl
               << "============================================" << std::endl;
@@ -31,26 +36,18 @@ int main(int argc, char* argv[]){
     fill_array(A, n);
     //fill_array_interactive(A, n);
 
-    //Test Armadillos Eigen solver
-    clock_t start_time_ARMA = clock();
-
+    // Test Armadillos Eigen solver.
     arma::vec eigval;
     arma::mat eigvec;
+    clock_t start_time_ARMA = clock();
     arma::eig_sym(eigval, eigvec, A);
-
     clock_t end_time_ARMA = clock();
     double time_used_ARMA = (double)(end_time_ARMA - start_time_ARMA)/CLOCKS_PER_SEC;
-
     std::cout << "Time used ARMADILLO: " << time_used_ARMA << std::endl;
 
-
-    //cout << "Armadillo found eigenvalues: " << eigval << endl;
-    //cout << "Armadillo found eigenvectors: " << eigvec << endl;
-
+    // Time jacobi implementation.
     clock_t start_time = clock();
-
     jacobi_eigen(&A, &V, n);
-
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
     std::cout << "Time used Jacobi: " << time_used << std::endl;
