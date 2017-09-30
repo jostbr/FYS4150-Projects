@@ -17,7 +17,8 @@ int main(int argc, char* argv[]){
     TEST_get_max_non_diag();
     TEST_get_trig_values();
     TEST_jacobi_eigen();
-    std::cout << "============================================" << std::endl;
+    TEST_orthogonality();
+    std::cout << "============================================\n" << std::endl;
 
     std::string filename = argv[1];
     int n = atoi(argv[2]);
@@ -27,8 +28,8 @@ int main(int argc, char* argv[]){
     arma::mat A = arma::zeros(n,n);
     arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors, Orthonormal!!
 
-    //fill_array(A, n);
-    fill_array_interactive(A, n);
+    fill_array(A, n);
+    //fill_array_interactive(A, n);
 
     //Test Armadillos Eigen solver
     clock_t start_time_ARMA = clock();

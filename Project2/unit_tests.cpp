@@ -82,7 +82,7 @@ void TEST_jacobi_eigen(){
     double eps = 1.0E-5;        // Some tolerance in case values aren't exact
 
     arma::mat A = arma::zeros(N, N);    // To hold diagonal matrix with eigvals
-    arma::mat V = arma::zeros(N, N);    // Not used in this function
+    arma::mat V = arma::eye(N, N);    // Not used in this function
     A(0,0) = 2.0; A(1,1) = 4.0; A(2,2) = 1.0;
     A(0,1) = 1.0; A(1,0) = 1.0;
     A(0,2) = -1.0; A(2,0) = -1.0;
@@ -103,13 +103,59 @@ void TEST_jacobi_eigen(){
     }
 
     else {
-        std::cout << "Correct eigenvalues found ==== > TEST PASSED!" << std::endl;
+        std::cout << "Correct eigenvalues found ====> TEST PASSED!" << std::endl;
     }
 }
 
 
-/*void TEST_orthogonality(arma::mat V, int N){
-    for (int i = 0; i < N; i++){
+void TEST_orthogonality(){
+    int N = 5;
+    arma::mat A = arma::zeros(N, N);
+    arma::mat V = arma::eye(N, N);
 
+    for (int i = 0; i < N; i++){
+        for (int j = 0; j < N; j++){
+            if (i == j){
+                A(i,j) = i*j*j - i;    // Some arbitrary values
+            }
+
+            else {
+                A(i,j) = i*j - j;   // Some arbitrary values
+                A(j,i) = A(i, j);  // Make sure matrix is symmetric
+            }
+        }
     }
-}*/
+
+    jacobi_eigen(&A, &V, N);
+
+    bool test_failed = false;
+    double eps = 1.0E-10;
+    double inner_prod = 0.0;
+
+    for (int c_1 = 0; c_1 < N; c_1++){
+        for (int c_2 = 0; c_2 < N; c_2++){
+            inner_prod = 0.0;
+
+            for (int k = 0; k < N; k++){
+                inner_prod += V(k,c_1)*V(k,c_2);
+            }
+
+            if (inner_prod > eps && c_1 != c_2){
+                test_failed = true;
+            }
+
+            if (inner_prod - 1 > eps && c_1 == c_2){
+                test_failed = true;
+            }
+            //std::cout << "Inner prod: "<< inner_prod << "  c1: " << c1 << "  c2: " << c2 << std::endl;
+        }
+    }
+
+    if (test_failed){
+        std::cout << "Orthogonality is NOT preserved ====> TEST FAILED" << std::endl;
+    }
+
+    else {
+        std::cout << "Orthogonality is preserved ====> TEST PASSED!" << std::endl;
+    }
+}

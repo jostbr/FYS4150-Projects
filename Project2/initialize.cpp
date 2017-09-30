@@ -42,7 +42,7 @@ void fill_array(arma::mat& A, int n){
 void fill_array_interactive(arma::mat& A, int n){
     double rho_0 = 0.0;
     //Rho max scales with the frequency omega
-    double rho_n = 7.0;
+    double rho_n = 2.0;
     arma::vec rho(n+2);
     rho(0) = rho_0;
     rho(n+1) = rho_n;
@@ -61,7 +61,7 @@ void fill_array_interactive(arma::mat& A, int n){
     //std::cout << "rho= " << rho << std::endl;
 
     //Defining the frequency, 0.01, 0.5, 1, 5
-    double omega = 0.500;
+    double omega = 5.0;
     double omega_squared = omega*omega;
 
 
