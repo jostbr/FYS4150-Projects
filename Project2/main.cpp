@@ -74,9 +74,6 @@ int main(int argc, char* argv[]){
         }
     }
 
-    std::cout << w << std::endl;
-    std::cout << A(w,v) << std::endl;
-
     double min_eigval_2 = 10.0e4;
     int w_2, v_2;
 
@@ -92,9 +89,6 @@ int main(int argc, char* argv[]){
         }
     }
 
-    std::cout << w_2 << std::endl;
-    std::cout << A(w_2,v_2) << std::endl;
-
     double min_eigval_3 = 10.0e4;
     int w_3, v_3;
 
@@ -109,9 +103,6 @@ int main(int argc, char* argv[]){
             }
         }
     }
-
-    std::cout << w_3 << std::endl;
-    std::cout << A(w_3,v_3) << std::endl;
 
     arma::vec eig_vec_1(n);
     arma::vec eig_vec_2(n);
