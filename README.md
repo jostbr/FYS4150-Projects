@@ -1,8 +1,4 @@
+
 # FYS4150-Projects
-Project assignments for FYS4150 at University of Oslo.
 
-Just added some more text.
-
-Just added even more text.
-
-Even more text.
+Repository for projects assignments in Computational Physics (FYS4150) at the University of Oslo, fall 2017.
