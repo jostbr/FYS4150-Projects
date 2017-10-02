@@ -40,8 +40,8 @@ int main(int argc, char* argv[]){
     arma::mat A = arma::zeros(n,n);
     arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors, Orthonormal!!
 
-    fill_array(A, n);
-    //fill_array_interactive(A, n);
+    fill_array(A, n);                   // Initialize non-interacting case
+    //fill_array_interactive(A, n);     // Initialize interacting case
 
     // Time Armadillos Eigen solver.
     arma::vec eigval;
