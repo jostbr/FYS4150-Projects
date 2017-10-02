@@ -17,6 +17,13 @@ void write_results_to_file_plot(std::string fileout, arma::vec eig_vec_1, arma::
  * in jacobi.cpp in order to solve for eigenvalues and eigenvectors. At last eigenvectors are
  * extracted (for corresponding eigenvalues) and then are written to file. */
 int main(int argc, char* argv[]){
+    if (argc != 3){
+        std::cout << "BAD USAGE OF COMMAND LINE ARGUMENTS! NEED 2." << std::endl;
+        std::cout << "CMD ARGS: <output-filename> <N>" << std::endl;
+        std::cout << "\nTerminating program.." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     std::cout << "\nEXECUTING UNIT TESTS..." << std::endl
               << "==================================================" << std::endl;
     TEST_get_max_non_diag();

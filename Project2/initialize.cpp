@@ -13,8 +13,6 @@ void fill_array(arma::mat& A, int n){
     double h_step = (rho_n - rho_0)/(n+1);
     double hh =h_step*h_step;
 
-    //std::cout << "h_step= " << h_step << std::endl;
-
     for (int i=1; i<n+1; i++){
         rho(i) = rho_0 + i*h_step;
     }
@@ -35,7 +33,6 @@ void fill_array(arma::mat& A, int n){
 
         }
     }
-    //diag_el.print("Diag element");
 }
 
 
@@ -55,7 +52,6 @@ void fill_array_interactive(arma::mat& A, int n){
     for (int i=1; i<n+1; i++){
         rho(i) = rho_0 + i*h_step;      // Compute rho-coordinates
     }
-    //std::cout << "rho= " << rho << std::endl;
 
     // Defining the frequency, 0.01, 0.5, 1, 5
     double omega = 5.0;
@@ -66,8 +62,6 @@ void fill_array_interactive(arma::mat& A, int n){
         diag_el(i)= (2.0/hh) + (rho(i+1)*rho(i+1))*omega_squared + (1.0/rho(i+1));
     }
 
-    //diag_el.print("Diag element = ");
-
     double off_const = -1.0/hh;
 
     for (int i=0; i<n; i++){
@@ -77,8 +71,5 @@ void fill_array_interactive(arma::mat& A, int n){
 
         }
     }
-
-    //A.print("A= ");
-
 }
 
