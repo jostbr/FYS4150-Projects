@@ -115,9 +115,6 @@ int main(int argc, char* argv[]){
         eig_vec_3(j) = V(j,w_3)*V(j,w_3);
     }
 
-
-    //write_results_to_file(fileout, eig, V, n);
-    //write_results_to_file_plot(fileout, eig, eig_vec_1, eig_vec_2, eig_vec_3, n);
     write_results_to_file_plot(fileout, eig_vec_1, eig_vec_2, eig_vec_3, n);
 
     std::cout << "\nThree first wavefunctions written to " << fileout << std::endl << std::endl;
