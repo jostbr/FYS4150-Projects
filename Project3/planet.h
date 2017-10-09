@@ -3,14 +3,19 @@
 #define PLANET_H
 
 # include <iostream>
+# include <cmath>
 
-class Planet{
+class planet{
     public:
-        Planet();
-        Planet(std::string planet_name, double x, double y, double v_x, double v_y);
-        ~Planet();
-    private:
-        std::string planet_name;
+        planet();
+        planet(std::string id, double m, double x, double y, double v_x, double v_y);
+        double compute_distance(planet planet_2);
+        double compute_force(planet planet_2, int dim);
+        ~planet();
+
+        std::string name;
+        double mass;
+        double mass_sun;
         double r[2], v[2], a[2];
 };
 

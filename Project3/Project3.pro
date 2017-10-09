@@ -6,9 +6,9 @@ CONFIG -= qt
 SOURCES += main.cpp \
     earth_sun.cpp \
     planet.cpp \
-    ode_solver.cpp
+    nbody_solver.cpp
 
 HEADERS += \
     earth_sun.h \
     planet.h \
-    ode_solver.h
+    nbody_solver.h

@@ -17,7 +17,7 @@ void two_body(){
     ofile << "t x y" << std::endl;
 
     double pi = acos(-1.0);
-    double t_max = 10.0;        // Upper time in years
+    double t_max = 10.0;       // Upper time in years
     double h = 0.0001;         // Step size in years
 
     double r_0[2];             // Initial position x, y in AU
@@ -56,7 +56,7 @@ void euler_solver(double* r_0, double* v_0, double h, double t_max, std::ofstrea
 
         t += h;
 
-        write_row_to_file(ofile, t, r[0], r[1]);    // Write every timestep to foile
+        write_row_to_file(ofile, t, r[0], r[1]);    // Write every timestep to file
     }
 }
 
