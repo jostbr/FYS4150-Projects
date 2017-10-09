@@ -17,13 +17,12 @@ void two_body(){
     ofile << "t x y" << std::endl;
 
     double pi = acos(-1.0);
-    double t_max = 2.0;               // Upper time in years
+    double t_max = 10.0;        // Upper time in years
     double h = 0.0001;         // Step size in years
 
-    double r_0[2];            // Position x, y in AU
-    double v_0[2];            // Velcoity v_x, v_y in AU/yr
+    double r_0[2];             // Initial position x, y in AU
+    double v_0[2];             // Initial velocity v_x, v_y in AU/yr
 
-    double t = 0.0;
     r_0[0] = 1.0; r_0[1] = 0.0;
     v_0[0] = 0.0; v_0[1] = 2.0*pi;
 
@@ -70,23 +69,25 @@ void verlet_solver(double* r_0, double* v_0, double h, double t_max, std::ofstre
     double h_half = h/2;
     double r_norm_cubed;
     double t = 0.0;
-    double r[2], v[2], a_prev[2], a_next[2];
+    double r[2], v[2], a_curr[2], a_next[2];
 
     write_row_to_file(ofile, t, r_0[0], r_0[1]);    // Write initial condition to file
 
     r[0] = r_0[0]; r[1] = r_0[1];
     v[0] = v_0[0]; v[1] = v_0[1];
 
+    r_norm_cubed = pow(sqrt(r[0]*r[0] + r[1]*r[1]), 3.0);
+    a_curr[0] = -four_pi_sq*r[0]/r_norm_cubed;
+    a_curr[1] = -four_pi_sq*r[1]/r_norm_cubed;
+
     while (t <= t_max){
         r_norm_cubed = pow(sqrt(r[0]*r[0] + r[1]*r[1]), 3.0);
 
         for (int dim = 0; dim < num_dims; dim++){
-            a_prev[dim] = -four_pi_sq*r[dim]/r_norm_cubed;   // Compute acc. in dim-direction for curr time step
-            r[dim] = r[dim] + h*v[dim] + (h_squared/2.0)*a_prev[dim];   // Update position in dim-direction
-
+            r[dim] = r[dim] + h*v[dim] + (h_squared/2.0)*a_curr[dim];   // Update position in dim-direction
             a_next[dim] = -four_pi_sq*r[dim]/r_norm_cubed;   // Compute acc. in dim-direction for next time step
-
-            v[dim] = v[dim] + h_half*(a_next[dim] + a_prev[dim]);   // Update velocity in dim-direction
+            v[dim] = v[dim] + h_half*(a_next[dim] + a_curr[dim]);   // Update velocity in dim-direction
+            a_curr[dim] = a_next[dim];      // Current acc. equal to next acc. for next iteration
         }
 
         t += h;
