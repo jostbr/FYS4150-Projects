@@ -33,32 +33,25 @@ void nbody_solver::euler(planet* nbodies){
         t += h;
 
         for (int i = 0; i < num_bodies; i++){   // Solve for both x and y direction
-            if (nbodies[i].name.compare("sun") != 0){   // Don't solve any motion for the sun
-                //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
+            std::cout << "Time stepping for " << nbodies[i].name << std::endl;
 
-                for (int dim = 0; dim < num_dims; dim++){      // Solve for all planets
-                    force_dim_i = 0.0;
+            for (int dim = 0; dim < num_dims; dim++){      // Solve for all planets
+                force_dim_i = nbodies[i].compute_total_force(nbodies, num_bodies, dim);
 
-                    for (int j = 0; j < num_bodies; j++){   // Compute force on planet i in direction dim
-                        if (i != j){
-                            //std::cout << "While adding force from planet " << nbodies[j].name << std::endl;
-                            //r_norm_cubed = pow(nbodies[i].compute_distance(nbodies[j]), 3.0);
-                            force_dim_i += nbodies[i].compute_force(nbodies[j], dim);
-                        }
-                    }
-
-                    nbodies[i].a[dim] = force_dim_i/nbodies[i].mass;             // Compute acceleration in i-direction
-                    nbodies[i].r[dim] = nbodies[i].r[dim] + h*nbodies[i].v[dim];   // Update position in i-direction
-                    nbodies[i].v[dim] = nbodies[i].v[dim] + h*nbodies[i].a[dim];   // Update velocity in i-direction
-                }
-
-                write_row_to_file(ofile[i], t, nbodies[i].r[0], nbodies[i].r[1]);    // Write every timestep to file
+                nbodies[i].a[dim] = force_dim_i/nbodies[i].mass;             // Compute acceleration in i-direction
+                nbodies[i].r[dim] = nbodies[i].r[dim] + h*nbodies[i].v[dim];   // Update position in i-direction
+                nbodies[i].v[dim] = nbodies[i].v[dim] + h*nbodies[i].a[dim];   // Update velocity in i-direction
             }
+
+            write_row_to_file(ofile[i], t, nbodies[i].r[0], nbodies[i].r[1]);    // Write every timestep to file
+            std::cout << std::endl;
         }
+
+        // Might be something wrong with doing dims loop inside bodies loop concerning the distance computations.
     }
 
     for (int i = 0; i < num_bodies; i++){
-        ofile[i].close();
+        ofile[i].close();   // Close all file objects
     }
 }
 

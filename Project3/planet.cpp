@@ -35,6 +35,22 @@ double planet::compute_force(planet planet_2, int dim){
     return force;
 }
 
+double planet::compute_total_force(planet* planets, int num_planets, int dim){
+    double four_pi_sq = 4*acos(-1.0)*acos(-1.0);
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
+    double r_sun_cubed = pow(compute_distance(sun), 3.0);
+    double total_force = -((four_pi_sq*mass)/(r_sun_cubed))*(r[dim] - sun.r[dim]);
+
+    for (int i = 0; i < num_planets; i++){
+        if (planets[i].name.compare(name) != 0){    // No force on itself
+            std::cout << "While using force from " << planets[i].name << std::endl;
+            total_force += compute_force(planets[i], dim);
+        }
+    }
+
+    return total_force;
+}
+
 /* Destructor function. .*/
 planet::~planet(){
     // Destroy stuff

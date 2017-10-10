@@ -11,6 +11,7 @@ class planet{
         planet(std::string id, double m, double x, double y, double v_x, double v_y);
         double compute_distance(planet planet_2);
         double compute_force(planet planet_2, int dim);
+        double compute_total_force(planet* planets, int num_planets, int dim);
         ~planet();
 
         std::string name;

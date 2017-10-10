@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 filename = "../build-Project3/{}.txt"
 
 data_earth = np.loadtxt(filename.format("earth"), dtype = np.float64, skiprows = 1)
-data_jupiter = np.loadtxt(filename.format("jupiter"), dtype = np.float64, skiprows = 1)
+#data_jupiter = np.loadtxt(filename.format("jupiter"), dtype = np.float64, skiprows = 1)
 print(data_earth.shape)
 
 plt.plot(data_earth[:, 1], data_earth[:, 2])
