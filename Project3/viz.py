@@ -8,9 +8,13 @@ import matplotlib.pyplot as plt
 filename = "../build-Project3/{}.txt"
 
 data_earth = np.loadtxt(filename.format("earth"), dtype = np.float64, skiprows = 1)
-#data_jupiter = np.loadtxt(filename.format("jupiter"), dtype = np.float64, skiprows = 1)
+data_jupiter = np.loadtxt(filename.format("jupiter"), dtype = np.float64, skiprows = 1)
+data_mars = np.loadtxt(filename.format("mars"), dtype = np.float64, skiprows = 1)
 print(data_earth.shape)
 
+plt.figure(figsize = (8, 8))
+plt.axis("equal")
 plt.plot(data_earth[:, 1], data_earth[:, 2])
-#plt.plot(data_jupiter[:, 1], data_jupiter[:, 2])
+plt.plot(data_jupiter[:, 1], data_jupiter[:, 2])
+plt.plot(data_mars[:, 1], data_mars[:, 2])
 plt.show()

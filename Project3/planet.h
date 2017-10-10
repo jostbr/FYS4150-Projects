@@ -17,7 +17,9 @@ class planet{
         std::string name;
         double mass;
         double mass_sun;
-        double r[2], v[2], a[2];
+        double r_curr[2], v_curr[2];
+        double r_next[2], v_next[2];
+        double a_curr[2];
 };
 
 #endif // PLANET_H
