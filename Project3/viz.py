@@ -24,8 +24,7 @@ for planet in planets:
     file_path = file_directory + filename   # Cooresponding path
 
     if (os.path.exists(file_path)):
-        data[planet] = np.loadtxt(file_path,
-            dtype = np.float64, skiprows = 1)       # Load in data from file
+        data[planet] = np.loadtxt(file_path, dtype = np.float64, skiprows = 1)  # Load in data from file
 
 some_planet = list(data.keys())[0]  # When needing to access an arbitrary element in data
 # ====================================================================

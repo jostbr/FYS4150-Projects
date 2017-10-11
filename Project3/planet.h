@@ -6,6 +6,9 @@
 # include <cmath>
 
 class planet{
+    static constexpr double mass_sun = 2.0E+30;
+    static constexpr double four_pi_sq = 4*acos(-1.0)*acos(-1.0);
+
     public:
         planet();
         planet(std::string id, double m, double x, double y, double v_x, double v_y);
@@ -16,10 +19,7 @@ class planet{
 
         std::string name;
         double mass;
-        double mass_sun;
-        double r_curr[2], v_curr[2];
-        double r_next[2], v_next[2];
-        double a_curr[2];
+        double r[2], v[2];
 };
 
 #endif // PLANET_H

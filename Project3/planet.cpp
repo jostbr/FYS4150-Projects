@@ -1,60 +1,56 @@
 
 #include "planet.h"
 
-/* Default constructor function. */
+/* Default constructor function. Initialize everything to zero */
 planet::planet(){
-    name = "";
-    mass = 0.0;
-    mass_sun = 0.0;
-    r_curr[0] = 0.0; r_curr[1] = 0.0;
-    r_next[0] = 0.0; r_next[1] = 0.0;
-    v_curr[0] = 0.0; v_curr[1] = 0.0;
-    v_next[0] = 0.0; v_next[1] = 0.0;
-    a_curr[0] = 0.0; a_curr[1] = 0.0;
+    this->name = "";
+    this->mass = 0.0;
+    this->r[0] = 0.0; this->r[1] = 0.0;
+    this->v[0] = 0.0; this->v[1] = 0.0;
 }
 
-/* Overload constructor function. */
+/* Overload constructor function with arguments. */
 planet::planet(std::string id, double m, double x, double y, double v_x, double v_y){
-    name = id;
-    mass = m;
-    mass_sun = 2.0E+30;
-    r_curr[0] = x; r_curr[1] = y;
-    v_curr[0] = v_x; v_curr[1] = v_y;
-
-    r_next[0] = 0.0; r_next[1] = 0.0;
-    v_next[0] = 0.0; v_next[1] = 0.0;
-    a_curr[0] = 0.0; a_curr[1] = 0.0;
+    this->name = id;
+    this->mass = m;
+    this->r[0] = x; this->r[1] = y;
+    this->v[0] = v_x; this->v[1] = v_y;
 }
 
+/* Function that computes distance between this->planet and planet_2. */
 double planet::compute_distance(planet planet_2){
-    double distance = sqrt((r_curr[0] - planet_2.r_curr[0])*(r_curr[0] - planet_2.r_curr[0]) +
-            (r_curr[1] - planet_2.r_curr[0])*(r_curr[1] - planet_2.r_curr[0])); // sqrt((x_i-x_j)^2 + (y_i-y_j)^2)
+    double distance = sqrt((this->r[0] - planet_2.r[0])*(this->r[0] - planet_2.r[0]) +
+            (this->r[1] - planet_2.r[0])*(this->r[1] - planet_2.r[0])); // sqrt((x_i-x_j)^2 + (y_i-y_j)^2)
     return distance;
 }
 
+/* Function that, through calls to this->compute_distance, computes force acting
+ * on this->planet from planet_2 in the dim-direction. */
 double planet::compute_force(planet planet_2, int dim){
-    double four_pi_sq = 4*acos(-1.0)*acos(-1.0);
-    double distance = compute_distance(planet_2);
-    double force = -four_pi_sq*(planet_2.mass/mass_sun)*mass*(r_curr[dim]
-        - planet_2.r_curr[dim])/(pow(distance, 3.0));
+    double distance_cubed = pow(this->compute_distance(planet_2), 3.0);
+    double force = -((planet::four_pi_sq*(planet_2.mass/planet::mass_sun)*this->mass)
+                     /distance_cubed)*(this->r[dim] - planet_2.r[dim]);
     return force;
 }
 
+/* Function that, through calls to this->compute_force(), computes total acceleration of
+ * this->planet (in dim-direction) due to the sum of gravitational forces from all
+ * num_planets planets in array planets*. */
 double planet::compute_acceleration(planet* planets, int num_planets, int dim){
-    double four_pi_sq = 4*acos(-1.0)*acos(-1.0);
-    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
-    double r_sun_cubed = pow(compute_distance(sun), 3.0);
-    double total_force = -((four_pi_sq*mass)/(r_sun_cubed))*(r_curr[dim] - sun.r_curr[dim]);
+    planet sun("sun", planet::mass_sun, 0.0, 0.0, 0.0, 0.0);
+    double total_force = this->compute_force(sun, dim);     // Include force from sun separately
 
     for (int i = 0; i < num_planets; i++){
-        if (planets[i].name.compare(name) != 0){    // No force on itself
+        if (planets[i].name.compare(this->name) != 0){    // No force on itself
             //std::cout << "While using force from " << planets[i].name << std::endl;
-            total_force += compute_force(planets[i], dim);
+            total_force += this->compute_force(planets[i], dim);
         }
     }
 
-    return total_force/mass;
+    return total_force/this->mass;  // Divide by this->mass to get acceleration
 }
+/* Note on future fficiency improvement: Compute force from sun separately to save FLOPS. */
+
 
 /* Destructor function. .*/
 planet::~planet(){

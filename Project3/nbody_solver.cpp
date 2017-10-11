@@ -1,72 +1,69 @@
 
 # include "nbody_solver.h"
 
-nbody_solver::nbody_solver(){
-    num_bodies = 0;
-    t_max = 0.0;
-    h = 0.0;
-}
-
-nbody_solver::nbody_solver(int body_count, double t_end, double step){
-    num_bodies = body_count;
-    t_max = t_end;
-    h = step;
-}
-
-void nbody_solver::euler(planet* nbodies){
-    std::ofstream ofile[3];
-    int num_dims = 2;
-    double r_norm_cubed;
-    double force_dim_i = 0.0;
-    double t = 0.0;
-    int frame = 0;
+nbody_solver::nbody_solver(planet* bodies, int num_bodies){
+    this->num_bodies = num_bodies;
+    this->bodies = new planet[num_bodies];
 
     for (int i = 0; i < num_bodies; i++){
-        std::string filename = nbodies[i].name;
-        filename.append(".txt");
-        ofile[i].open(filename.c_str());
-        ofile[i] << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
-        ofile[i] << "t x y" << std::endl;
-        write_row_to_file(ofile[i], t, nbodies[i].r_curr[0], nbodies[i].r_curr[1]);    // Write initial condition to file
+        this->bodies[i] = bodies[i];
     }
+}
 
-    while (t <= t_max){                     // Solve for future
-        t += h;
-        frame++;
+void nbody_solver::euler(double h, double t_max, std::string method){
+    planet* bodies_curr = new planet[this->num_bodies];
+    std::ofstream* ofiles = new std::ofstream[this->num_bodies];
+    int num_dims = 2;
+    double t = 0.0;
+    double a_curr[2];
+    int frame = 0;
 
-        for (int i = 0; i < num_bodies; i++){   // Solve for both x and y direction
+    this->initialize_output_files(&ofiles);
+
+    /* Loop until maximum times is reached. */
+    while (t <= t_max){
+        t += h;     // Increase time by step size
+        frame++;    // Count to next frame
+
+        for (int i = 0; i < this->num_bodies; i++){
+            bodies_curr[i] = this->bodies[i];        // Make copy of all planets for current time step
+        }
+
+        for (int i = 0; i < this->num_bodies; i++){   // Solve for both x and y direction
             //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
-
             for (int dim = 0; dim < num_dims; dim++){      // Solve for all planets
-                nbodies[i].a_curr[dim] = nbodies[i].compute_acceleration(nbodies, num_bodies, dim); // Compute acceleration in i-direction
-                nbodies[i].r_next[dim] = nbodies[i].r_curr[dim] + h*nbodies[i].v_curr[dim];   // Update position in i-direction
-                nbodies[i].v_next[dim] = nbodies[i].v_curr[dim] + h*nbodies[i].a_curr[dim];   // Update velocity in i-direction
+                a_curr[dim] = bodies_curr[i].compute_acceleration(bodies_curr, this->num_bodies, dim); // Compute acceleration in dim-direction
+                this->bodies[i].r[dim] = bodies_curr[i].r[dim] + h*bodies_curr[i].v[dim];   // Update position in i-direction
+                this->bodies[i].v[dim] = bodies_curr[i].v[dim] + h*a_curr[dim];   // Update velocity in i-direction
             }
 
             if (frame % 100 == 0){
-                write_row_to_file(ofile[i], t, nbodies[i].r_next[0], nbodies[i].r_next[1]);    // Write every timestep to file
-                std::cout << std::endl;
+                this->write_row_to_file(ofiles[i], t, this->bodies[i].r[0], this->bodies[i].r[1]);    // Write every timestep to file
+                //std::cout << std::endl;
             }
         }
-
-        /* Set current values (pos, vel) to next values. */
-        for (int i = 0; i < num_bodies; i++){
-            for (int dim = 0; dim < num_dims; dim++){
-                nbodies[i].r_curr[dim] = nbodies[i].r_next[dim];
-                nbodies[i].v_curr[dim] = nbodies[i].v_next[dim];
-            }
-        }
-
-        // Might be something wrong with doing dims loop inside bodies loop concerning the distance computations.
     }
 
-    for (int i = 0; i < num_bodies; i++){
-        ofile[i].close();   // Close all file objects
+    for (int i = 0; i < this->num_bodies; i++){
+        ofiles[i].close();   // Close all file objects after time loop
     }
+
+    delete[] bodies_curr; delete[] ofiles;
 }
 
 void nbody_solver::verlet(){
 
+}
+
+void nbody_solver::initialize_output_files(std::ofstream** ofiles){
+    for (int i = 0; i < this->num_bodies; i++){
+        std::string filename = this->bodies[i].name;
+        filename.append(".txt");
+        (*ofiles)[i].open(filename.c_str());
+        (*ofiles)[i] << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
+        (*ofiles)[i] << "t x y" << std::endl;   // Write header to file
+        this->write_row_to_file((*ofiles)[i], 0.0, this->bodies[i].r[0], this->bodies[i].r[1]);
+    }
 }
 
 void nbody_solver::write_row_to_file(std::ofstream& ofile, double t, double x, double y){
