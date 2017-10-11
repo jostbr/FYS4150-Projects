@@ -11,7 +11,7 @@ int main(){
     static int const num_planets = 3;
     planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 2.0*pi);
     planet mars("mars", 6.6E+23, 0.0, 1.52, -1.6*pi, 0.0);
-    planet jupiter("jupiter", 1.9E+27, -5.2, 0.0, 0.0, -0.9*pi);
+    planet jupiter("jupiter", 1.9E+27, -5.2, 0.0, 0.0, -0.8*pi);
     //planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
 
     planet bodies[num_planets];
@@ -21,7 +21,7 @@ int main(){
 
     //std::cout << bodies[1].name << std::endl;
 
-    double t_max = 30.0;       // Upper time in years
+    double t_max = 5.0;       // Upper time in years
     double h = 0.0001;         // Step size in years
     nbody_solver solver(num_planets, t_max, h);
     solver.euler(bodies);

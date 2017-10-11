@@ -40,7 +40,7 @@ double planet::compute_force(planet planet_2, int dim){
     return force;
 }
 
-double planet::compute_total_force(planet* planets, int num_planets, int dim){
+double planet::compute_acceleration(planet* planets, int num_planets, int dim){
     double four_pi_sq = 4*acos(-1.0)*acos(-1.0);
     planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
     double r_sun_cubed = pow(compute_distance(sun), 3.0);
@@ -53,7 +53,7 @@ double planet::compute_total_force(planet* planets, int num_planets, int dim){
         }
     }
 
-    return total_force;
+    return total_force/mass;
 }
 
 /* Destructor function. .*/

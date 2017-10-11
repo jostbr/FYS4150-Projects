@@ -38,9 +38,7 @@ void nbody_solver::euler(planet* nbodies){
             //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
 
             for (int dim = 0; dim < num_dims; dim++){      // Solve for all planets
-                force_dim_i = nbodies[i].compute_total_force(nbodies, num_bodies, dim);
-
-                nbodies[i].a_curr[dim] = force_dim_i/nbodies[i].mass;             // Compute acceleration in i-direction
+                nbodies[i].a_curr[dim] = nbodies[i].compute_acceleration(nbodies, num_bodies, dim); // Compute acceleration in i-direction
                 nbodies[i].r_next[dim] = nbodies[i].r_curr[dim] + h*nbodies[i].v_curr[dim];   // Update position in i-direction
                 nbodies[i].v_next[dim] = nbodies[i].v_curr[dim] + h*nbodies[i].a_curr[dim];   // Update velocity in i-direction
             }
