@@ -48,7 +48,7 @@ double planet::compute_total_force(planet* planets, int num_planets, int dim){
 
     for (int i = 0; i < num_planets; i++){
         if (planets[i].name.compare(name) != 0){    // No force on itself
-            std::cout << "While using force from " << planets[i].name << std::endl;
+            //std::cout << "While using force from " << planets[i].name << std::endl;
             total_force += compute_force(planets[i], dim);
         }
     }

@@ -19,6 +19,7 @@ void nbody_solver::euler(planet* nbodies){
     double r_norm_cubed;
     double force_dim_i = 0.0;
     double t = 0.0;
+    int frame = 0;
 
     for (int i = 0; i < num_bodies; i++){
         std::string filename = nbodies[i].name;
@@ -31,9 +32,10 @@ void nbody_solver::euler(planet* nbodies){
 
     while (t <= t_max){                     // Solve for future
         t += h;
+        frame++;
 
         for (int i = 0; i < num_bodies; i++){   // Solve for both x and y direction
-            std::cout << "Time stepping for " << nbodies[i].name << std::endl;
+            //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
 
             for (int dim = 0; dim < num_dims; dim++){      // Solve for all planets
                 force_dim_i = nbodies[i].compute_total_force(nbodies, num_bodies, dim);
@@ -43,8 +45,10 @@ void nbody_solver::euler(planet* nbodies){
                 nbodies[i].v_next[dim] = nbodies[i].v_curr[dim] + h*nbodies[i].a_curr[dim];   // Update velocity in i-direction
             }
 
-            write_row_to_file(ofile[i], t, nbodies[i].r_next[0], nbodies[i].r_next[1]);    // Write every timestep to file
-            std::cout << std::endl;
+            if (frame % 100 == 0){
+                write_row_to_file(ofile[i], t, nbodies[i].r_next[0], nbodies[i].r_next[1]);    // Write every timestep to file
+                std::cout << std::endl;
+            }
         }
 
         /* Set current values (pos, vel) to next values. */
