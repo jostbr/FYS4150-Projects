@@ -10,8 +10,8 @@ int main(){
     double pi = acos(-1.0);
     static int const num_planets = 3;
     planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 2.0*pi);
-    planet mars("mars", 6.6E+23, 0.0, 1.52, -1.5*pi, 0.0);
-    planet jupiter("jupiter", 1.9E+27, -5.2, 0.0, 0.0, -0.5*pi);
+    planet mars("mars", 6.6E+23, 0.0, 1.52, -1.6*pi, 0.0);
+    planet jupiter("jupiter", 1.9E+27, -5.2, 0.0, 0.0, -0.9*pi);
     //planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
 
     planet bodies[num_planets];
