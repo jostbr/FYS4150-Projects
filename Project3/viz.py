@@ -26,38 +26,49 @@ for planet in planets:
     if (os.path.exists(file_path)):
         data[planet] = np.loadtxt(file_path,
             dtype = np.float64, skiprows = 1)       # Load in data from file
+
+some_planet = list(data.keys())[0]  # When needing to access an arbitrary element in data
 # ====================================================================
 
 # Function top plot trajectories of all computed planets.
 def plot_trajectories(data):
-    plt.figure(figsize = (8, 8))
-    plt.axis("equal")
+    plt.style.use("ggplot")
+    fig, ax = plt.subplots(figsize = (8, 8))
+    ax.set_aspect("equal")
 
     for planet in data.keys():
-        plt.plot(data[planet][:, 1], data[planet][:, 2], label = planet.title())
+        ax.plot(data[planet][:, 1], data[planet][:, 2], label = planet.title())
 
-    plt.title("Planet trajectories over {:.2f} years".format(data[list(data.keys())[0]][-1, 0],
-        fontname = "serif", fontsize = 14))
-    plt.xlabel("x-coordinate [AU]", fontname = "serif", fontsize = 12)
-    plt.ylabel("y-coordinate [AU]", fontname = "serif", fontsize = 12)
-    plt.legend()
+    ax.set_title("Planet trajectories over {:.2f} years".format(data[some_planet][-1, 0]),
+        fontname = "serif", fontsize = 18)
+    ax.set_xlabel("x-coordinate [AU]", fontname = "serif", fontsize = 12)
+    ax.set_ylabel("y-coordinate [AU]", fontname = "serif", fontsize = 12)
+    ax.legend()
+    fig.tight_layout()
 
 # Function to animate trajectories of all computed planets
 def animate_trajectories(data):
+    plt.style.use("ggplot")
     fig = plt.figure(figsize = (10, 7))
     fig.set_size_inches(8, 8)
 
     ax = plt.axes(xlim=(-8, 8), ylim=(-8, 8))
     ax.set_aspect("equal")
+    ax.set_title("Planet positions after {} years".format(data[some_planet][0, 0]),
+        fontname = "serif", fontsize = 18)
+    ax.set_xlabel("x-coordinate [AU]", fontname = "serif", fontsize = 12)
+    ax.set_ylabel("y-coordinate [AU]", fontname = "serif", fontsize = 12)
 
     circles = dict()    # To hold plt.Circle objects representing planets
+    lines = list()      # Only be able to create legend with circle markers
 
     sun = plt.Circle((0.0, 0.0), 1.5*max(circle_sizes.values()), fc = "#ffdb00")    # Need some sun
     ax.add_patch(sun)
-
     for planet in data.keys():
         circles[planet] = plt.Circle((data[planet][0, 1], data[planet][0, 2]),
             circle_sizes[planet], fc = circle_colors[planet])   # Initiate circles
+        lines.append(plt.Line2D(range(1), range(1), color = "none", marker = "o",
+            markerfacecolor = circle_colors[planet], label = planet.title()))   # Only for legend below
 
     # Initialize animation
     def init():
@@ -72,7 +83,8 @@ def animate_trajectories(data):
         for planet in circles.keys():
             animate_planet(i, planet)
 
-        
+        ax.set_title("Planet positions after {} years".format(data[some_planet][i, 0]),
+            fontname = "serif", fontsize = 18)
         return []
 
     # Update each planet/circle position.
@@ -82,9 +94,10 @@ def animate_trajectories(data):
         circles[planet].center = (x, y)
         return circles[planet]
 
-
+    fig.tight_layout()
+    ax.legend(lines, [planet.title() for planet in data.keys()])     # Label all planets
     anim = animation.FuncAnimation(fig, animation_manage, init_func = init,
-        fargs=(list(circles.keys()),), frames = data[list(data.keys())[0]].shape[0],
+        fargs=(list(circles.keys()),), frames = data[some_planet].shape[0],
         interval = 10, blit = True)
 
     return anim
