@@ -12,7 +12,7 @@
 class nbody_solver{
     public:
         nbody_solver(planet* bodies, int num_bodies);
-        void solve(double h, double t_max, std::string method);
+        void solve(double h, double t_max, double t_write, std::string method);
         void write_row_to_file(int file_index, double t, double x, double y);
         ~nbody_solver();
 

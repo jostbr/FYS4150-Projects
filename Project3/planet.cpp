@@ -19,10 +19,10 @@ planet::planet(std::string id, double m, double x, double y, double v_x, double 
     this->a[0] = 0.0; this->a[1] = 0.0;
 }
 
-/* Function that computes distance between this->planet and planet_2. */
+/* Function that computes distance (sqrt((x_i-x_j)^2 + (y_i-y_j)^2)) between this->planet and planet_2. */
 double planet::compute_distance(planet planet_2) const {
     double distance = sqrt((this->r[0] - planet_2.r[0])*(this->r[0] - planet_2.r[0]) +
-            (this->r[1] - planet_2.r[0])*(this->r[1] - planet_2.r[0])); // sqrt((x_i-x_j)^2 + (y_i-y_j)^2)
+            (this->r[1] - planet_2.r[1])*(this->r[1] - planet_2.r[1]));
     return distance;
 }
 
@@ -44,7 +44,7 @@ double planet::compute_total_acc(planet* planets, int num_planets, int dim) cons
 
     for (int i = 0; i < num_planets; i++){
         if (planets[i].name.compare(this->name) != 0){    // No force on itself
-            //std::cout << "While using force from " << planets[i].name << std::endl;
+            //if (dim == 0) std::cout << "While using force from " << planets[i].name << std::endl;
             total_accel += this->compute_acc(planets[i], dim);
         }
     }

@@ -9,12 +9,13 @@ file_directory = "../build-Project3/"   # Path to result data files
 
 planet_masses = {"earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
     "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
-    "uranus": 8.8E+25, "neptun": 1.03E+26, "pluto": 1.31E+22}
+    "uranus": 8.8E+25, "neptune": 1.03E+26, "pluto": 1.31E+22, "moon": 7.34E+22}
 circle_sizes = {"earth": 0.08, "jupiter": 0.4, "mars": 0.04, "venus": 0.1,
-    "saturn": 0.2, "mercury": 0.02, "uranus": 0.1, "neptun": 0.12, "pluto": 0.014}
+    "saturn": 0.2, "mercury": 0.02, "uranus": 0.1, "neptune": 0.12, "pluto": 0.014,
+    "moon": 0.008}
 circle_colors = {"earth": "#2666FE", "jupiter": "#f99805", "mars": "#f24519",
     "venus": "#c56300", "saturn": "#DAA520", "mercury": "#965402", "uranus": "#A6D5CA",
-    "neptun": "#4D8FAC", "pluto": "#8b8b8b"}
+    "neptune": "#4D8FAC", "pluto": "#8b8b8b", "moon": "#000000"}
 
 planets = list(circle_sizes.keys())     # Names of all planets
 data = dict()   # To hold data for all planets
@@ -47,13 +48,13 @@ def plot_trajectories(data):
 
 # Function to animate trajectories of all computed planets
 def animate_trajectories(data):
-    plt.style.use("ggplot")
+    plt.style.use("default")
     fig = plt.figure(figsize = (10, 7))
     fig.set_size_inches(8, 8)
 
-    ax = plt.axes(xlim=(-8, 8), ylim=(-8, 8))
+    ax = plt.axes(xlim=(-30, 30), ylim=(-30, 30))
     ax.set_aspect("equal")
-    ax.set_title("Planet positions after {} years".format(data[some_planet][0, 0]),
+    ax.set_title("Planet positions after {:.2f} years".format(data[some_planet][0, 0]),
         fontname = "serif", fontsize = 18)
     ax.set_xlabel("x-coordinate [AU]", fontname = "serif", fontsize = 12)
     ax.set_ylabel("y-coordinate [AU]", fontname = "serif", fontsize = 12)
@@ -61,8 +62,9 @@ def animate_trajectories(data):
     circles = dict()    # To hold plt.Circle objects representing planets
     lines = list()      # Only be able to create legend with circle markers
 
-    sun = plt.Circle((0.0, 0.0), 1.5*max(circle_sizes.values()), fc = "#ffdb00")    # Need some sun
+    sun = plt.Circle((0.0, 0.0), 0.1, fc = "#d6c200")    # Need some sun
     ax.add_patch(sun)
+
     for planet in data.keys():
         circles[planet] = plt.Circle((data[planet][0, 1], data[planet][0, 2]),
             circle_sizes[planet], fc = circle_colors[planet])   # Initiate circles
@@ -82,7 +84,7 @@ def animate_trajectories(data):
         for planet in circles.keys():
             animate_planet(i, planet)
 
-        ax.set_title("Planet positions after {} years".format(data[some_planet][i, 0]),
+        ax.set_title("Planet positions after {:.2f} years".format(data[some_planet][i, 0]),
             fontname = "serif", fontsize = 18)
         return []
 
