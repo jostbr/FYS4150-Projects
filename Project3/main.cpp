@@ -40,7 +40,10 @@ int main(int argc, char* argv[]){
     //cout << "r= " << r << endl;   //Do work
 
     //solving for Earth-Sun with Euler
-    sys.Euler(Step, final_time, filename);
+    //sys.Euler(Step, final_time, filename);
+
+    //solving for Earth-Sun with Velocity Verlet
+    sys.Verlet(Step, final_time, filename);
 
 
 }

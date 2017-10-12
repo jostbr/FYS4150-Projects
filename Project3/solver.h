@@ -25,6 +25,7 @@ class solver
     double next_v[3];
     //Additional Variables needed for velocity Verlet
     double next_r[3];
+
     ofstream ofile;
 
     vector<planet> allPlanets;
@@ -36,6 +37,7 @@ class solver
     void addPlanet(planet newPlanet);
 
     void Euler(double Step, double final_time, string filename);
+    void Verlet(double Step, double final_time, string filename);
 
     void initalize_write_to_file(string filename);
     void write_row_to_file(double t);
