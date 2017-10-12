@@ -298,7 +298,7 @@ int main(int argc, char* argv[]){
     string fileout = filename;
 
 
-    double epsilon = 10.0e-10;
+    double epsilon = 10.0e-20;
 
     arma::mat A = arma::zeros(n,n);
     arma::mat V = arma::eye(n,n);       //V is matrix to contain eigenvectors, Orthonormal!!
@@ -323,13 +323,17 @@ int main(int argc, char* argv[]){
 
 
     //Test Armadillos Eigen solver
-    //clock_t start_time = clock();
+    clock_t start_time_ARMA = clock();
+
     arma::vec eigval;
     arma::mat eigvec;
     arma::eig_sym(eigval, eigvec, A);
 
-    //clock_t end_time = clock();
-    //double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
+    clock_t end_time_ARMA = clock();
+    double time_used_ARMA = (double)(end_time_ARMA - start_time_ARMA)/CLOCKS_PER_SEC;
+
+    cout << "Time used ARMADILLO: " << time_used_ARMA << endl;
+
 
     //cout << "Armadillo found eigenvalues: " << eigval << endl;
     //cout << "Armadillo found eigenvectors: " << eigvec << endl;
@@ -345,13 +349,13 @@ int main(int argc, char* argv[]){
 
     clock_t end_time = clock();
     double time_used = (double)(end_time - start_time)/CLOCKS_PER_SEC;
-    cout << "Time used: " << time_used << endl;
+    cout << "Time used Jacobi: " << time_used << endl;
 
     //A.print("A = ");            //Should contain eigenvalues along the diagonal
     //V.print("V = ");            //Should contain eigenvectors as columns
 
     arma::vec eig = arma::sort(A.diag());
-    //eig.print();
+    eig.print();
 
     //Find index of three first wavefunc
     double min_eigval = 10.0e4;
