@@ -323,8 +323,7 @@ int main(int argc, char* argv[]){
 
 
     //Test Armadillos Eigen solver
-    clock_t start_time_ARMA = clock();
-
+    //clock_t start_time = clock();
     arma::vec eigval;
     arma::mat eigvec;
     arma::eig_sym(eigval, eigvec, A);
@@ -355,7 +354,7 @@ int main(int argc, char* argv[]){
     //V.print("V = ");            //Should contain eigenvectors as columns
 
     arma::vec eig = arma::sort(A.diag());
-    eig.print();
+    //eig.print();
 
     //Find index of three first wavefunc
     double min_eigval = 10.0e4;
