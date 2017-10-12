@@ -45,7 +45,6 @@ void nbody_solver::solve(double h, double t_max, std::string method){
 
 void nbody_solver::euler(double h, double t_max, int frame_write){
     planet* bodies_curr = new planet[this->num_bodies];
-    int num_dims = 2;
     int frame = 0;
     double t = 0.0;
 
@@ -63,8 +62,8 @@ void nbody_solver::euler(double h, double t_max, int frame_write){
             //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
 
             /* Execute euler time-stepping for both/all directions. */
-            for (int dim = 0; dim < num_dims; dim++){
-                bodies_curr[i].a[dim] = bodies_curr[i].compute_acceleration(bodies_curr, this->num_bodies, dim);
+            for (int dim = 0; dim < cnst::num_dims; dim++){
+                bodies_curr[i].a[dim] = bodies_curr[i].compute_total_acc(bodies_curr, this->num_bodies, dim);
                 this->bodies[i].r[dim] = bodies_curr[i].r[dim] + h*bodies_curr[i].v[dim];
                 this->bodies[i].v[dim] = bodies_curr[i].v[dim] + h*bodies_curr[i].a[dim];
             }
@@ -81,7 +80,6 @@ void nbody_solver::euler(double h, double t_max, int frame_write){
 
 void nbody_solver::verlet(double h, double t_max, int frame_write){
     planet* bodies_curr = new planet[this->num_bodies];
-    int num_dims = 2;
     int frame = 0;
     double h_squared_half = h*h/2.0;
     double h_half = h/2.0;
@@ -89,8 +87,8 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
 
     for (int i = 0; i < this->num_bodies; i++){
         bodies_curr[i] = this->bodies[i];        // Copy of all planets for current time step
-        bodies_curr[i].a[0] = bodies_curr[i].compute_acceleration(bodies_curr, this->num_bodies, 0); // Init. x-acc.
-        bodies_curr[i].a[1] = bodies_curr[i].compute_acceleration(bodies_curr, this->num_bodies, 1); // Init. y-acc.
+        bodies_curr[i].a[0] = this->bodies[i].compute_total_acc(this->bodies, this->num_bodies, 0); // Init. x-acc.
+        bodies_curr[i].a[1] = this->bodies[i].compute_total_acc(this->bodies, this->num_bodies, 1); // Init. y-acc.
     }
 
     /* Loop until maximum times is reached. */
@@ -102,17 +100,17 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
         for (int i = 0; i < this->num_bodies; i++){
             //std::cout << "Time stepping for " << nbodies[i].name << std::endl;
 
-            for (int dim = 0; dim < num_dims; dim++){
+            for (int dim = 0; dim < cnst::num_dims; dim++){
                 this->bodies[i].r[dim] = bodies_curr[i].r[dim] + h*bodies_curr[i].v[dim] +
                         h_squared_half*bodies_curr[i].a[dim];
             }
         }
 
         /* New loop over bodies and directions to compute the updated values for acceleration
-         * and then velocities. Can't do in same loop above since all bodies must be done. */
+         * and then velocities. Can't do in same loop above since all r_{i+1} must be done for a_{i+1}. */
         for (int i = 0; i < this->num_bodies; i++){
-            for (int dim = 0; dim < num_dims; dim++){
-                this->bodies[i].a[dim] = this->bodies[i].compute_acceleration(
+            for (int dim = 0; dim < cnst::num_dims; dim++){
+                this->bodies[i].a[dim] = this->bodies[i].compute_total_acc(
                             this->bodies, this->num_bodies, dim);
                 this->bodies[i].v[dim] = bodies_curr[i].v[dim] + h_half*
                         (this->bodies[i].a[dim] + bodies_curr[i].a[dim]);

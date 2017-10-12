@@ -11,4 +11,5 @@ SOURCES += main.cpp \
 HEADERS += \
     earth_sun.h \
     planet.h \
-    nbody_solver.h
+    nbody_solver.h \
+    constants.h

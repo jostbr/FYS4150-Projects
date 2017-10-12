@@ -7,6 +7,7 @@
 # include <iomanip>
 # include <string>
 # include "planet.h"
+# include "constants.h"
 
 class nbody_solver{
     public:
