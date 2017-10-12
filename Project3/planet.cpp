@@ -7,6 +7,7 @@ planet::planet(){
     this->mass = 0.0;
     this->r[0] = 0.0; this->r[1] = 0.0;
     this->v[0] = 0.0; this->v[1] = 0.0;
+    this->a[0] = 0.0; this->a[1] = 0.0;
 }
 
 /* Overload constructor function with arguments. */
@@ -15,6 +16,7 @@ planet::planet(std::string id, double m, double x, double y, double v_x, double 
     this->mass = m;
     this->r[0] = x; this->r[1] = y;
     this->v[0] = v_x; this->v[1] = v_y;
+    this->a[0] = 0.0; this->a[1] = 0.0;
 }
 
 /* Function that computes distance between this->planet and planet_2. */
@@ -49,7 +51,7 @@ double planet::compute_acceleration(planet* planets, int num_planets, int dim){
 
     return total_force/this->mass;  // Divide by this->mass to get acceleration
 }
-/* Note on future fficiency improvement: Compute force from sun separately to save FLOPS. */
+/* Note on future efficiency improvement: Compute force from sun separately to save FLOPS. */
 
 
 /* Destructor function. .*/

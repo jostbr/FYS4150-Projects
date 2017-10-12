@@ -24,7 +24,7 @@ int main(){
     double t_max = 5.0;       // Upper time in years
     double h = 0.0001;         // Step size in years
     nbody_solver solver(bodies, num_planets);
-    solver.euler(h, t_max, "euler");
+    solver.solve(h, t_max, "euler");
 
     return 0;
 }
