@@ -20,121 +20,150 @@ solver::solver()
 void solver::addPlanet(planet newPlanet)
 {
     allPlanets.push_back(newPlanet);    //push_back works as append in python
-    number_planets += number_planets;
+    //number_planets += number_planets;
+}
+
+void solver::resetAcceleration(){
+    for(int i = 0; i < allPlanets.size(); i++ )
+        allPlanets[i].resetA();
+}
+
+void solver::computeAcceleration(){
+    resetAcceleration();
+
+    for(int i = 0; i < allPlanets.size(); i++){
+        for(int j = 0; j < allPlanets.size(); j++){
+            if(j == i) continue;
+            for(int dim = 0; dim < 3; dim++)
+                allPlanets[i].a[dim] += allPlanets[i].Acceleration(allPlanets[j],dim);
+        }
+    }
 }
 
 void solver::Euler(double Step, double final_time, string filename)
 {
-    //allPlanets[i].r[0];
     double t = 0.0;
-    double r_qubed = 0.0;
-    double r_ = 0.0;
-    current_r[0] = allPlanets[0].r[0];
-    current_r[1] = allPlanets[0].r[1];
-    current_r[2] = allPlanets[0].r[2];
+    //int print_frame = 0;
+    //initalize_write_to_file(filename);
+    ofstream* ofiles = new ofstream[allPlanets.size()];
+    for (int i = 0; i < allPlanets.size(); i++){
+            string filename = allPlanets[i].name;
+            filename.append(".txt");
+            ofiles[i].open(filename.c_str());
+            ofiles[i] << setiosflags(ios::showpoint | ios::uppercase);
+            ofiles[i] << "t x y z" << endl;   // Write header to file
+            write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
+    }
 
-    current_v[0] = allPlanets[0].v[0];
-    current_v[1] = allPlanets[0].v[1];
-    current_v[2] = allPlanets[0].v[2];
+    double inital_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
+                            + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
 
-    cout << current_r[0] << endl;
-    cout << current_v[0] << endl;
+    double inital_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
 
-    initalize_write_to_file(filename);
+    cout << "inital KE = " << inital_kin_energy_Earth << endl;
+    cout << "inital PE = " << inital_pot_energy_Earth << endl;
 
     while (t <= final_time){
-        next_r[0] = current_r[0] + current_v[0]*Step;
-        next_r[1] = current_r[1] + current_v[1]*Step;
-        next_r[2] = current_r[2] + current_v[2]*Step;
-
-        r_ = sqrt((current_r[0]*current_r[0])+(current_r[1]*current_r[1])+(current_r[2]*current_r[2]));
-        r_qubed = r_*r_*r_;
-//        cout << "rrr= " << r_qubed<<endl;
-
-        next_v[0] = current_v[0] - (Step*fourpipi*current_r[0])/r_qubed;
-        next_v[1] = current_v[1] - (Step*fourpipi*current_r[1])/r_qubed;
-        next_v[2] = current_v[2] - (Step*fourpipi*current_r[2])/r_qubed;
-
-//        cout << "next_r x= " << next_r[0] <<endl;
-//        cout << "next_v x= " << next_v[0] <<endl;
-
-        //Need to make a function that writes results to file
-        write_row_to_file(t);
-
-        current_r[0] = next_r[0];
-        current_r[1] = next_r[1];
-        current_r[2] = next_r[2];
-
-        current_v[0] = next_v[0];
-        current_v[1] = next_v[1];
-        current_v[2] = next_v[2];
-
+        computeAcceleration();
         t += Step;
+        for (int i = 0; i < allPlanets.size(); i++){
+            for (int dim=0; dim < 3; dim++){
+                allPlanets[i].v[dim] += allPlanets[i].a[dim]*Step;
+                allPlanets[i].r[dim] += allPlanets[i].v[dim]*Step;
+            }
+            write_row_to_file(i,t, allPlanets[i].r[0], allPlanets[i].r[1],allPlanets[i].r[2], &ofiles) ;
+        }
     }
-    ofile.close();
+
+    double final_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
+                               + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
+    double final_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
+
+    cout << "final KE = " << final_kin_energy_Earth << endl;
+    cout << "final PE = " << final_pot_energy_Earth << endl;
+
+    cout << "Difference Kin energy from inital to final = " << inital_kin_energy_Earth - final_kin_energy_Earth << endl;
+    cout << "Difference Pot energy from inital to final = " << inital_pot_energy_Earth - final_pot_energy_Earth << endl;
+
+    double inital_tot_energy_Earth = inital_kin_energy_Earth + inital_pot_energy_Earth;
+    double final_tot_energy_Earth = final_kin_energy_Earth + final_pot_energy_Earth;
+
+    cout << "inital TOTAL energy = " << inital_tot_energy_Earth << endl;
+    cout << "Difference TOTAL energy from inital to final = " << inital_tot_energy_Earth - final_tot_energy_Earth << endl;
+
+    for (int i=0; i<allPlanets.size(); i++){
+        ofiles[i].close();
+    }
 }
 
 //Velocity Verlet
 void solver::Verlet(double Step, double final_time, string filename){
+
     double StepStep = Step*Step;
     double t = 0.0;
-    double r_qubed_i = 0.0;
-    double r_qubed_ii = 0.0;
-    double rrr = 0.0;
+//    double r_qubed_i = 0.0;
+//    double r_qubed_ii = 0.0;
+//    double rrr = 0.0;
 
-    current_r[0] = allPlanets[0].r[0];
-    current_r[1] = allPlanets[0].r[1];
-    current_r[2] = allPlanets[0].r[2];
-
-    current_v[0] = allPlanets[0].v[0];
-    current_v[1] = allPlanets[0].v[1];
-    current_v[2] = allPlanets[0].v[2];
-
-    initalize_write_to_file(filename);
-
-    //Algorithm
-    while (t <= final_time){
-        rrr = sqrt((current_r[0]*current_r[0])+(current_r[1]*current_r[1])+(current_r[2]*current_r[2]));
-        r_qubed_i = rrr*rrr*rrr;
-
-        next_r[0] = current_r[0] + Step*current_v[0] + (StepStep/2.0)*(-fourpipi*current_r[0])/(r_qubed_i);
-        next_r[1] = current_r[1] + Step*current_v[1] + (StepStep/2.0)*(-fourpipi*current_r[1])/(r_qubed_i);
-        next_r[2] = current_r[2] + Step*current_v[2] + (StepStep/2.0)*(-fourpipi*current_r[2])/(r_qubed_i);
-
-        rrr = sqrt((next_r[0]*next_r[0])+(next_r[1]*next_r[1])+(next_r[2]*next_r[2]));
-        r_qubed_ii = rrr*rrr*rrr;
-
-        next_v[0] = current_v[0] + (Step/2.0)*(((-fourpipi*next_r[0])/(r_qubed_ii))+((-fourpipi*current_r[0])/(r_qubed_i)));
-        next_v[1] = current_v[1] + (Step/2.0)*(((-fourpipi*next_r[1])/(r_qubed_ii))+((-fourpipi*current_r[1])/(r_qubed_i)));
-        next_v[2] = current_v[2] + (Step/2.0)*(((-fourpipi*next_r[2])/(r_qubed_ii))+((-fourpipi*current_r[2])/(r_qubed_i)));
-
-        write_row_to_file(t);
-
-        current_r[0] = next_r[0];
-        current_r[1] = next_r[1];
-        current_r[2] = next_r[2];
-
-        current_v[0] = next_v[0];
-        current_v[1] = next_v[1];
-        current_v[2] = next_v[2];
-
-        t += Step;
+    ofstream* ofiles = new ofstream[allPlanets.size()];
+    for (int i = 0; i < allPlanets.size(); i++){
+            string filename = allPlanets[i].name;
+            filename.append(".txt");
+            ofiles[i].open(filename.c_str());
+            ofiles[i] << setiosflags(ios::showpoint | ios::uppercase);
+            ofiles[i] << "t x y z" << endl;   // Write header to file
+            write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
     }
-    ofile.close();
+
+
+    while (t <= final_time){
+        computeAcceleration();
+        t += Step;
+        for (int i = 0; i < allPlanets.size(); i++){
+            for (int dim=0; dim < 3; dim++){
+                //All the current stuff
+                allPlanets[i].r[dim] += allPlanets[i].v[dim]*Step + (StepStep/2.0)*allPlanets[i].a[dim];
+                //First part of next velocity
+                allPlanets[i].v[dim] += allPlanets[i].a[dim]*(Step/2.0);
+            }
+            computeAcceleration();
+            for (int dim=0; dim < 3; dim++){
+                allPlanets[i].v[dim] += allPlanets[i].a[dim]*(Step/2.0);
+            }
+            write_row_to_file(i,t, allPlanets[i].r[0], allPlanets[i].r[1],allPlanets[i].r[2], &ofiles) ;
+        }
+    }
+    for (int i=0; i<allPlanets.size(); i++){
+        ofiles[i].close();
+    }
 }
 
 
-void solver::write_row_to_file(double t){
-    ofile << setw(20) << setprecision(8) << t;
-    ofile << setw(20) << setprecision(8) << next_r[0];
-    ofile << setw(20) << setprecision(8) << next_r[1];
-    ofile << setw(20) << setprecision(8) << next_r[2] << endl;
+void solver::write_row_to_file(int i, double t, double x, double y, double z, ofstream** ofiles){
+    (*ofiles)[i] << setw(20) << setprecision(8) << t;
+    (*ofiles)[i] << setw(20) << setprecision(8) << x;
+    (*ofiles)[i] << setw(20) << setprecision(8) << y;
+    (*ofiles)[i] << setw(20) << setprecision(8) << z << endl;
 }
 
 
 void solver::initalize_write_to_file(string filename){
-    ofile.open(filename);
-    ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "                 t                  x                     y                   z      " << endl;
+    ofstream* ofiles = new ofstream[allPlanets.size()];
+    for (int i = 0; i < allPlanets.size(); i++){
+            string filename = allPlanets[i].name;
+            filename.append(".txt");
+            ofiles[i].open(filename.c_str());
+            ofiles[i] << setiosflags(ios::showpoint | ios::uppercase);
+            ofiles[i] << "t x y z" << endl;   // Write header to file
+            write_row_to_file(i, 0.0, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
+    }
 }
+
+
+
+
+
+
+
+
 

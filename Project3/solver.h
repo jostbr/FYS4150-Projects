@@ -16,15 +16,7 @@ class solver
     public:
 
     static constexpr double fourpipi= 4*acos(-1.0)*acos(-1.0);
-
-    int number_planets = 0;
-
-    //Varaiables needed for Euler
-    double current_r[3];
-    double current_v[3];
-    double next_v[3];
-    //Additional Variables needed for velocity Verlet
-    double next_r[3];
+    static constexpr double G_const = 6.67E-11;     //Nmm/kg
 
     ofstream ofile;
 
@@ -40,8 +32,10 @@ class solver
     void Verlet(double Step, double final_time, string filename);
 
     void initalize_write_to_file(string filename);
-    void write_row_to_file(double t);
+    void write_row_to_file(int i, double t, double x, double y, double z, ofstream **ofiles);
 
+    void resetAcceleration();
+    void computeAcceleration();
 };
 
 #endif // SOLVER_H
