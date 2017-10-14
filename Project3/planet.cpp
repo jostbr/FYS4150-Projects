@@ -1,5 +1,6 @@
 //In this main all the functions and constructors for the class is defined
 #include "planet.h"
+#include "solver.h"
 
 //Defining actions for the empty constructor
 planet::planet()
@@ -64,7 +65,6 @@ double planet::getDistance(planet otherplanet)
     zz = z1-z2;
 
     double rel_distance = sqrt(xx*xx + yy*yy + zz*zz);
-
     return rel_distance;
 }
 
@@ -72,5 +72,4 @@ double planet::Acceleration(planet newPlanet, int dim){
     double distance_cubed = pow(getDistance(newPlanet), 3.0);
     double accel = -((fourpipi*(newPlanet.mass/sun_mass))/distance_cubed)*(r[dim] - newPlanet.r[dim]);
     return accel;
-
 }

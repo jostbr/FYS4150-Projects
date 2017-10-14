@@ -8,6 +8,8 @@
 #include <fstream>
 #include <iomanip>
 
+#include <ctime>
+
 
 
 //Empty constructor
@@ -20,7 +22,8 @@ solver::solver()
 void solver::addPlanet(planet newPlanet)
 {
     allPlanets.push_back(newPlanet);    //push_back works as append in python
-    //number_planets += number_planets;
+    total_mass += newPlanet.mass;
+
 }
 
 void solver::resetAcceleration(){
@@ -137,6 +140,25 @@ void solver::Verlet(double Step, double final_time, string filename){
         ofiles[i].close();
     }
 }
+
+
+//function to find mass center for system - then put at rest
+/* Need to return a vectorial position in r_centerofmass*/
+void solver::centerofmass(){
+    for (int i = 0; i < allPlanets.size(); i++){
+        x_comp += allPlanets[i].r[0]*allPlanets[i].mass;
+        y_comp += allPlanets[i].r[1]*allPlanets[i].mass;
+        z_comp += allPlanets[i].r[2]*allPlanets[i].mass;
+       //r_centerofmass[0]= (allPlanets[i].r[0]*allPlanets[i].mass)/total_mass
+    }
+    r_centerofmass[0]= x_comp/total_mass;
+    r_centerofmass[1]= y_comp/total_mass;
+    r_centerofmass[2]= z_comp/total_mass;
+
+     cout << "center off mass= " << r_centerofmass[1] << endl;
+}
+
+
 
 
 void solver::write_row_to_file(int i, double t, double x, double y, double z, ofstream** ofiles){
