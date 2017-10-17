@@ -20,14 +20,14 @@
 class planet{
     public:
         planet();
-        planet(std::string id, double m, double x, double y, double v_x, double v_y);
+        planet(std::string id, double m, double x, double y, double z, double v_x, double v_y, double v_z);
         double compute_distance(planet planet_2) const;
         double compute_acc(planet planet_2, int dim) const;
         ~planet();
 
         std::string name;
         double mass;
-        double r[2], v[2], a[2];
+        double r[3], v[3], a[3];
 };
 
 #endif // PLANET_H

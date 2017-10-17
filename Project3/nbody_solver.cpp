@@ -42,8 +42,8 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         filename.append(".txt");
         this->ofiles[i].open(filename.c_str());
         this->ofiles[i] << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
-        this->ofiles[i] << "t x y" << std::endl;   // Write header to file
-        this->write_row_to_file(i, 0.0, this->bodies[i].r[0], this->bodies[i].r[1]);
+        this->ofiles[i] << "t x y z" << std::endl;   // Write header to file
+        this->write_row_to_file(i, 0.0, this->bodies[i].r[0], this->bodies[i].r[1], this->bodies[i].r[2]);
     }
 
     clock_t t_0 = clock();
@@ -65,8 +65,8 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     clock_t t_1 = clock();
 
     double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
-    std::cout << "\nTime used by " << method << " method: " << std::setprecision(8) << time_used << " seconds\n" << std::endl;
-    //std::cout << time_used << std::endl;
+    std::cout << "\nTime used by " << method << " method: " << std::setprecision(8)
+              << time_used << " seconds\n" << std::endl;
 
     for (int i = 0; i < this->num_bodies; i++){
         this->ofiles[i].close();   // Close all file objects after time loop
@@ -103,7 +103,7 @@ void nbody_solver::euler(double h, double t_max, int frame_write){
             }
 
             if (frame % frame_write == 0){
-                this->write_row_to_file(i, t, this->bodies[i].r[0], this->bodies[i].r[1]);
+                this->write_row_to_file(i, t, this->bodies[i].r[0], this->bodies[i].r[1], this->bodies[i].r[2]);
                 //std::cout << std::endl;
             }
         }
@@ -156,7 +156,7 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
             }
 
             if (frame % frame_write == 0){
-                this->write_row_to_file(i, t, this->bodies[i].r[0], this->bodies[i].r[1]);
+                this->write_row_to_file(i, t, this->bodies[i].r[0], this->bodies[i].r[1], this->bodies[i].r[2]);
             }
 
             //std::cout << std::endl;
@@ -170,13 +170,12 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
     delete[] bodies_curr;
 }
 
-/* Function that, through calls to this->compute_force(), computes total acceleration of
- * this->planet (in dim-direction) due to the sum of gravitational forces from all
- * num_planets planets in array planets*. */
+/* Function that, through calls to planet::compute_accel(), computes total acceleration of subject
+ * (in dim-direction) due to the sum of gravitational forces from all planets in array objects. */
 double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim) const {
-    //planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0);
-    //double total_accel = subject.compute_acc(sun, dim);     // Include force from sun separately
-    double total_accel = 0.0;
+    planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    double total_accel = subject.compute_acc(sun, dim);     // Include force from sun separately
+    //double total_accel = 0.0;
 
     for (int i = 0; i < this->num_bodies; i++){
         if (objects[i].name.compare(subject.name) != 0){    // No force on itself
@@ -190,10 +189,11 @@ double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim)
 
 /* Function that writes a row of values (t, x, y) to data member output file
  * ofiles[file_index] where file_index is unique per body i the simulation. */
-void nbody_solver::write_row_to_file(int file_index, double t, double x, double y){
+void nbody_solver::write_row_to_file(int file_index, double t, double x, double y, double z){
     this->ofiles[file_index] << std::setw(20) << std::setprecision(8) << t;
     this->ofiles[file_index] << std::setw(20) << std::setprecision(8) << x;
-    this->ofiles[file_index] << std::setw(20) << std::setprecision(8) << y << std::endl;
+    this->ofiles[file_index] << std::setw(20) << std::setprecision(8) << y;
+    this->ofiles[file_index] << std::setw(20) << std::setprecision(8) << z << std::endl;
 }
 
 /* Destructor that deallocates memory from dynamically allocated member variables. */
