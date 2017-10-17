@@ -118,12 +118,27 @@ void solver::Verlet(double Step, double final_time, string filename){
             write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
     }
 
+    //To calculate the inital kinetic energy of the system
+    double total_inital_kin_energy = 0.0;
+    //Starts loop at 1 to avoid including the Sun
+    for (int j=1; j < allPlanets.size(); j++){
+        total_inital_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+    }
+
+    double total_inital_pot_energy = 0.0;
+    //Can not include the sun as this means deviding on r=0 --> inf
+    for (int j=1; j < allPlanets.size(); j++){
+        total_inital_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+    }
 
     while (t <= final_time){
         computeAcceleration();
         t += Step;
+
         for (int i = 0; i < allPlanets.size(); i++){
             for (int dim=0; dim < 3; dim++){
+                if (i==0) continue;         //To keep the Sun fixed in Origo
                 //All the current stuff
                 allPlanets[i].r[dim] += allPlanets[i].v[dim]*Step + (StepStep/2.0)*allPlanets[i].a[dim];
                 //First part of next velocity
@@ -131,6 +146,7 @@ void solver::Verlet(double Step, double final_time, string filename){
             }
             computeAcceleration();
             for (int dim=0; dim < 3; dim++){
+                if (i==0) continue;         //To keep the Sun fixed in Origo
                 allPlanets[i].v[dim] += allPlanets[i].a[dim]*(Step/2.0);
             }
             write_row_to_file(i,t, allPlanets[i].r[0], allPlanets[i].r[1],allPlanets[i].r[2], &ofiles) ;
@@ -139,11 +155,34 @@ void solver::Verlet(double Step, double final_time, string filename){
     for (int i=0; i<allPlanets.size(); i++){
         ofiles[i].close();
     }
+
+    double total_final_kin_energy = 0.0;
+    //Starts loop at 1 to avoid including the Sun
+    for (int j=1; j < allPlanets.size(); j++){
+        total_final_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+    }
+
+
+    cout << "inital KE = " << total_inital_kin_energy << endl;
+    cout << "final KE = " << total_final_kin_energy << endl;
+
+    //To calculate the potential energy, it should be done with respect to the mass center and total mass?
+    //Under, use sun
+    double total_final_pot_energy = 0.0;
+    //Can not include the sun as this means deviding on r=0 --> inf
+    for (int j=1; j < allPlanets.size(); j++){
+        total_final_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+    }
+
+    cout << "inital PE = " << total_inital_pot_energy << endl;
+    cout << "final PE = " << total_final_pot_energy << endl;
 }
 
 
 //function to find mass center for system - then put at rest
-/* Need to return a vectorial position in r_centerofmass*/
+/* Need to return a vectorial position in r_centerofmass
+Includes the sun in the calculations*/
 void solver::centerofmass(){
     for (int i = 0; i < allPlanets.size(); i++){
         x_comp += allPlanets[i].r[0]*allPlanets[i].mass;
@@ -155,9 +194,55 @@ void solver::centerofmass(){
     r_centerofmass[1]= y_comp/total_mass;
     r_centerofmass[2]= z_comp/total_mass;
 
-     cout << "center off mass= " << r_centerofmass[1] << endl;
+    cout << "center off mass in x_dir= " << r_centerofmass[1] << endl;
 }
 
+
+//To find total momentum of system
+//Totalmomentum without the sun
+//double solver::totMomNonSun(){
+//    double tot_mom = 0.0;
+//    for (int i=1; i< allPlanets.size(); i++){
+//        double planet_v = 0.0;
+//        for (int dim=0; dim < 3; dim++){
+//            planet_v += fabs(allPlanets[i].v[dim]);
+//        }
+//        tot_mom += allPlanets[i].mass*planet_v;
+
+//    }
+//    cout << "Tot Mom NO SUN = " << tot_mom << endl;
+//    return tot_mom;
+//}
+
+
+//double solver::findSolarVelocity(double tot_mom){
+//    //Find velocity of SUN that gives total momentum = 0
+//    //double tot_mom = sys.totMomNonSun();
+//    double sun_velocity = tot_mom/ allPlanets[0].mass;
+//    //cout << "Sun velocity abs value that make total momentum equal zero = " << sun_velocity << endl;
+//    return sun_velocity;
+//}
+
+void solver::findSolarVelocity(){
+    double tot_mom_x = 0.0;
+    double tot_mom_y = 0.0;
+    double tot_mom_z = 0.0;
+    //Exlude the sun
+    for (int i=1; i< allPlanets.size(); i++){
+            tot_mom_x += allPlanets[i].mass*allPlanets[i].v[0];
+            tot_mom_y += allPlanets[i].mass*allPlanets[i].v[1];
+            tot_mom_z += allPlanets[i].mass*allPlanets[i].v[2];
+    }
+    //double sun_velocity[3];
+
+    sun_velocity[0] = tot_mom_x/allPlanets[0].mass;
+    sun_velocity[1] = tot_mom_y/allPlanets[0].mass;
+    sun_velocity[2] = tot_mom_z/allPlanets[0].mass;
+
+    //return sun_velocity;
+    cout << "Sun velocity in x dir that make total momentum equal zero = " << sun_velocity[0] << endl;
+
+}
 
 
 

@@ -30,6 +30,8 @@ class solver
     double y_comp = 0.0;
     double z_comp = 0.0;
 
+    double sun_velocity[3];
+
 
 
     //Declearing all the classmenmber functions
@@ -47,6 +49,8 @@ class solver
     void computeAcceleration();
 
     void centerofmass();
+    void findSolarVelocity();
+
 };
 
 #endif // SOLVER_H
