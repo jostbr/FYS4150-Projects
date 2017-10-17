@@ -7,13 +7,13 @@ from matplotlib import animation
 # ========================= GLOBAL VARIABLES =========================
 file_directory = "../build-Project3/"   # Path to result data files
 
-planet_masses = {"earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
+planet_masses = {"sun": 2.0E+30, "earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
     "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
     "uranus": 8.8E+25, "neptune": 1.03E+26, "pluto": 1.31E+22, "moon": 7.34E+22}
-circle_sizes = {"earth": 0.08, "jupiter": 0.4, "mars": 0.04, "venus": 0.1,
+circle_sizes = {"sun": 0.1, "earth": 0.08, "jupiter": 0.4, "mars": 0.04, "venus": 0.1,
     "saturn": 0.2, "mercury": 0.02, "uranus": 0.1, "neptune": 0.12, "pluto": 0.014,
     "moon": 0.008}
-circle_colors = {"earth": "#2666FE", "jupiter": "#f99805", "mars": "#f24519",
+circle_colors = {"sun": "#d6c200", "earth": "#2666FE", "jupiter": "#f99805", "mars": "#f24519",
     "venus": "#c56300", "saturn": "#DAA520", "mercury": "#965402", "uranus": "#A6D5CA",
     "neptune": "#4D8FAC", "pluto": "#8b8b8b", "moon": "#000000"}
 
@@ -62,8 +62,9 @@ def animate_trajectories(data):
     circles = dict()    # To hold plt.Circle objects representing planets
     lines = list()      # Only be able to create legend with circle markers
 
-    sun = plt.Circle((0.0, 0.0), 0.1, fc = "#d6c200")    # Need some sun
-    ax.add_patch(sun)
+    if ("sun" not in list(data.keys())):
+        sun = plt.Circle((0.0, 0.0), 0.1, fc = "#d6c200")    # Need some sun
+        ax.add_patch(sun)
 
     for planet in data.keys():
         circles[planet] = plt.Circle((data[planet][0, 1], data[planet][0, 2]),

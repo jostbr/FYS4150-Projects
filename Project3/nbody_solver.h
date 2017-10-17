@@ -12,7 +12,7 @@
 
 class nbody_solver{
     public:
-        nbody_solver(planet* bodies, int num_bodies);
+        nbody_solver(planet* bodies, int n, bool implicit_sun = false);
         void solve(double h, double t_max, double t_write, std::string method);
         void write_row_to_file(int file_index, double t, double x, double y, double z);
         ~nbody_solver();
@@ -22,6 +22,7 @@ class nbody_solver{
         void verlet(double h, double t_max, int frame_write);
         double compute_total_acc(planet subject, planet* objects, int dim) const;
         int num_bodies;
+        bool fixed_sun;
         planet* bodies;
         std::ofstream* ofiles;
 };

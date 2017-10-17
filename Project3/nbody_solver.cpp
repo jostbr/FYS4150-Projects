@@ -2,8 +2,9 @@
 # include "nbody_solver.h"
 
 /* Overload constructor (no ordinary exists) function with arguments. */
-nbody_solver::nbody_solver(planet* bodies, int num_bodies){
-    this->num_bodies = num_bodies;
+nbody_solver::nbody_solver(planet* bodies, int n, bool implicit_sun){
+    this->num_bodies = n;
+    this->fixed_sun = implicit_sun;
     this->bodies = new planet[num_bodies];
     this->ofiles = new std::ofstream[num_bodies];
 
@@ -173,9 +174,14 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
 /* Function that, through calls to planet::compute_accel(), computes total acceleration of subject
  * (in dim-direction) due to the sum of gravitational forces from all planets in array objects. */
 double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim) const {
-    planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    double total_accel = subject.compute_acc(sun, dim);     // Include force from sun separately
-    //double total_accel = 0.0;
+    double total_accel = 0.0;
+
+    /* Simulation is being run with a fixed sun at the origin. */
+    if (this->fixed_sun == true){
+        std::cout << "Using fixed sun!" << std::endl;
+        planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        total_accel += subject.compute_acc(sun, dim);     // Include force from sun separately
+    }
 
     for (int i = 0; i < this->num_bodies; i++){
         if (objects[i].name.compare(subject.name) != 0){    // No force on itself
