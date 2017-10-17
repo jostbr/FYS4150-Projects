@@ -6,6 +6,7 @@
 # include <fstream>
 # include <iomanip>
 # include <string>
+# include <ctime>
 # include "planet.h"
 # include "constants.h"
 
@@ -19,6 +20,7 @@ class nbody_solver{
     private:
         void euler(double h, double t_max, int frame_write);
         void verlet(double h, double t_max, int frame_write);
+        double compute_total_acc(planet subject, planet* objects, int dim) const;
         int num_bodies;
         planet* bodies;
         std::ofstream* ofiles;

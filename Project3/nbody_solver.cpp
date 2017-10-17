@@ -22,8 +22,9 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     std::cout << "=================================================" << std::endl;
     std::cout << "Using algorithm :           " << method << std::endl;
     std::cout << "Number of bodies:           " << this->num_bodies << std::endl;
+    std::cout << "Simulation time [years]:    " << t_max << std::endl;
     std::cout << "Time step, h [years]:       " << std::setprecision(2) << h << std::endl;
-    std::cout << "Simulation time [years:     " << t_max << std::endl;
+    std::cout << "Total time steps:           " << t_max/h << std::endl;
     std::cout << "Output every [time step]:   " << frame_write << std::endl;
     std::cout << "Total output [time steps]:  " << total_frames << std::endl << std::endl;
 
@@ -31,7 +32,7 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     if (total_frames > 50000){
         std::cout << "\nError: Invalid choice of t_max and t_write!" << std::endl;
         std::cout << "Lines written to file can't exceed t_max/t_write = " << total_frames << std::endl;
-        std::cout << "Terminating program.." << std::endl;
+        std::cout << "Terminating program...\n" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -44,6 +45,8 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         this->ofiles[i] << "t x y" << std::endl;   // Write header to file
         this->write_row_to_file(i, 0.0, this->bodies[i].r[0], this->bodies[i].r[1]);
     }
+
+    clock_t t_0 = clock();
 
     if (method.compare("euler") == 0){
         this->euler(h, t_max, frame_write);
@@ -58,6 +61,12 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         std::cout << "Terminating program.." << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    clock_t t_1 = clock();
+
+    double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
+    std::cout << "\nTime used by " << method << " method: " << std::setprecision(8) << time_used << " seconds\n" << std::endl;
+    //std::cout << time_used << std::endl;
 
     for (int i = 0; i < this->num_bodies; i++){
         this->ofiles[i].close();   // Close all file objects after time loop
@@ -88,7 +97,7 @@ void nbody_solver::euler(double h, double t_max, int frame_write){
 
             /* Execute euler time-stepping for both/all directions. */
             for (int dim = 0; dim < cnst::num_dims; dim++){
-                bodies_curr[i].a[dim] = bodies_curr[i].compute_total_acc(bodies_curr, this->num_bodies, dim);
+                bodies_curr[i].a[dim] = this->compute_total_acc(bodies_curr[i], bodies_curr, dim);
                 this->bodies[i].r[dim] = bodies_curr[i].r[dim] + h*bodies_curr[i].v[dim];
                 this->bodies[i].v[dim] = bodies_curr[i].v[dim] + h*bodies_curr[i].a[dim];
             }
@@ -114,12 +123,13 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
     double h_half = h/2.0;
     double t = 0.0;
 
-    /* Make copy of all bodies to track current and next
-     * time step. Also compute init. acceleration. */
+    /* Make copy of all bodies to track current and next time step. Also compute init. acceleration. */
     for (int i = 0; i < this->num_bodies; i++){
         bodies_curr[i] = this->bodies[i];
-        bodies_curr[i].a[0] = this->bodies[i].compute_total_acc(this->bodies, this->num_bodies, 0);
-        bodies_curr[i].a[1] = this->bodies[i].compute_total_acc(this->bodies, this->num_bodies, 1);
+
+        for (int dim = 0; dim < cnst::num_dims; dim++){
+            bodies_curr[i].a[dim] = this->compute_total_acc(this->bodies[i], this->bodies, dim);
+        }
     }
 
     /* Loop until maximum times is reached. */
@@ -140,8 +150,7 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
         for (int i = 0; i < this->num_bodies; i++){
             //std::cout << "Time stepping for " << this->bodies[i].name << std::endl;
             for (int dim = 0; dim < cnst::num_dims; dim++){
-                this->bodies[i].a[dim] = this->bodies[i].compute_total_acc(
-                            this->bodies, this->num_bodies, dim);
+                this->bodies[i].a[dim] = this->compute_total_acc(this->bodies[i], this->bodies, dim);
                 this->bodies[i].v[dim] = bodies_curr[i].v[dim] + h_half*
                         (this->bodies[i].a[dim] + bodies_curr[i].a[dim]);
             }
@@ -159,6 +168,24 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
     }
 
     delete[] bodies_curr;
+}
+
+/* Function that, through calls to this->compute_force(), computes total acceleration of
+ * this->planet (in dim-direction) due to the sum of gravitational forces from all
+ * num_planets planets in array planets*. */
+double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim) const {
+    //planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0);
+    //double total_accel = subject.compute_acc(sun, dim);     // Include force from sun separately
+    double total_accel = 0.0;
+
+    for (int i = 0; i < this->num_bodies; i++){
+        if (objects[i].name.compare(subject.name) != 0){    // No force on itself
+            //if (dim == 0) std::cout << "While using force from " << planets[i].name << std::endl;
+            total_accel += subject.compute_acc(objects[i], dim);
+        }
+    }
+
+    return total_accel;  // Divide by this->mass to get acceleration
 }
 
 /* Function that writes a row of values (t, x, y) to data member output file

@@ -6,15 +6,20 @@
 # include "nbody_solver.h"
 # include "constants.h"
 
+void run_nasa();
+void run_three_body();
+
 int main(){
     //two_body();
+
+    run_three_body();
+
+    return 0;
+}
+
+void run_nasa(){
     int num_planets = 9;
     planet* planets = new planet[num_planets];
-
-    /* Much used as testing setup. */
-    /*planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 2.0*cnst::pi);
-    planet mars("mars", 6.6E+23, 0.0, 1.52, -1.6*cnst::pi, 0.0);
-    planet jupiter("jupiter", 1.9E+27, -5.2, 0.0, 0.0, -0.8*cnst::pi);*/
 
     /* Initial conditions from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results). */
     planet mercury("mercury", 3.3E+23, -3.810263402960284E-01,-1.879843146811533E-01,
@@ -61,5 +66,32 @@ int main(){
     solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
 
     delete[] planets;
-    return 0;
+}
+
+void run_three_body(){
+    int num_planets = 4;
+    planet* planets = new planet[num_planets];
+
+    /* Much used as testing setup. */
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0);
+    planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 2*cnst::pi);
+    planet mars("mars", 6.6E+23, 0.0, 1.52, -1.5*cnst::pi, 0.0);
+    planet jupiter("jupiter", 1.9E+27, -5.20, 0.0, 0.0, -0.9*cnst::pi);
+
+    planets[0] = sun;
+    planets[1] = earth;
+    planets[2] = mars;
+    planets[3] = jupiter;
+
+    double t_max = 50.0;          // Upper time in years
+    double t_write = 10.0;       // Write to file every t_write days
+    double h = 0.0001;         // Step size in days
+
+    t_write = t_write/365.0;    // Convert to years before passing argument
+    //h = h/365.0;                // Convert to years before passing argument
+
+    nbody_solver solar_system(planets, num_planets);      // Create solver object
+    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+
+    delete[] planets;
 }
