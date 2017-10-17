@@ -13,7 +13,7 @@ nbody_solver::nbody_solver(planet* bodies, int n, bool implicit_sun){
     }
 }
 
-/* Manager function that supervises the n-body solution process. This includes ccalling a solution
+/* Manager function that supervises the n-body solution process. This includes calling a solution
  * algorithm, making sure parameter arguments are reasonable and handling ouput data for each body. */
 void nbody_solver::solve(double h, double t_max, double t_write, std::string method){
     int frame_write = (int)(t_write/h + 0.5);        // Write to file interval
@@ -47,7 +47,11 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         this->write_row_to_file(i, 0.0, this->bodies[i].r[0], this->bodies[i].r[1], this->bodies[i].r[2]);
     }
 
-    clock_t t_0 = clock();
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    double r_pre = bodies[0].compute_distance(sun);
+    std::cout << "Initial distance to sun: " << std::setprecision(8) << r_pre << std::endl;
+
+    clock_t t_0 = clock();  // Time the main computations
 
     if (method.compare("euler") == 0){
         this->euler(h, t_max, frame_write);
@@ -63,7 +67,10 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         exit(EXIT_FAILURE);
     }
 
-    clock_t t_1 = clock();
+    clock_t t_1 = clock();      // Done timing
+
+    double r_post = bodies[0].compute_distance(sun);
+    std::cout << "Final distance to sun: " << std::setprecision(8) << r_post << std::endl;
 
     double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
     std::cout << "\nTime used by " << method << " method: " << std::setprecision(8)
@@ -178,7 +185,6 @@ double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim)
 
     /* Simulation is being run with a fixed sun at the origin. */
     if (this->fixed_sun == true){
-        std::cout << "Using fixed sun!" << std::endl;
         planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         total_accel += subject.compute_acc(sun, dim);     // Include force from sun separately
     }

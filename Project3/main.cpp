@@ -9,13 +9,15 @@
 /* Function declarations of different setup cases using the model. */
 void run_nasa();
 void run_three_body();
+void run_two_body();
 
 /* Main function calling the various cases. */
 int main(){
     //two_body();
 
+    run_two_body();
     //run_three_body();
-    run_nasa();
+    //run_nasa();
 
     return 0;
 }
@@ -75,27 +77,45 @@ void run_nasa(){
 }
 
 void run_three_body(){
-    int num_planets = 3;
+    int num_planets = 2;
     planet* planets = new planet[num_planets];
 
-    /* Much used as testing setup. */
-    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 2*cnst::pi, 0.0);
     planet jupiter("jupiter", 1.9E+27, -5.20, 0.0, 0.0, 0.0, -0.9*cnst::pi, 0.0);
 
-    planets[0] = sun;
-    planets[1] = earth;
-    planets[2] = jupiter;
+    planets[0] = earth;
+    planets[1] = jupiter;
 
-    double t_max = 5.0;        // Upper time in years
+    double t_max = 50.0;        // Upper time in years
     double t_write = 10.0;     // Write to file every t_write days
-    double h = 0.0001;         // Step size in days
+    double h = 1.0/24.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
-    //h = h/365.0;                // Convert to years before passing argument
+    h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets, true);      // Create solver object
-    solar_system.solve(h, t_max, t_write, "euler");      // Solve nbody-system using specified method
+    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+
+    delete[] planets;
+}
+
+void run_two_body(){
+    int num_planets = 1;
+    planet* planets = new planet[num_planets];
+
+    planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 1.1*cnst::pi, 0.0);
+
+    planets[0] = earth;
+
+    double t_max = 100.0;        // Upper time in years
+    double t_write = 4.0;     // Write to file every t_write days
+    double h = 1.0/24.0;         // Step size in days
+
+    t_write = t_write/365.0;    // Convert to years before passing argument
+    h = h/365.0;                // Convert to years before passing argument
+
+    nbody_solver solar_system(planets, num_planets, true);      // Create solver object
+    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
 
     delete[] planets;
 }

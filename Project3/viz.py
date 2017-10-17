@@ -7,9 +7,9 @@ from matplotlib import animation
 # ========================= GLOBAL VARIABLES =========================
 file_directory = "../build-Project3/"   # Path to result data files
 
-planet_masses = {"sun": 2.0E+30, "earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
-    "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
-    "uranus": 8.8E+25, "neptune": 1.03E+26, "pluto": 1.31E+22, "moon": 7.34E+22}
+#planet_masses = {"sun": 2.0E+30, "earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
+#    "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
+#    "uranus": 8.8E+25, "neptune": 1.03E+26, "pluto": 1.31E+22, "moon": 7.34E+22}
 circle_sizes = {"sun": 0.1, "earth": 0.08, "jupiter": 0.4, "mars": 0.04, "venus": 0.1,
     "saturn": 0.2, "mercury": 0.02, "uranus": 0.1, "neptune": 0.12, "pluto": 0.014,
     "moon": 0.008}
@@ -105,7 +105,7 @@ def animate_trajectories(data):
     return anim
 
 plot_trajectories(data)
-anim = animate_trajectories(data)
+#anim = animate_trajectories(data)
 
 plt.show()
 
