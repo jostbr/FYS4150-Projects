@@ -56,19 +56,23 @@ int main(int argc, char* argv[]){
 //    sys.addPlanet(Uranus);
 //    sys.addPlanet(Neptune);
 
-    sys.centerofmass();
-
+    //Solve when we use centerofmass !=Sun
     //Find velocity of SUN that gives total momentum = 0
     sys.findSolarVelocity();
+    sys.giveSuninitalvelocity();
+    sys.centerofmass();
+
+    sys.Verlet_CenterofMass(Step, final_time, filename);
+
 
 
     //solving Planitary System with Euler
     //sys.Euler(Step, final_time, filename);
 
     //solving Planitary System with Velocity Verlet
-    sys.Verlet(Step, final_time, filename);
+    //sys.Verlet(Step, final_time, filename);
 
-    sys.centerofmass();
+
 
     //Need a destructor off vector allPlanets
 

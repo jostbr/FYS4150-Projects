@@ -73,3 +73,4 @@ double planet::Acceleration(planet newPlanet, int dim){
     double accel = -((fourpipi*(newPlanet.mass/sun_mass))/distance_cubed)*(r[dim] - newPlanet.r[dim]);
     return accel;
 }
+

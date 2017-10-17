@@ -50,6 +50,8 @@ class solver
 
     void centerofmass();
     void findSolarVelocity();
+    void giveSuninitalvelocity();
+    void Verlet_CenterofMass(double Step, double final_time, string filename);
 
 };
 

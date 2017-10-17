@@ -244,6 +244,90 @@ void solver::findSolarVelocity(){
 
 }
 
+void solver::giveSuninitalvelocity(){
+    for (int dim=0; dim<3; dim++){
+        allPlanets[0].v[dim]=sun_velocity[dim];
+    }
+}
+
+//Velocity Verlet
+void solver::Verlet_CenterofMass(double Step, double final_time, string filename){
+
+    double StepStep = Step*Step;
+    double t = 0.0;
+
+    ofstream* ofiles = new ofstream[allPlanets.size()];
+    for (int i = 0; i < allPlanets.size(); i++){
+            string filename = allPlanets[i].name;
+            filename.append(".txt");
+            ofiles[i].open(filename.c_str());
+            ofiles[i] << setiosflags(ios::showpoint | ios::uppercase);
+            ofiles[i] << "t x y z" << endl;   // Write header to file
+            write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
+    }
+
+//    //To calculate the inital kinetic energy of the system
+//    double total_inital_kin_energy = 0.0;
+//    //Starts loop at 1 to avoid including the Sun
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_inital_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+//                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+//    }
+
+//    double total_inital_pot_energy = 0.0;
+//    //Can not include the sun as this means deviding on r=0 --> inf
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_inital_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+//    }
+
+    while (t <= final_time){
+        computeAcceleration();
+        t += Step;
+
+        for (int i = 0; i < allPlanets.size(); i++){
+            for (int dim=0; dim < 3; dim++){
+                //if (i==0) continue;         //To keep the Sun fixed in Origo
+                //All the current stuff
+                allPlanets[i].r[dim] += allPlanets[i].v[dim]*Step + (StepStep/2.0)*allPlanets[i].a[dim];
+                //First part of next velocity
+                allPlanets[i].v[dim] += allPlanets[i].a[dim]*(Step/2.0);
+            }
+            computeAcceleration();
+            for (int dim=0; dim < 3; dim++){
+                //if (i==0) continue;         //To keep the Sun fixed in Origo
+                allPlanets[i].v[dim] += allPlanets[i].a[dim]*(Step/2.0);
+            }
+            write_row_to_file(i,t, allPlanets[i].r[0], allPlanets[i].r[1],allPlanets[i].r[2], &ofiles) ;
+        }
+    }
+    for (int i=0; i<allPlanets.size(); i++){
+        ofiles[i].close();
+    }
+
+//    double total_final_kin_energy = 0.0;
+//    //Starts loop at 1 to avoid including the Sun
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_final_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+//                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+//    }
+
+
+//    cout << "inital KE = " << total_inital_kin_energy << endl;
+//    cout << "final KE = " << total_final_kin_energy << endl;
+
+//    //To calculate the potential energy, it should be done with respect to the mass center and total mass?
+//    //Under, use sun
+//    double total_final_pot_energy = 0.0;
+//    //Can not include the sun as this means deviding on r=0 --> inf
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_final_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+//    }
+
+//    cout << "inital PE = " << total_inital_pot_energy << endl;
+//    cout << "final PE = " << total_final_pot_energy << endl;
+}
+
+
 
 
 void solver::write_row_to_file(int i, double t, double x, double y, double z, ofstream** ofiles){
