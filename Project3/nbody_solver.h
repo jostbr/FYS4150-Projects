@@ -6,6 +6,7 @@
 # include <fstream>
 # include <iomanip>
 # include <string>
+# include <cmath>
 # include <ctime>
 # include "planet.h"
 # include "constants.h"
@@ -21,6 +22,7 @@ class nbody_solver{
         void euler(double h, double t_max, int frame_write);
         void verlet(double h, double t_max, int frame_write);
         double compute_total_acc(planet subject, planet* objects, int dim) const;
+        void display_kinetic_energy(double time) const;
         int num_bodies;
         bool fixed_sun;
         planet* bodies;

@@ -63,7 +63,7 @@ void run_nasa(){
     //planets[9] = moon;
 
     /* User friendly units for parameters. */
-    double t_max = 50.0;          // Upper time in years
+    double t_max = 10.0;          // Upper time in years
     double t_write = 10.0;       // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 
@@ -87,7 +87,7 @@ void run_three_body(){
     planets[1] = jupiter;
 
     double t_max = 50.0;        // Upper time in years
-    double t_write = 10.0;     // Write to file every t_write days
+    double t_write = 4.0;     // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
@@ -103,11 +103,11 @@ void run_two_body(){
     int num_planets = 1;
     planet* planets = new planet[num_planets];
 
-    planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 1.1*cnst::pi, 0.0);
+    planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 2.0*cnst::pi, 0.0);
 
     planets[0] = earth;
 
-    double t_max = 100.0;        // Upper time in years
+    double t_max = 74.31;        // Upper time in years
     double t_write = 4.0;     // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 

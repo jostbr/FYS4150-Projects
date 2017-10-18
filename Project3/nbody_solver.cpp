@@ -19,15 +19,16 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     int frame_write = (int)(t_write/h + 0.5);        // Write to file interval
     int total_frames = (int)(t_max/t_write + 0.5);
 
-    std::cout << "\nSolving n-body problem with following parameters:" << std::endl;
-    std::cout << "=================================================" << std::endl;
+    std::cout << "\nSolving n-body problem with parameters:" << std::endl;
+    std::cout << "===========================================" << std::endl;
     std::cout << "Using algorithm :           " << method << std::endl;
     std::cout << "Number of bodies:           " << this->num_bodies << std::endl;
     std::cout << "Simulation time [years]:    " << t_max << std::endl;
     std::cout << "Time step, h [years]:       " << std::setprecision(2) << h << std::endl;
     std::cout << "Total time steps:           " << t_max/h << std::endl;
     std::cout << "Output every [time step]:   " << frame_write << std::endl;
-    std::cout << "Total output [time steps]:  " << total_frames << std::endl << std::endl;
+    std::cout << "Total output [time steps]:  " << total_frames << std::endl;
+    std::cout << "===========================================" << std::endl;
 
     /* If arguments passed would result in a "dangerously" large output files. */
     if (total_frames > 50000){
@@ -47,12 +48,16 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
         this->write_row_to_file(i, 0.0, this->bodies[i].r[0], this->bodies[i].r[1], this->bodies[i].r[2]);
     }
 
+    /* =========== Testing initial properties of the system. ============ */
     planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    double r_pre = bodies[0].compute_distance(sun);
-    std::cout << "Initial distance to sun: " << std::setprecision(8) << r_pre << std::endl;
+    double r_pre = this->bodies[0].compute_distance(sun);
+    this->display_kinetic_energy(0.0);
+
+
 
     clock_t t_0 = clock();  // Time the main computations
 
+    /* ========================== Executing main algorithms ========================== */
     if (method.compare("euler") == 0){
         this->euler(h, t_max, frame_write);
     }
@@ -69,9 +74,19 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
 
     clock_t t_1 = clock();      // Done timing
 
-    double r_post = bodies[0].compute_distance(sun);
-    std::cout << "Final distance to sun: " << std::setprecision(8) << r_post << std::endl;
+    /* =========== Testing final properties of the system. ============ */
+    this->display_kinetic_energy(t_max);
 
+    double r_post = this->bodies[0].compute_distance(sun);
+    if (fabs(r_post - r_pre) < 0.0001*r_pre){
+        std::cout << "\n\nOrbit was circular for " << this->bodies[0].name << std::endl;
+    }
+
+
+
+
+
+    /* Print out timing results for the main computations. */
     double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
     std::cout << "\nTime used by " << method << " method: " << std::setprecision(8)
               << time_used << " seconds\n" << std::endl;
@@ -197,6 +212,33 @@ double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim)
     }
 
     return total_accel;  // Divide by this->mass to get acceleration
+}
+
+/* Function for displaying the kinetic and potential energy of the nbody system. */
+void nbody_solver::display_kinetic_energy(double time) const {
+    planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    double K_E = 0.0;
+    double P_E = 0.0;
+
+    for (int i = 0; i < this->num_bodies; i++){
+        K_E += this->bodies[i].compute_kinetic_energy();
+
+        if (this->fixed_sun == true){
+            P_E += this->bodies[i].compute_potential_energy(sun);
+        }
+
+        for (int j = 0; j < this->num_bodies; j++){
+            if (i != j){
+                P_E += this->bodies[i].compute_potential_energy(this->bodies[j]);
+            }
+        }
+    }
+
+    std::cout << "\n\nEnergy [kg AU^2/yr^2] of the system at t = " << time << " years:" << std::endl;
+    std::cout << "---------------------------------------------------------" << std::endl;
+    std::cout << "Kinetic energy:      " << std::setprecision(8) << K_E << std::endl;
+    std::cout << "Potential energy:    " << std::setprecision(8) << P_E << std::endl;
+    std::cout << "Total energy:        " << std::setprecision(8) << K_E + P_E << std::endl;
 }
 
 /* Function that writes a row of values (t, x, y) to data member output file

@@ -23,6 +23,8 @@ class planet{
         planet(std::string id, double m, double x, double y, double z, double v_x, double v_y, double v_z);
         double compute_distance(planet planet_2) const;
         double compute_acc(planet planet_2, int dim) const;
+        double compute_kinetic_energy() const;
+        double compute_potential_energy(planet planet_2) const;
         ~planet();
 
         std::string name;

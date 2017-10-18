@@ -33,6 +33,15 @@ double planet::compute_acc(planet planet_2, int dim) const {
              /pow(this->compute_distance(planet_2), 3.0))*(this->r[dim] - planet_2.r[dim]);
 }
 
+/* Function that returns the kinetic energy of the planet K_E = 0.5*m*v^2. */
+double planet::compute_kinetic_energy() const {
+    return 0.5*this->mass*(pow(this->v[0], 2.0) + pow(this->v[1], 2.0) + pow(this->v[2], 2.0));
+}
+
+double planet::compute_potential_energy(planet planet_2) const {
+    return -cnst::G*this->mass*planet_2.mass/this->compute_distance(planet_2);
+}
+
 
 /* Destructor function. .*/
 planet::~planet(){
