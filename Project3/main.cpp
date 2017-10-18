@@ -115,7 +115,7 @@ void run_two_body(){
     h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets, true);      // Create solver object
-    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+    solar_system.solve(h, t_max, t_write, "verlet", true);      // Solve nbody-system using specified method
 
     delete[] planets;
 }

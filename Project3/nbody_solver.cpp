@@ -15,7 +15,7 @@ nbody_solver::nbody_solver(planet* bodies, int n, bool implicit_sun){
 
 /* Manager function that supervises the n-body solution process. This includes calling a solution
  * algorithm, making sure parameter arguments are reasonable and handling ouput data for each body. */
-void nbody_solver::solve(double h, double t_max, double t_write, std::string method){
+void nbody_solver::solve(double h, double t_max, double t_write, std::string method, bool diagnostics){
     int frame_write = (int)(t_write/h + 0.5);        // Write to file interval
     int total_frames = (int)(t_max/t_write + 0.5);
 
@@ -49,11 +49,15 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     }
 
     /* =========== Testing initial properties of the system. ============ */
-    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    double r_pre = this->bodies[0].compute_distance(sun);
-    this->display_kinetic_energy(0.0);
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);   // To check for circular orbits
+    double r_initial, r_final;  // Also to check for circular orbits
 
-
+    if (diagnostics == true){
+        std::cout << "\n\nRUNNING DIAGNOSTICS..." << std::endl;
+        std::cout << "============================================================" << std::endl;
+        r_initial = this->bodies[0].compute_distance(sun);
+        this->display_kinetic_energy(0.0);
+    }
 
     clock_t t_0 = clock();  // Time the main computations
 
@@ -75,21 +79,28 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     clock_t t_1 = clock();      // Done timing
 
     /* =========== Testing final properties of the system. ============ */
-    this->display_kinetic_energy(t_max);
+    if (diagnostics == true){
+        this->display_kinetic_energy(t_max);
 
-    double r_post = this->bodies[0].compute_distance(sun);
-    if (fabs(r_post - r_pre) < 0.0001*r_pre){
-        std::cout << "\n\nOrbit was circular for " << this->bodies[0].name << std::endl;
+        std::cout << "\nTesting " << bodies[0].name << " for circular orbits..." << std::endl;
+        r_final = this->bodies[0].compute_distance(sun);
+
+        if (fabs(r_final - r_initial) < 0.0001*r_initial){
+            std::cout << "Orbit was circular for " << this->bodies[0].name << std::endl;
+        }
+
+        else {
+            std::cout << "\n\nOrbit was NOT circular for " << this->bodies[0].name << std::endl;
+        }
+
+        std::cout << "============================================================" << std::endl;
     }
-
-
-
 
 
     /* Print out timing results for the main computations. */
     double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
     std::cout << "\nTime used by " << method << " method: " << std::setprecision(8)
-              << time_used << " seconds\n" << std::endl;
+              << time_used << " seconds.\n" << std::endl;
 
     for (int i = 0; i < this->num_bodies; i++){
         this->ofiles[i].close();   // Close all file objects after time loop
@@ -234,7 +245,7 @@ void nbody_solver::display_kinetic_energy(double time) const {
         }
     }
 
-    std::cout << "\n\nEnergy [kg AU^2/yr^2] of the system at t = " << time << " years:" << std::endl;
+    std::cout << "\nEnergy [kg AU^2/yr^2] of the system at t = " << time << " years:" << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
     std::cout << "Kinetic energy:      " << std::setprecision(8) << K_E << std::endl;
     std::cout << "Potential energy:    " << std::setprecision(8) << P_E << std::endl;
