@@ -9,14 +9,16 @@
 /* Function declarations of different setup cases using the model. */
 void run_nasa();
 void run_three_body();
+void run_three_body_full();
 void run_two_body();
 
 /* Main function calling the various cases. */
 int main(){
     //two_body();
 
-    run_two_body();
+    //run_two_body();
     //run_three_body();
+    run_three_body_full();
     //run_nasa();
 
     return 0;
@@ -28,7 +30,7 @@ void run_nasa(){
     planet* planets = new planet[num_planets];
 
     /* Initial conditions from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results). */
-    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    //planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     planet mercury("mercury", 3.3E+23, -3.875425742988118E-01, -6.951071548980541E-03, 3.498508347786951E-02,
                    -5.348515291899226E-03*365, -2.692079116485562E-02*365, -1.709103846484009E-03*365);
     planet venus("venus", 4.9E+24, -5.001758135917815E-01, 5.144600047038554E-01, 3.592022525524809E-02,
@@ -59,11 +61,13 @@ void run_nasa(){
     planets[6] = uranus;
     planets[7] = neptune;
     planets[8] = pluto;
+
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     planets[9] = sun;
     //planets[9] = moon;
 
     /* User friendly units for parameters. */
-    double t_max = 10.0;          // Upper time in years
+    double t_max = 74.31;          // Upper time in years
     double t_write = 10.0;       // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 
@@ -71,7 +75,7 @@ void run_nasa(){
     h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets);      // Create solver object
-    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+    solar_system.solve(h, t_max, t_write, "verlet", true);      // Solve nbody-system using specified method
 
     delete[] planets;
 }
@@ -80,20 +84,63 @@ void run_three_body(){
     int num_planets = 2;
     planet* planets = new planet[num_planets];
 
-    planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 2*cnst::pi, 0.0);
-    planet jupiter("jupiter", 1.9E+27, -5.20, 0.0, 0.0, 0.0, -0.9*cnst::pi, 0.0);
+    planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
+                 -3.769713222485607E-03*365, 1.677534834992509E-02*365,-1.916440316952949E-07*365);
+    planet jupiter("jupiter", 1.9E+27, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
+                   3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
 
     planets[0] = earth;
     planets[1] = jupiter;
 
     double t_max = 50.0;        // Upper time in years
-    double t_write = 4.0;     // Write to file every t_write days
+    double t_write = 1.0;     // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
     h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets, true);      // Create solver object
+    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+
+    delete[] planets;
+}
+
+void run_three_body_full(){
+    int num_planets = 3;
+    planet* planets = new planet[num_planets];
+
+    planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
+                 -3.769713222485607E-03*365, 1.677534834992509E-02*365,-1.916440316952949E-07*365);
+    planet jupiter("jupiter", 1.9E+27, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
+                   3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
+
+    double tot_mom_x = 0.0;
+    double tot_mom_y = 0.0;
+    double tot_mom_z = 0.0;
+    double v_x, v_y, v_z;
+
+    tot_mom_x = earth.mass*earth.v[0] + jupiter.mass*jupiter.v[0];
+    tot_mom_y = earth.mass*earth.v[1] + jupiter.mass*jupiter.v[1];
+    tot_mom_z = earth.mass*earth.v[2] + jupiter.mass*jupiter.v[2];
+
+    v_x = tot_mom_x/cnst::mass_sun;
+    v_y = tot_mom_y/cnst::mass_sun;
+    v_z = tot_mom_z/cnst::mass_sun;
+
+    planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, v_x, v_y, v_z);
+
+    planets[0] = earth;
+    planets[1] = jupiter;
+    planets[2] = sun;
+
+    double t_max = 500.0;        // Upper time in years
+    double t_write = 10.0;     // Write to file every t_write days
+    double h = 1.0/24.0;         // Step size in days
+
+    t_write = t_write/365.0;    // Convert to years before passing argument
+    h = h/365.0;                // Convert to years before passing argument
+
+    nbody_solver solar_system(planets, num_planets);      // Create solver object
     solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
 
     delete[] planets;
@@ -107,8 +154,8 @@ void run_two_body(){
 
     planets[0] = earth;
 
-    double t_max = 74.31;        // Upper time in years
-    double t_write = 4.0;     // Write to file every t_write days
+    double t_max = 50.0;        // Upper time in years
+    double t_write = 1.0;     // Write to file every t_write days
     double h = 1.0/24.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument

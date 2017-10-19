@@ -239,7 +239,7 @@ void nbody_solver::display_kinetic_energy(double time) const {
         }
 
         for (int j = 0; j < this->num_bodies; j++){
-            if (i != j){
+            if (j > i){
                 P_E += this->bodies[i].compute_potential_energy(this->bodies[j]);
             }
         }
