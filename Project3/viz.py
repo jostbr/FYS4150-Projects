@@ -3,6 +3,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from mpl_toolkits.mplot3d import Axes3D
 
 # ========================= GLOBAL VARIABLES =========================
 file_directory = "../build-Project3/"   # Path to result data files
@@ -31,7 +32,7 @@ some_planet = list(data.keys())[0]  # When needing to access an arbitrary elemen
 # ====================================================================
 
 # Function top plot trajectories of all computed planets.
-def plot_trajectories(data):
+def plot_trajectories_2D(data):
     plt.style.use("ggplot")
     fig, ax = plt.subplots(figsize = (8, 8))
     ax.set_aspect("equal")
@@ -45,11 +46,41 @@ def plot_trajectories(data):
 
     ax.text(0.03, 0.03, "Sun")
     ax.set_title("Planet trajectories over {:.2f} years".format(data[some_planet][-1, 0]),
-        fontname = "serif", fontsize = 18)
+        fontname = "serif", fontsize = 20)
     ax.set_xlabel("x [AU]", fontname = "serif", fontsize = 12)
     ax.set_ylabel("y [AU]", fontname = "serif", fontsize = 12)
     ax.legend()
     fig.tight_layout()
+
+def plot_trajectories_3D(data):
+    #plt.style.use("default")
+    fig = plt.figure(figsize = (11, 7))
+    ax = Axes3D(fig)
+
+    end_time_index = -1
+
+    u, v = np.mgrid[0:2*np.pi:100j, 0:np.pi:100j]
+    x = 0.05*np.cos(u)*np.sin(v)
+    y = 0.05*np.sin(u)*np.sin(v)
+    z = 0.05*np.cos(v)
+
+    # Plot the surface
+    ax.plot_surface(x, y, z, color = "y")
+    ax.text(0.05, 0.05, 0.05, "Sun")
+
+    for planet in data.keys():
+        ax.plot(data[planet][:end_time_index, 1], data[planet][:end_time_index, 2],
+            data[planet][:end_time_index, 3], color = circle_colors[planet], label = planet.title())
+
+    ax.set_zlim(-1, 1)
+
+
+    ax.set_title("Planet trajectories over {:.2f} years".format(data[some_planet][end_time_index, 0]),
+        fontname = "serif", fontsize = 18)
+    ax.set_xlabel("x [AU]", fontname = "serif", fontsize = 16)
+    ax.set_ylabel("y [AU]", fontname = "serif", fontsize = 16)
+    ax.set_zlabel("z [AU]", fontname = "serif", fontsize = 16)
+    ax.legend()
 
 # Function to animate trajectories of all computed planets
 def animate_trajectories(data):
@@ -119,8 +150,9 @@ def animate_trajectories(data):
 
     return anim
 
-#plot_trajectories(data)
-anim = animate_trajectories(data)
+plot_trajectories_2D(data)
+#plot_trajectories_3D(data)
+#anim = animate_trajectories(data)
 
 plt.show()
 

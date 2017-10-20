@@ -35,7 +35,7 @@ int main(){
 
         planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
                      -3.769713222485607E-03*365, 1.677534834992509E-02*365,-1.916440316952949E-07*365);
-        planet jupiter("jupiter", 1.9E+27, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
+        planet jupiter("jupiter", 1.9E+28, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
                        3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
 
         planets[0] = earth;
@@ -75,13 +75,13 @@ int main(){
 
     /* Run a simulation of the entire solar system with realistic initial conditions from JPL, NASA. */
     else if (scenario.compare("NASA") == 0){
-        num_planets = 10;
-        fixed_sun = false;
+        num_planets = 9;
+        fixed_sun = true;
         planets = new planet[num_planets];
 
         /* Initial conditions at 05.10.2017-00:00:00, from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results).
          * The velocities are multiplied by 365 day/yr in order to get units from AU/day to AU/yr. */
-        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         planet mercury("mercury", 3.3E+23, -3.875425742988118E-01, -6.951071548980541E-03, 3.498508347786951E-02,
                        -5.348515291899226E-03*365, -2.692079116485562E-02*365, -1.709103846484009E-03*365);
         planet venus("venus", 4.9E+24, -5.001758135917815E-01, 5.144600047038554E-01, 3.592022525524809E-02,
@@ -112,18 +112,18 @@ int main(){
         planets[6] = uranus;
         planets[7] = neptune;
         planets[8] = pluto;
-        planets[9] = sun;
+        //planets[9] = sun;
     }
 
-    double t_max = 50.0;        // Upper time in years
-    double t_write = 20.0;     // Write to file every t_write days
-    double h = 1.0/24.0;         // Step size in days
+    double t_max = 500.0;        // Upper time in years
+    double t_write = 4.0;     // Write to file every t_write days
+    double h = 1.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
     h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets, fixed_sun);      // Create solver object
-    solar_system.solve(h, t_max, t_write, "verlet", true);      // Solve nbody-system using specified method
+    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
 
     delete[] planets;
 

@@ -15,7 +15,7 @@ nbody_solver::nbody_solver(planet* bodies, int n, bool implicit_sun){
 
 /* Manager function that supervises the n-body solution process. This includes calling a solution
  * algorithm, making sure parameter arguments are reasonable and handling ouput data for each body. */
-void nbody_solver::solve(double h, double t_max, double t_write, std::string method, bool diagnostics){
+void nbody_solver::solve(double h, double t_max, double t_write, std::string method){
     int frame_write = (int)(t_write/h + 0.5);        // Write to file interval
     int total_frames = (int)(t_max/t_write + 0.5);
 
@@ -28,7 +28,7 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     std::cout << "Total time steps:           " << t_max/h << std::endl;
     std::cout << "Output every [time step]:   " << frame_write << std::endl;
     std::cout << "Total output [time steps]:  " << total_frames << std::endl;
-    std::cout << "===========================================" << std::endl;
+    std::cout << "===========================================\n" << std::endl;
 
     /* If arguments passed would result in a "dangerously" large output files. */
     if (total_frames > 50000){
@@ -52,12 +52,9 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);   // To check for circular orbits
     double r_initial, r_final;  // Also to check for circular orbits
 
-    if (diagnostics == true){
-        std::cout << "\n\nRUNNING DIAGNOSTICS..." << std::endl;
-        std::cout << "============================================================" << std::endl;
-        r_initial = this->bodies[0].compute_distance(sun);
-        this->display_kinetic_energy(0.0);
-    }
+    r_initial = this->bodies[0].compute_distance(sun);
+    this->compute_energy(0.0);
+    this->compute_angular_momentum(0.0);
 
     clock_t t_0 = clock();  // Time the main computations
 
@@ -79,23 +76,19 @@ void nbody_solver::solve(double h, double t_max, double t_write, std::string met
     clock_t t_1 = clock();      // Done timing
 
     /* =========== Testing final properties of the system. ============ */
-    if (diagnostics == true){
-        this->display_kinetic_energy(t_max);
+    std::cout << std::endl << std::endl;
+    this->compute_energy(t_max);
+    this->compute_angular_momentum(t_max);
+    std::cout << "\nTesting " << bodies[0].name << " for circular orbits..." << std::endl;
+    r_final = this->bodies[0].compute_distance(sun);
 
-        std::cout << "\nTesting " << bodies[0].name << " for circular orbits..." << std::endl;
-        r_final = this->bodies[0].compute_distance(sun);
-
-        if (fabs(r_final - r_initial) < 0.0001*r_initial){
-            std::cout << "Orbit was circular for " << this->bodies[0].name << std::endl;
-        }
-
-        else {
-            std::cout << "\n\nOrbit was NOT circular for " << this->bodies[0].name << std::endl;
-        }
-
-        std::cout << "============================================================" << std::endl;
+    if (fabs(r_final - r_initial) < 0.0001*r_initial){
+        std::cout << "Orbit was circular for " << this->bodies[0].name << std::endl;
     }
 
+    else {
+        std::cout << "Orbit was NOT circular for " << this->bodies[0].name << std::endl;
+    }
 
     /* Print out timing results for the main computations. */
     double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
@@ -226,7 +219,7 @@ double nbody_solver::compute_total_acc(planet subject, planet* objects, int dim)
 }
 
 /* Function for displaying the kinetic and potential energy of the nbody system. */
-void nbody_solver::display_kinetic_energy(double time) const {
+void nbody_solver::compute_energy(double time) const {
     planet sun("sun", cnst::mass_sun, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     double K_E = 0.0;
     double P_E = 0.0;
@@ -250,6 +243,32 @@ void nbody_solver::display_kinetic_energy(double time) const {
     std::cout << "Kinetic energy:      " << std::setprecision(8) << K_E << std::endl;
     std::cout << "Potential energy:    " << std::setprecision(8) << P_E << std::endl;
     std::cout << "Total energy:        " << std::setprecision(8) << K_E + P_E << std::endl;
+}
+
+/* Function that computes the angular momentum L = m*cross(r, v) of the system
+ * this->bodies at time time and prints out the resulting vecotr L to standard out. */
+void nbody_solver::compute_angular_momentum(double time) const {
+    double m, x, y, z, v_x, v_y, v_z;
+    double l_x = 0.0, l_y = 0.0, l_z = 0.0;
+
+    for (int i = 0; i < this->num_bodies; i++){
+        x = this->bodies[i].r[0];
+        y = this->bodies[i].r[1];
+        z = this->bodies[i].r[2];
+        v_x = this->bodies[i].v[0];
+        v_y = this->bodies[i].v[1];
+        v_z = this->bodies[i].v[2];
+        m = this->bodies[i].mass;
+
+        l_x += m*(y*v_z - z*v_y);   // x-component of cross product
+        l_y += m*(z*v_x - x*v_z);   // y-component of cross product
+        l_z += m*(x*v_y - y*v_x);   // z-component of cross product
+    }
+
+
+    std::cout << "\nAngular momentum [kg AU^2/yr] of the system at t = " << time << " years:" << std::endl;
+    std::cout << "---------------------------------------------------------" << std::endl;
+    std::cout << "L-vector = (" << std::setprecision(8) << l_x << ", " << l_y<< ", " << l_z << ")" << std::endl;
 }
 
 /* Function that writes a row of values (t, x, y) to data member output file
