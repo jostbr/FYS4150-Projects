@@ -15,7 +15,7 @@ void run_two_body();
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "NASA";
+    std::string scenario = "2Body";
     planet* planets;
     int num_planets;
     bool fixed_sun;
