@@ -58,13 +58,13 @@ void solver::Euler(double Step, double final_time, string filename)
             write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
     }
 
-    double inital_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
-                            + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
+//    double inital_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
+//                            + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
 
-    double inital_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
+//    double inital_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
 
-    cout << "inital KE = " << inital_kin_energy_Earth << endl;
-    cout << "inital PE = " << inital_pot_energy_Earth << endl;
+//    cout << "inital KE = " << inital_kin_energy_Earth << endl;
+//    cout << "inital PE = " << inital_pot_energy_Earth << endl;
 
     while (t <= final_time){
         computeAcceleration();
@@ -78,21 +78,21 @@ void solver::Euler(double Step, double final_time, string filename)
         }
     }
 
-    double final_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
-                               + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
-    double final_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
+//    double final_kin_energy_Earth = 0.5*allPlanets[1].mass*(allPlanets[1].v[0]*allPlanets[1].v[0]
+//                               + allPlanets[1].v[1]*allPlanets[1].v[1] + allPlanets[1].v[2]*allPlanets[1].v[2]);
+//    double final_pot_energy_Earth = G_const*((allPlanets[0].mass*allPlanets[1].mass)/allPlanets[0].getDistance(allPlanets[1]));
 
-    cout << "final KE = " << final_kin_energy_Earth << endl;
-    cout << "final PE = " << final_pot_energy_Earth << endl;
+//    cout << "final KE = " << final_kin_energy_Earth << endl;
+//    cout << "final PE = " << final_pot_energy_Earth << endl;
 
-    cout << "Difference Kin energy from inital to final = " << inital_kin_energy_Earth - final_kin_energy_Earth << endl;
-    cout << "Difference Pot energy from inital to final = " << inital_pot_energy_Earth - final_pot_energy_Earth << endl;
+//    cout << "Difference Kin energy from inital to final = " << inital_kin_energy_Earth - final_kin_energy_Earth << endl;
+//    cout << "Difference Pot energy from inital to final = " << inital_pot_energy_Earth - final_pot_energy_Earth << endl;
 
-    double inital_tot_energy_Earth = inital_kin_energy_Earth + inital_pot_energy_Earth;
-    double final_tot_energy_Earth = final_kin_energy_Earth + final_pot_energy_Earth;
+//    double inital_tot_energy_Earth = inital_kin_energy_Earth + inital_pot_energy_Earth;
+//    double final_tot_energy_Earth = final_kin_energy_Earth + final_pot_energy_Earth;
 
-    cout << "inital TOTAL energy = " << inital_tot_energy_Earth << endl;
-    cout << "Difference TOTAL energy from inital to final = " << inital_tot_energy_Earth - final_tot_energy_Earth << endl;
+//    cout << "inital TOTAL energy = " << inital_tot_energy_Earth << endl;
+//    cout << "Difference TOTAL energy from inital to final = " << inital_tot_energy_Earth - final_tot_energy_Earth << endl;
 
     for (int i=0; i<allPlanets.size(); i++){
         ofiles[i].close();
@@ -104,9 +104,6 @@ void solver::Verlet(double Step, double final_time, string filename){
 
     double StepStep = Step*Step;
     double t = 0.0;
-//    double r_qubed_i = 0.0;
-//    double r_qubed_ii = 0.0;
-//    double rrr = 0.0;
 
     ofstream* ofiles = new ofstream[allPlanets.size()];
     for (int i = 0; i < allPlanets.size(); i++){
@@ -118,19 +115,19 @@ void solver::Verlet(double Step, double final_time, string filename){
             write_row_to_file(i, t, allPlanets[i].r[0], allPlanets[i].r[1], allPlanets[i].r[2], &ofiles);
     }
 
-    //To calculate the inital kinetic energy of the system
-    double total_inital_kin_energy = 0.0;
-    //Starts loop at 1 to avoid including the Sun
-    for (int j=1; j < allPlanets.size(); j++){
-        total_inital_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
-                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
-    }
+//    //To calculate the inital kinetic energy of the system
+//    double total_inital_kin_energy = 0.0;
+//    //Starts loop at 1 to avoid including the Sun
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_inital_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+//                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+//    }
 
-    double total_inital_pot_energy = 0.0;
-    //Can not include the sun as this means deviding on r=0 --> inf
-    for (int j=1; j < allPlanets.size(); j++){
-        total_inital_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
-    }
+//    double total_inital_pot_energy = 0.0;
+//    //Can not include the sun as this means deviding on r=0 --> inf
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_inital_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+//    }
 
     while (t <= final_time){
         computeAcceleration();
@@ -156,27 +153,30 @@ void solver::Verlet(double Step, double final_time, string filename){
         ofiles[i].close();
     }
 
-    double total_final_kin_energy = 0.0;
-    //Starts loop at 1 to avoid including the Sun
-    for (int j=1; j < allPlanets.size(); j++){
-        total_final_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
-                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
-    }
+//    double total_final_kin_energy = 0.0;
+//    //Starts loop at 1 to avoid including the Sun
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_final_kin_energy +=  0.5*allPlanets[j].mass*(allPlanets[j].v[0]*allPlanets[j].v[0]
+//                + allPlanets[j].v[1]*allPlanets[j].v[1] + allPlanets[j].v[2]*allPlanets[j].v[2]);
+//    }
 
 
-    cout << "inital KE = " << total_inital_kin_energy << endl;
-    cout << "final KE = " << total_final_kin_energy << endl;
+//    cout << "inital KE = " << total_inital_kin_energy << endl;
+//    cout << "final KE = " << total_final_kin_energy << endl;
 
-    //To calculate the potential energy, it should be done with respect to the mass center and total mass?
-    //Under, use sun
-    double total_final_pot_energy = 0.0;
-    //Can not include the sun as this means deviding on r=0 --> inf
-    for (int j=1; j < allPlanets.size(); j++){
-        total_final_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
-    }
+//    //To calculate the potential energy, it should be done with respect to the mass center and total mass?
+//    //Under, use sun
+//    double total_final_pot_energy = 0.0;
+//    //Can not include the sun as this means deviding on r=0 --> inf
+//    for (int j=1; j < allPlanets.size(); j++){
+//        total_final_pot_energy +=  G_const*((allPlanets[0].mass*allPlanets[j].mass)/allPlanets[j].getDistance(allPlanets[0]));
+//    }
 
-    cout << "inital PE = " << total_inital_pot_energy << endl;
-    cout << "final PE = " << total_final_pot_energy << endl;
+//    cout << "inital PE = " << total_inital_pot_energy << endl;
+//    cout << "final PE = " << total_final_pot_energy << endl;
+
+//    cout << "inital total energy = " << total_inital_kin_energy+total_inital_pot_energy << endl;
+//    cout << "final total energy = " << total_final_kin_energy+total_final_pot_energy << endl;
 }
 
 
@@ -194,34 +194,11 @@ void solver::centerofmass(){
     r_centerofmass[1]= y_comp/total_mass;
     r_centerofmass[2]= z_comp/total_mass;
 
-    cout << "center off mass in x_dir= " << r_centerofmass[1] << endl;
+    cout << "center off mass in x_dir= " << r_centerofmass[0] << endl;
+    cout << "center off mass in y_dir= " << r_centerofmass[1] << endl;
+    cout << "center off mass in z_dir= " << r_centerofmass[2] << endl;
 }
 
-
-//To find total momentum of system
-//Totalmomentum without the sun
-//double solver::totMomNonSun(){
-//    double tot_mom = 0.0;
-//    for (int i=1; i< allPlanets.size(); i++){
-//        double planet_v = 0.0;
-//        for (int dim=0; dim < 3; dim++){
-//            planet_v += fabs(allPlanets[i].v[dim]);
-//        }
-//        tot_mom += allPlanets[i].mass*planet_v;
-
-//    }
-//    cout << "Tot Mom NO SUN = " << tot_mom << endl;
-//    return tot_mom;
-//}
-
-
-//double solver::findSolarVelocity(double tot_mom){
-//    //Find velocity of SUN that gives total momentum = 0
-//    //double tot_mom = sys.totMomNonSun();
-//    double sun_velocity = tot_mom/ allPlanets[0].mass;
-//    //cout << "Sun velocity abs value that make total momentum equal zero = " << sun_velocity << endl;
-//    return sun_velocity;
-//}
 
 void solver::findSolarVelocity(){
     double tot_mom_x = 0.0;
@@ -241,6 +218,8 @@ void solver::findSolarVelocity(){
 
     //return sun_velocity;
     cout << "Sun velocity in x dir that make total momentum equal zero = " << sun_velocity[0] << endl;
+    cout << "Sun velocity in y dir that make total momentum equal zero = " << sun_velocity[1] << endl;
+    cout << "Sun velocity in z dir that make total momentum equal zero = " << sun_velocity[2] << endl;
 
 }
 
@@ -250,7 +229,7 @@ void solver::giveSuninitalvelocity(){
     }
 }
 
-//Velocity Verlet
+//Velocity Verlet -Treates Sun as a regular planet - works for both Sun v_i= 0 and v_i!=0, but sun will move
 void solver::Verlet_CenterofMass(double Step, double final_time, string filename){
 
     double StepStep = Step*Step;
