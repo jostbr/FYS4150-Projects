@@ -268,7 +268,7 @@ void nbody_solver::compute_angular_momentum(double time) const {
 
     std::cout << "\nAngular momentum [kg AU^2/yr] of the system at t = " << time << " years:" << std::endl;
     std::cout << "---------------------------------------------------------" << std::endl;
-    std::cout << "L-vector = (" << std::setprecision(8) << l_x << ", " << l_y<< ", " << l_z << ")" << std::endl;
+    std::cout << "L-vector = (" << std::setprecision(8) << l_x << ", " << l_y << ", " << l_z << ")" << std::endl;
 }
 
 /* Function that writes a row of values (t, x, y) to data member output file

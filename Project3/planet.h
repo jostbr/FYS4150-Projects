@@ -25,6 +25,7 @@ class planet{
         double compute_acc(planet planet_2, int dim) const;
         double compute_kinetic_energy() const;
         double compute_potential_energy(planet planet_2) const;
+        double compute_acc_mercury_GR(planet planet_2, int dim) const;
         ~planet();
 
         std::string name;

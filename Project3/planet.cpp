@@ -30,7 +30,21 @@ double planet::compute_distance(planet planet_2) const {
  * this->planet due to force acting on this->planet from planet_2 in the dim-direction. */
 double planet::compute_acc(planet planet_2, int dim) const {
     return -((cnst::four_pi_sq*(planet_2.mass/cnst::mass_sun))
-             /pow(this->compute_distance(planet_2), 3.0))*(this->r[dim] - planet_2.r[dim]);
+             /pow(this->compute_distance(planet_2), 3.5))*(this->r[dim] - planet_2.r[dim]);
+}
+
+/* Function that, through calls to this->compute_distance, computes acceleration for
+ * mercury taking general relativity effects into account from planet_2 in dim-direction. */
+double planet::compute_acc_mercury_GR(planet planet_2, int dim) const {
+    double l_x = (this->r[1]*this->v[2] - this->r[2]*this->v[1]);
+    double l_y = (this->r[2]*this->v[0] - this->r[0]*this->v[2]);
+    double l_z = (this->r[0]*this->v[1] - this->r[1]*this->v[0]);
+    double l = sqrt(l_x*l_x + l_y*l_y + l_z*l_z);
+    double r = this->compute_distance(planet_2);
+
+    double acc = -(((cnst::four_pi_sq*(planet_2.mass/cnst::mass_sun))/pow(r, 3.0))*
+                   (this->r[dim] - planet_2.r[dim]))*(1.0 + 3.0*l*l/(r*r*cnst::c*cnst::c));
+    return acc;
 }
 
 /* Function that returns the kinetic energy of the planet K_E = 0.5*m*v^2. */

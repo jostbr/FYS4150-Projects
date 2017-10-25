@@ -42,9 +42,10 @@ def plot_trajectories_2D(data):
         ax.add_patch(sun)
 
     for planet in data.keys():
-        ax.plot(data[planet][:, 1], data[planet][:, 2], label = planet.title())
+        ax.plot(data[planet][:, 1], data[planet][:, 2], color = circle_colors[planet],
+            label = planet.title())
 
-    ax.text(0.03, 0.03, "Sun")
+    #ax.text(0.03, 0.03, "Sun")
     ax.set_title("Planet trajectories over {:.2f} years".format(data[some_planet][-1, 0]),
         fontname = "serif", fontsize = 20)
     ax.set_xlabel("x [AU]", fontname = "serif", fontsize = 12)
@@ -65,14 +66,16 @@ def plot_trajectories_3D(data):
     z = 0.05*np.cos(v)
 
     # Plot the surface
-    ax.plot_surface(x, y, z, color = "y")
-    ax.text(0.05, 0.05, 0.05, "Sun")
+    #ax.plot_surface(x, y, z, color = "y")
+    #ax.text(0.05, 0.05, 0.05, "Sun")
 
     for planet in data.keys():
         ax.plot(data[planet][:end_time_index, 1], data[planet][:end_time_index, 2],
             data[planet][:end_time_index, 3], color = circle_colors[planet], label = planet.title())
 
-    ax.set_zlim(-1, 1)
+    #ax.set_zlim(-1, 1)
+    #ax.set_xlim(-1,1)
+    #ax.set_ylim(-1,1)
 
 
     ax.set_title("Planet trajectories over {:.2f} years".format(data[some_planet][end_time_index, 0]),
@@ -150,9 +153,9 @@ def animate_trajectories(data):
 
     return anim
 
-plot_trajectories_2D(data)
+#plot_trajectories_2D(data)
 #plot_trajectories_3D(data)
-#anim = animate_trajectories(data)
+anim = animate_trajectories(data)
 
 plt.show()
 

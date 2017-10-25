@@ -75,13 +75,12 @@ int main(){
 
     /* Run a simulation of the entire solar system with realistic initial conditions from JPL, NASA. */
     else if (scenario.compare("NASA") == 0){
-        num_planets = 9;
-        fixed_sun = true;
+        num_planets = 10;
+        fixed_sun = false;
         planets = new planet[num_planets];
 
         /* Initial conditions at 05.10.2017-00:00:00, from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results).
          * The velocities are multiplied by 365 day/yr in order to get units from AU/day to AU/yr. */
-        //planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         planet mercury("mercury", 3.3E+23, -3.875425742988118E-01, -6.951071548980541E-03, 3.498508347786951E-02,
                        -5.348515291899226E-03*365, -2.692079116485562E-02*365, -1.709103846484009E-03*365);
         planet venus("venus", 4.9E+24, -5.001758135917815E-01, 5.144600047038554E-01, 3.592022525524809E-02,
@@ -98,7 +97,7 @@ int main(){
                       -1.755487390163406E-03*365, 3.342318358663112E-03*365, 3.502497227464970E-05*365);
         planet neptune("neptune", 1.03E+26, 2.860068501993164E+01, -8.863219015882104E+00, -4.766480065556578E-01,
                        9.131556899736526E-04*365, 3.011597020226301E-03*365, -8.356560349675644E-05*365);
-        planet pluto("pluto", 1.21E+22, 1.050819470206781E+01, -3.172223975950871E+01, 3.537382102084780E-01,
+        planet pluto("pluto", 1.31E+22, 1.050819470206781E+01, -3.172223975950871E+01, 3.537382102084780E-01,
                      3.044230750828683E-03*365, 3.252349625349516E-04*365, -9.049498787998516E-04*365);
         //planet moon("moon", 7.34E+22, 9.817536677155551E-01, 2.029568450722727E-01, -1.516108910221079E-04,
         //            -3.818699428076255E-03, 1.737747002307549E-02, -4.069751782258844E-05);
@@ -112,12 +111,51 @@ int main(){
         planets[6] = uranus;
         planets[7] = neptune;
         planets[8] = pluto;
-        //planets[9] = sun;
+
+        double tot_mom_x = 0.0;
+        double tot_mom_y = 0.0;
+        double tot_mom_z = 0.0;
+        double v_x, v_y, v_z;
+
+        for (int i = 0; i < num_planets-1; i++){
+            tot_mom_x += planets[i].mass*planets[i].v[0];
+            tot_mom_y += planets[i].mass*planets[i].v[1];
+            tot_mom_z += planets[i].mass*planets[i].v[2];
+        }
+
+        v_x = tot_mom_x/cnst::mass_sun;
+        v_y = tot_mom_y/cnst::mass_sun;
+        v_z = tot_mom_z/cnst::mass_sun;
+        std::cout << std::setprecision(8) << v_x << "\n";
+        std::cout << std::setprecision(8) << v_y << "\n";
+        std::cout << std::setprecision(8) << v_z << "\n";
+
+        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, -v_x, -v_y, -v_z);
+        planets[9] = sun;
+
+        double M = 0.0;
+        double r_x = 0.0, r_y = 0.0, r_z = 0.0;
+
+        for (int i = 0; i < num_planets; i++){
+            M += planets[i].mass;
+            r_x += planets[i].mass*planets[i].r[0];
+            r_y += planets[i].mass*planets[i].r[1];
+            r_z += planets[i].mass*planets[i].r[2];
+        }
+
+        r_x = r_x/M;
+        r_y = r_y/M;
+        r_z = r_z/M;
+
+        std::cout << std::setprecision(8) << r_x << "\n";
+        std::cout << std::setprecision(8) << r_y << "\n";
+        std::cout << std::setprecision(8) << r_z << "\n";
+
     }
 
-    double t_max = 500.0;        // Upper time in years
-    double t_write = 4.0;     // Write to file every t_write days
-    double h = 1.0;         // Step size in days
+    double t_max = 50000.0;        // Upper time in years
+    double t_write = 400.0;     // Write to file every t_write days
+    double h = 0.1;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
     h = h/365.0;                // Convert to years before passing argument
