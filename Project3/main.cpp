@@ -153,8 +153,8 @@ int main(){
 
     }
 
-    double t_max = 50000.0;        // Upper time in years
-    double t_write = 400.0;     // Write to file every t_write days
+    double t_max = 100.0;        // Upper time in years
+    double t_write = 4.0;     // Write to file every t_write days
     double h = 0.1;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument

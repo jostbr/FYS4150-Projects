@@ -30,7 +30,7 @@ double planet::compute_distance(planet planet_2) const {
  * this->planet due to force acting on this->planet from planet_2 in the dim-direction. */
 double planet::compute_acc(planet planet_2, int dim) const {
     return -((cnst::four_pi_sq*(planet_2.mass/cnst::mass_sun))
-             /pow(this->compute_distance(planet_2), 3.5))*(this->r[dim] - planet_2.r[dim]);
+             /pow(this->compute_distance(planet_2), 3.0))*(this->r[dim] - planet_2.r[dim]);
 }
 
 /* Function that, through calls to this->compute_distance, computes acceleration for

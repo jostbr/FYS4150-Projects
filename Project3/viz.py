@@ -51,7 +51,6 @@ def plot_trajectories_2D(data):
     ax.set_xlabel("x [AU]", fontname = "serif", fontsize = 12)
     ax.set_ylabel("y [AU]", fontname = "serif", fontsize = 12)
     ax.legend()
-    fig.tight_layout()
 
 def plot_trajectories_3D(data):
     #plt.style.use("default")
@@ -153,9 +152,9 @@ def animate_trajectories(data):
 
     return anim
 
-#plot_trajectories_2D(data)
+plot_trajectories_2D(data)
 #plot_trajectories_3D(data)
-anim = animate_trajectories(data)
+#anim = animate_trajectories(data)
 
 plt.show()
 
