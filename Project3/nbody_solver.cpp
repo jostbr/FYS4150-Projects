@@ -271,6 +271,27 @@ void nbody_solver::compute_angular_momentum(double time) const {
     std::cout << "L-vector = (" << std::setprecision(8) << l_x << ", " << l_y << ", " << l_z << ")" << std::endl;
 }
 
+/* Function that displays the center of mass of the system. */
+void nbody_solver::compute_center_mass() const {
+    double M = 0.0;
+    double r_x = 0.0, r_y = 0.0, r_z = 0.0;
+
+    for (int i = 0; i < this->num_bodies; i++){
+        M += this->bodies[i].mass;
+        r_x += this->bodies[i].mass*this->bodies[i].r[0];
+        r_y += this->bodies[i].mass*this->bodies[i].r[1];
+        r_z += this->bodies[i].mass*this->bodies[i].r[2];
+    }
+
+    r_x = r_x/M;
+    r_y = r_y/M;
+    r_z = r_z/M;
+
+    std::cout << "Center mass x: " << std::setprecision(8) << r_x << std::endl;
+    std::cout << "Center mass y: " << std::setprecision(8) << r_y << std::endl;
+    std::cout << "Center mass z: " << std::setprecision(8) << r_z << std::endl;
+}
+
 /* Function that writes a row of values (t, x, y) to data member output file
  * ofiles[file_index] where file_index is unique per body i the simulation. */
 void nbody_solver::write_row_to_file(int file_index, double t, double x, double y, double z){

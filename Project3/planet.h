@@ -13,9 +13,11 @@
  * - v[2] [double] --> Velocity (in AU/yr) in x and y
  * - a[2] [double] --> Acceleration (in AU/yr^2) in x and y
  *
- * - compute_distance()  [double] --> Returns distance between wo planets
- * - compute_acc()       [double] --> Returns acceleration to to force from another planet
- * - compute_total_acc() [double] --> Returns net acceleration due to forces from several planets. */
+ * - compute_distance()         [double] --> Returns distance between wo planets
+ * - compute_acc()              [double] --> Returns acceleration to to force from another planet
+ * - compute_kinetic_energy()   [double] --> Returns kinetic energy of the planet
+ * - compute_potential_energy() [double] --> Returns potential energy of a planet relative to another planet
+ * - compute_acc_mercury_GR()   [double] --> Returns acceleration of planet taking GR effects into account */
 
 class planet{
     public:

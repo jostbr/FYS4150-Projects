@@ -11,11 +11,12 @@ void run_nasa();
 void run_three_body();
 void run_three_body_full();
 void run_two_body();
+void compute_sun_initial_velocity(planet*, double, double&, double&, double&);
 
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "2Body";
+    std::string scenario = "3BodyFull";
     planet* planets;
     int num_planets;
     bool fixed_sun;
@@ -35,7 +36,7 @@ int main(){
 
         planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
                      -3.769713222485607E-03*365, 1.677534834992509E-02*365,-1.916440316952949E-07*365);
-        planet jupiter("jupiter", 1.9E+28, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
+        planet jupiter("jupiter", 1.9E+30, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
                        3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
 
         planets[0] = earth;
@@ -53,23 +54,13 @@ int main(){
         planet jupiter("jupiter", 1.9E+27, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
                        3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
 
-        double tot_mom_x = 0.0;
-        double tot_mom_y = 0.0;
-        double tot_mom_z = 0.0;
-        double v_x, v_y, v_z;
-
-        tot_mom_x = earth.mass*earth.v[0] + jupiter.mass*jupiter.v[0];
-        tot_mom_y = earth.mass*earth.v[1] + jupiter.mass*jupiter.v[1];
-        tot_mom_z = earth.mass*earth.v[2] + jupiter.mass*jupiter.v[2];
-
-        v_x = tot_mom_x/cnst::mass_sun;
-        v_y = tot_mom_y/cnst::mass_sun;
-        v_z = tot_mom_z/cnst::mass_sun;
-
-        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, v_x, v_y, v_z);
-
         planets[0] = earth;
         planets[1] = jupiter;
+
+        double v_x, v_y, v_z;
+        compute_sun_initial_velocity(planets, num_planets, v_x, v_y, v_z);
+
+        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, v_x, v_y, v_z);
         planets[2] = sun;
     }
 
@@ -112,45 +103,11 @@ int main(){
         planets[7] = neptune;
         planets[8] = pluto;
 
-        double tot_mom_x = 0.0;
-        double tot_mom_y = 0.0;
-        double tot_mom_z = 0.0;
         double v_x, v_y, v_z;
+        compute_sun_initial_velocity(planets, num_planets, v_x, v_y, v_z);
 
-        for (int i = 0; i < num_planets-1; i++){
-            tot_mom_x += planets[i].mass*planets[i].v[0];
-            tot_mom_y += planets[i].mass*planets[i].v[1];
-            tot_mom_z += planets[i].mass*planets[i].v[2];
-        }
-
-        v_x = tot_mom_x/cnst::mass_sun;
-        v_y = tot_mom_y/cnst::mass_sun;
-        v_z = tot_mom_z/cnst::mass_sun;
-        std::cout << std::setprecision(8) << v_x << "\n";
-        std::cout << std::setprecision(8) << v_y << "\n";
-        std::cout << std::setprecision(8) << v_z << "\n";
-
-        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, -v_x, -v_y, -v_z);
+        planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, v_x, v_y, v_z);
         planets[9] = sun;
-
-        double M = 0.0;
-        double r_x = 0.0, r_y = 0.0, r_z = 0.0;
-
-        for (int i = 0; i < num_planets; i++){
-            M += planets[i].mass;
-            r_x += planets[i].mass*planets[i].r[0];
-            r_y += planets[i].mass*planets[i].r[1];
-            r_z += planets[i].mass*planets[i].r[2];
-        }
-
-        r_x = r_x/M;
-        r_y = r_y/M;
-        r_z = r_z/M;
-
-        std::cout << std::setprecision(8) << r_x << "\n";
-        std::cout << std::setprecision(8) << r_y << "\n";
-        std::cout << std::setprecision(8) << r_z << "\n";
-
     }
 
     double t_max = 100.0;        // Upper time in years
@@ -166,4 +123,21 @@ int main(){
     delete[] planets;
 
     return 0;
+}
+
+/* Function to compute initial velocity for the sun that gives total momentum of system equal to zero. */
+void compute_sun_initial_velocity(planet* planets, double num_planets, double& v_x, double& v_y, double& v_z){
+    double tot_mom_x = 0.0;
+    double tot_mom_y = 0.0;
+    double tot_mom_z = 0.0;
+
+    for (int i = 0; i < num_planets-1; i++){
+        tot_mom_x += planets[i].mass*planets[i].v[0];
+        tot_mom_y += planets[i].mass*planets[i].v[1];
+        tot_mom_z += planets[i].mass*planets[i].v[2];
+    }
+
+    v_x = -tot_mom_x/cnst::mass_sun;
+    v_y = -tot_mom_y/cnst::mass_sun;
+    v_z = -tot_mom_z/cnst::mass_sun;
 }
