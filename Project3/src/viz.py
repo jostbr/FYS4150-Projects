@@ -152,9 +152,9 @@ def animate_trajectories(data):
 
     return anim
 
-plot_trajectories_2D(data)
+#plot_trajectories_2D(data)
 #plot_trajectories_3D(data)
-#anim = animate_trajectories(data)
+anim = animate_trajectories(data)
 
 plt.show()
 

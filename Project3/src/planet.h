@@ -9,9 +9,9 @@
 /* Class to represent a celestial body (doesn't have to be a planet). List of members:
  * - name [string] --> One-word description of the planet
  * - mass [double] --> Mass (in kg) of the planet
- * - r[2] [double] --> Position (in AU) in x and y relative to the sun
- * - v[2] [double] --> Velocity (in AU/yr) in x and y
- * - a[2] [double] --> Acceleration (in AU/yr^2) in x and y
+ * - r[3] [double] --> Position (in AU) in x, y and z relative to origin
+ * - v[3] [double] --> Velocity (in AU/yr) in x, y and z
+ * - a[3] [double] --> Acceleration (in AU/yr^2) in x, y and z
  *
  * - compute_distance()         [double] --> Returns distance between wo planets
  * - compute_acc()              [double] --> Returns acceleration to to force from another planet

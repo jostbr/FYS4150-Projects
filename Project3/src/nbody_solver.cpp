@@ -1,3 +1,4 @@
+
 # include "nbody_solver.h"
 
 /* Overload constructor (no ordinary exists) function with arguments. */
@@ -191,6 +192,7 @@ void nbody_solver::verlet(double h, double t_max, int frame_write){
     delete[] bodies_curr;
 }
 
+/* Specific Verlet only for use when running mercury perihilion GR case. */
 void nbody_solver::verlet_GR(double h, double t_max, int frame_write){
     planet* bodies_curr = new planet[this->num_bodies];
     int frame = 0;                      // Counting time steps for writing to file

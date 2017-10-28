@@ -11,7 +11,7 @@ void compute_sun_initial_velocity(planet*, double, double&, double&, double&);
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "SolarSystem";
+    std::string scenario = "2Body";
     planet* planets;
     int num_planets;
     bool fixed_sun;
@@ -126,7 +126,7 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    double t_max = 100.0;        // Upper time in years
+    double t_max = 15.0;        // Upper time in years
     double t_write = 4.0;     // Write to file every t_write days
     double h = 0.1;         // Step size in days
 
