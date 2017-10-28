@@ -12,11 +12,11 @@ file_directory = "../build-Project3/"   # Path to result data files
 #    "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
 #    "uranus": 8.8E+25, "neptune": 1.03E+26, "pluto": 1.31E+22, "moon": 7.34E+22}
 circle_sizes = {"sun": 0.1, "earth": 0.08, "jupiter": 0.4, "mars": 0.04, "venus": 0.1,
-    "saturn": 0.2, "mercury": 0.02, "uranus": 0.1, "neptune": 0.12, "pluto": 0.14,
-    "moon": 0.008}
+    "saturn": 0.3, "mercury": 0.02, "uranus": 0.13, "neptune": 0.15, "pluto": 0.1,
+    "moon": 0.008, "asteroid": 0.1}
 circle_colors = {"sun": "#d6c200", "earth": "#2666FE", "jupiter": "#f99805", "mars": "#f24519",
     "venus": "#c56300", "saturn": "#DAA520", "mercury": "#965402", "uranus": "#A6D5CA",
-    "neptune": "#4D8FAC", "pluto": "#8b8b8b", "moon": "#000000"}
+    "neptune": "#4D8FAC", "pluto": "#8b8b8b", "moon": "#000000", "asteroid": "#4F4F4F"}
 
 planets = list(circle_sizes.keys())     # Names of all planets
 data = dict()   # To hold data for all planets
@@ -90,7 +90,7 @@ def animate_trajectories(data):
     fig = plt.figure(figsize = (10, 7))
     fig.set_size_inches(8, 8)
 
-    ax = plt.axes(xlim=(-20, 20), ylim=(-20, 20))
+    ax = plt.axes(xlim = (-8, 8), ylim = (-8, 8))
     ax.set_aspect("equal")
     ax.set_title("Planet positions after {:.2f} years".format(data[some_planet][0, 0]),
         fontname = "serif", fontsize = 18)
@@ -100,6 +100,7 @@ def animate_trajectories(data):
     circles = dict()    # To hold plt.Circle objects representing planets
     lines = list()      # Only be able to create legend with circle markers
     texts = dict()
+    trajectories = dict()
 
     for planet in data.keys():
         texts[planet] = ax.text(data[planet][0, 1], data[planet][0, 2], planet.title(), fontsize = 6)
@@ -111,12 +112,14 @@ def animate_trajectories(data):
     for planet in data.keys():
         circles[planet] = plt.Circle((data[planet][0, 1], data[planet][0, 2]),
             circle_sizes[planet], fc = circle_colors[planet])   # Initiate circles
+        trajectories[planet] = ax.plot([], [], color = circle_colors[planet])[0]  # Get Line2D object
         lines.append(plt.Line2D(range(1), range(1), color = "none", marker = "o",
             markerfacecolor = circle_colors[planet], label = planet.title()))   # Only for legend below
 
     # Initialize animation
     def init():
         for planet in circles.keys():
+            trajectories[planet].set_data(data[planet][0, 1], data[planet][0, 2])
             circles[planet].center = (data[planet][0, 1], data[planet][0, 2])
             ax.add_patch(circles[planet])
 
@@ -127,6 +130,7 @@ def animate_trajectories(data):
         for planet in circles.keys():
             animate_planet(i, planet)
             animate_text(i, planet)
+            animate_trajectories(i, planet)
 
         ax.set_title("Planet positions after {:.2f} years".format(data[some_planet][i, 0]),
             fontname = "serif", fontsize = 18)
@@ -144,16 +148,23 @@ def animate_trajectories(data):
         texts[planet].set_y(data[planet][i, 2] + 0.1)
         return texts[planet],
 
+    def animate_trajectories(i, planet):
+        trajectories[planet].set_data(data[planet][:i, 1], data[planet][:i, 2])
+        return trajectories[planet]
+
     fig.tight_layout()
     ax.legend(lines, [planet.title() for planet in data.keys()])     # Label all planets
     anim = animation.FuncAnimation(fig, animation_manage, init_func = init,
         fargs=(list(circles.keys()),), frames = data[some_planet].shape[0],
         interval = 10, blit = True)
+    #mpeg_writer = animation.FFMpegWriter(fps = 24, bitrate = 10000,
+    #    codec = "libx264", extra_args = ["-pix_fmt", "yuv420p"])
+    #anim.save("3body_massive_jupiter.mp4", writer = mpeg_writer)
 
     return anim
 
-#plot_trajectories_2D(data)
-#plot_trajectories_3D(data)
+plot_trajectories_2D(data)
+plot_trajectories_3D(data)
 anim = animate_trajectories(data)
 
 plt.show()

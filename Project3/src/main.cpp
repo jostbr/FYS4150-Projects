@@ -11,7 +11,7 @@ void compute_sun_initial_velocity(planet*, double, double&, double&, double&);
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "2Body";
+    std::string scenario = "2Body";  // 2Body, 3Body, 3BodyFull, SolarSystem, Mercury_GR
     planet* planets;
     int num_planets;
     bool fixed_sun;
@@ -83,6 +83,7 @@ int main(){
 
         /* Initial conditions at 05.10.2017-00:00:00, from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results).
          * The velocities are multiplied by 365 day/yr in order to get units from AU/day to AU/yr. */
+        //planet asteroid("asteroid", 1.0E+29, 30.0, 50.0, 0.0, 0.1, -0.4, 0.0);
         planet mercury("mercury", 3.3E+23, -3.875425742988118E-01, -6.951071548980541E-03, 3.498508347786951E-02,
                        -5.348515291899226E-03*365, -2.692079116485562E-02*365, -1.709103846484009E-03*365);
         planet venus("venus", 4.9E+24, -5.001758135917815E-01, 5.144600047038554E-01, 3.592022525524809E-02,
@@ -119,6 +120,7 @@ int main(){
 
         planet sun("sun", 2.0E+30, 0.0, 0.0, 0.0, v_x, v_y, v_z);
         planets[9] = sun;
+        //planets[10] = asteroid;   // If added; need also change loop limit to num_planets-2 in func. below
     }
 
     else {
@@ -126,9 +128,9 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    double t_max = 15.0;        // Upper time in years
+    double t_max = 100.0;        // Upper time in years
     double t_write = 4.0;     // Write to file every t_write days
-    double h = 0.1;         // Step size in days
+    double h = 1.0;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
     h = h/365.0;                // Convert to years before passing argument
