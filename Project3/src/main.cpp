@@ -6,32 +6,41 @@
 # include "nbody_solver.h"
 # include "constants.h"
 
-/* Function declarations of different setup cases using the model. */
-void run_nasa();
-void run_three_body();
-void run_three_body_full();
-void run_two_body();
 void compute_sun_initial_velocity(planet*, double, double&, double&, double&);
 
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "2Body";
+    std::string scenario = "SolarSystem";
     planet* planets;
     int num_planets;
     bool fixed_sun;
+    std::string method;
 
     if (scenario.compare("2Body") == 0){
         num_planets = 1;
         fixed_sun = true;
+        method = "verlet";
         planets = new planet[num_planets];
         planet earth("earth", 6.0E+24, 1.0, 0.0, 0.0, 0.0, 2.0*cnst::pi, 0.0);
         planets[0] = earth;
     }
 
+    else if (scenario.compare("Mercury_GR") == 0){
+        num_planets = 2;    // Two planets, but not interacting; just for comparison
+        fixed_sun = true;
+        method = "verlet_GR";
+        planets = new planet[num_planets];
+        planet mercury_GR("mercury_GR", 3.3E23, 0.3075, 0.0 , 0.0, 0.0, 12.44, 0.0);
+        planet mercury("mercury", 3.3E23, 0.3075, 0.0, 0.0, 0.0, 12.44, 0.0);
+        planets[0] = mercury_GR;
+        planets[1] = mercury;
+    }
+
     else if (scenario.compare("3Body") == 0){
         num_planets = 2;
         fixed_sun = true;
+        method = "verlet";
         planets = new planet[num_planets];
 
         planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
@@ -47,6 +56,7 @@ int main(){
     else if (scenario.compare("3BodyFull") == 0){
         num_planets = 3;
         fixed_sun = false;
+        method = "verlet";
         planets = new planet[num_planets];
 
         planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
@@ -65,9 +75,10 @@ int main(){
     }
 
     /* Run a simulation of the entire solar system with realistic initial conditions from JPL, NASA. */
-    else if (scenario.compare("NASA") == 0){
+    else if (scenario.compare("SolarSystem") == 0){
         num_planets = 10;
         fixed_sun = false;
+        method = "verlet";
         planets = new planet[num_planets];
 
         /* Initial conditions at 05.10.2017-00:00:00, from NASA (JPL) (https://ssd.jpl.nasa.gov/horizons.cgi#results).
@@ -110,6 +121,11 @@ int main(){
         planets[9] = sun;
     }
 
+    else {
+        std::cout << "Error: Invalid method!\nTerminating program..." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     double t_max = 100.0;        // Upper time in years
     double t_write = 4.0;     // Write to file every t_write days
     double h = 0.1;         // Step size in days
@@ -118,7 +134,7 @@ int main(){
     h = h/365.0;                // Convert to years before passing argument
 
     nbody_solver solar_system(planets, num_planets, fixed_sun);      // Create solver object
-    solar_system.solve(h, t_max, t_write, "verlet");      // Solve nbody-system using specified method
+    solar_system.solve(h, t_max, t_write, method);      // Solve nbody-system using specified method
 
     delete[] planets;
 

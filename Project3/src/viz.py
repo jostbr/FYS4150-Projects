@@ -6,7 +6,7 @@ from matplotlib import animation
 from mpl_toolkits.mplot3d import Axes3D
 
 # ========================= GLOBAL VARIABLES =========================
-file_directory = "../../build-Project3/"   # Path to result data files
+file_directory = "../build-Project3/"   # Path to result data files
 
 #planet_masses = {"sun": 2.0E+30, "earth": 6.0E+24, "jupiter": 1.9E+27, "mars": 6.6E+23,
 #    "venus": 4.9E+24, "saturn": 5.5E+26, "mercury": 3.3E+23,
@@ -23,7 +23,7 @@ data = dict()   # To hold data for all planets
 
 for planet in planets:
     filename = planet + ".txt"              # Filename of data file
-    file_path = file_directory + filename   # Cooresponding path
+    file_path = file_directory + filename   # Corresponding path
 
     if (os.path.exists(file_path)):
         data[planet] = np.loadtxt(file_path, dtype = np.float64, skiprows = 1)  # Load in data from file

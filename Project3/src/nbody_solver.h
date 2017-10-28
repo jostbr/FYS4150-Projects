@@ -36,7 +36,9 @@ class nbody_solver{
     private:
         void euler(double h, double t_max, int frame_write);
         void verlet(double h, double t_max, int frame_write);
+        void verlet_GR(double h, double t_max, int frame_write);
         double compute_total_acc(planet subject, planet* objects, int dim) const;
+        double compute_total_acc_GR(planet subject, int dim);
         void compute_energy(double time) const;
         void compute_angular_momentum(double time) const;
         void compute_center_mass() const;
