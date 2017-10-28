@@ -11,7 +11,7 @@ void compute_sun_initial_velocity(planet*, double, double&, double&, double&);
 /* Main function running simulation for various cases. */
 int main(){
     //two_body();
-    std::string scenario = "2Body";  // 2Body, 3Body, 3BodyFull, SolarSystem, Mercury_GR
+    std::string scenario = "3Body";  // 2Body, 3Body, 3BodyFull, SolarSystem, Mercury_GR
     planet* planets;
     int num_planets;
     bool fixed_sun;
@@ -45,7 +45,7 @@ int main(){
 
         planet earth("earth", 6.0E+24, 9.792413350022859E-01, 2.028842602347931E-01, -1.104417905152000E-05,
                      -3.769713222485607E-03*365, 1.677534834992509E-02*365,-1.916440316952949E-07*365);
-        planet jupiter("jupiter", 1.9E+27, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
+        planet jupiter("jupiter", 1.9E+30, -4.633988541075995E+00, -2.854313805178032E+00, 1.155444133602380E-01,
                        3.870325272607268E-03*365, -6.074720855944709E-03*365, -6.135557504730335E-05*365);
 
         planets[0] = earth;
@@ -128,9 +128,9 @@ int main(){
         exit(EXIT_FAILURE);
     }
 
-    double t_max = 100.0;        // Upper time in years
-    double t_write = 4.0;     // Write to file every t_write days
-    double h = 1.0;         // Step size in days
+    double t_max = 10.0;        // Upper time in years
+    double t_write = 80.0;     // Write to file every t_write days
+    double h = 0.001;         // Step size in days
 
     t_write = t_write/365.0;    // Convert to years before passing argument
     h = h/365.0;                // Convert to years before passing argument

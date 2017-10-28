@@ -5,6 +5,8 @@
 # include <string>
 # include <cmath>
 
+/* Program for solving the sun-earth 2-body problem (sun kept fixed) without object orientation. */
+
 void euler_solver(double* r, double* v, double h, double t_max, std::ofstream& ofile);
 void verlet_solver(double* r_0, double* v_0, double h, double t_max, std::ofstream& ofile);
 void write_row_to_file(std::ofstream& ofile, double t, double x, double y);
