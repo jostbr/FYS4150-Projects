@@ -212,9 +212,9 @@ void solver::findSolarVelocity(){
     }
     //double sun_velocity[3];
 
-    sun_velocity[0] = tot_mom_x/allPlanets[0].mass;
-    sun_velocity[1] = tot_mom_y/allPlanets[0].mass;
-    sun_velocity[2] = tot_mom_z/allPlanets[0].mass;
+    sun_velocity[0] = -tot_mom_x/allPlanets[0].mass;
+    sun_velocity[1] = -tot_mom_y/allPlanets[0].mass;
+    sun_velocity[2] = -tot_mom_z/allPlanets[0].mass;
 
     //return sun_velocity;
     cout << "Sun velocity in x dir that make total momentum equal zero = " << sun_velocity[0] << endl;

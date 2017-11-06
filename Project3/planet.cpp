@@ -69,7 +69,7 @@ double planet::getDistance(planet otherplanet)
 }
 
 double planet::Acceleration(planet newPlanet, int dim){
-    double distance_cubed = pow(getDistance(newPlanet), 3.0);
+    double distance_cubed = pow(getDistance(newPlanet), 4.0);
     double accel = -((fourpipi*(newPlanet.mass/sun_mass))/distance_cubed)*(r[dim] - newPlanet.r[dim]);
     return accel;
 }
