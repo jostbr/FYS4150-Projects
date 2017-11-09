@@ -32,6 +32,7 @@ void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Momen
 int PBC(int i, int L, int add);
 void WriteResultstoFile(int L, int MCC, double Temperature, vec Expectation_Values);
 void Analytical_Values(double Temperature, int L, int Tot_MCC);
+void Test_RNG();
 
 // initiate output file
 ofstream ofile;
@@ -52,6 +53,7 @@ int main(int argc, char* argv[])
     end_T = atof(argv[5]);
     step_T = atof(argv[6]);
 
+    //Test_RNG();
 
 
    //int N = L*L;         //Total number of Spins
@@ -66,7 +68,7 @@ int main(int argc, char* argv[])
     fileout.append(argument);
     ofile.open(fileout);
     ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "Temperature    Tot_MCC       E            SigmaE             M            SigmaM            |M| " << endl;
+    ofile << "Temperature    Tot_MCC       E            Cv             M            Chi            |M| " << endl;
 
 
     //---------------------------------------------
@@ -75,7 +77,7 @@ int main(int argc, char* argv[])
 
 
    //Initiate empty vector to hold the  for differnt energy changes (de)
-   vec Bin = zeros<vec>(5);
+   //vec Energy_Bin = zeros<vec>(L*L*4);
 
    //Initiate empty variables
    double Energy = 0.0;
@@ -94,7 +96,7 @@ int main(int argc, char* argv[])
        int Total_number_MCC = 0;
 
        //Remove this if-test for large simulations..
-       //if(L==2){Analytical_Values(Temperature, L, Tot_MCC);}
+       if(L==2){Analytical_Values(Temperature, L, Tot_MCC);}
 
        //Empty vector to store the five energy differences
        vec Energy_Change = zeros<vec>(17);
@@ -103,8 +105,8 @@ int main(int argc, char* argv[])
 
 
 
-       int Tot_Tot_MCC = 1000000;
-       for (int Tot_MCC = 1000000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 100000){
+       int Tot_Tot_MCC = 10000000;
+       for (int Tot_MCC = 10000000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 100000){
            //Loop over all MC cycles
            for (int MCC = 0; MCC <= Tot_MCC; MCC++){
                //Loop over all spins
@@ -151,6 +153,7 @@ int main(int argc, char* argv[])
                Expectation_Values(3) += Magnetic_Moment*Magnetic_Moment;
                Expectation_Values(4) += fabs(Magnetic_Moment);
 
+               //Energy_Bin(Energy+(L*L*2)) += 1;
 
 
 
@@ -169,7 +172,7 @@ int main(int argc, char* argv[])
 //           cout << "Number of bin elements for DeltaE 4 = " << Bin(3) << endl;
 //           cout << "Number of bin elements for DeltaE 8 = " << Bin(4) << endl;
 
-           cout << "Total Number of MC cycles = " << Tot_MCC << endl;
+           //cout << "Total Number of MC cycles = " << Tot_MCC << endl;
 
            //----------------------------------------------
 
@@ -184,16 +187,20 @@ int main(int argc, char* argv[])
 
        }//Terminates loop over all Tot_Tot_MCC
 
+//       for (int i=0; i<(L*L); i++){
+//           cout << Energy_Bin(i) << endl;
+//       }
+
 //       Expectation_Values(0) = 0.0;
 //       Expectation_Values(1) = 0.0;
 //       Expectation_Values(2) = 0.0;
 //       Expectation_Values(3) = 0.0;
 //       Expectation_Values(4) = 0.0;
 
-
+   if(Temperature == end_T){ofile.close();} // close output file}
    }//Terminates for different Temperatures
 
-   ofile.close(); // close output file
+
    return 0;
 }
 
@@ -273,23 +280,47 @@ void Analytical_Values(double Temperature, int L, int Tot_MCC){
     //The analytical solutions only holds for the 2x2 spin matrix
     double k_B = 1.0;                           // [J/K]
     double beta = 1.0/(k_B*Temperature);        //Inverse Temperature
-    double Z_4 = ((L*L)*4*cosh(8*beta)+12);     //*N because we have all the expectation values per spin and tot_MCC ?????HMMM?????
+    double Z_4 = (4*cosh(8*beta)+12);     //*N because we have all the expectation values per spin
 
-    double Energy_analytical =  (-32*sinh(8*beta)/Z_4);
+    double Energy_analytical =  (-32*sinh(8*beta)/Z_4) / L / L;
     cout << "Energy by Analytical calculations = " << Energy_analytical << endl;
 
-    double Abs_Mag_Analytical = (8*exp(8*beta) + 16)/(Z_4);
-    cout << "Absolut value of magnetic moment by Analytical calculations = " << Abs_Mag_Analytical << endl;
+    double Abs_Mag_Analytical = ((8*exp(8*beta) + 16)/Z_4);
+    cout << "Absolut value of magnetic moment by Analytical calculations = " << Abs_Mag_Analytical/L/L << endl;
 
-    double sigmaE_Analytical = ((((256*cosh(8*beta))/Z_4) - (1024*sinh(8*beta)*sinh(8*beta)))/(Z_4*Z_4)) ;
+    double Mag_Mag_Analytical = ((32*exp(8*beta)+32)/(Z_4)) ;
+    cout << "M*M by Analytical Calculation = " << Mag_Mag_Analytical/L/L << endl;
+
+    double sigmaE_Analytical = (((256*cosh(8*beta))/Z_4) - ((1024*sinh(8*beta)*sinh(8*beta))/(Z_4*Z_4))) / L /L ;
     cout << "Variance of Energy by Analytical calculations = " << sigmaE_Analytical<< endl;
     double Cv = ( sigmaE_Analytical  )/(k_B*Temperature*Temperature);
     cout << "Specific Heat by Analytical calculations = " << Cv << endl;
 
-    double sigmaM_Analytical = ((32*exp(8*beta)/Z_4) - ((64*exp(16*beta) + 256)/(Z_4*Z_4)));
+    double sigmaM_Analytical = (Mag_Mag_Analytical - Abs_Mag_Analytical*Abs_Mag_Analytical)/ L/L;
+    //double sigmaM_Analytical = (((32*exp(8*beta)+32)/Z_4) - ((64*exp(8*beta)*exp(8*beta) + 256)/(Z_4*Z_4))) / L / L ;
     cout << "Variance of Mean magnetization by Analytical calculations = " << sigmaM_Analytical << endl;
     double Suseptibility = (  sigmaM_Analytical  )/ (k_B*Temperature);
     cout << "Susceptibility by Analytical calculations = " << Suseptibility << endl;
+}
+
+//I want to make a function that test if RNG is good to go:)
+
+void Test_RNG(){
+    int Large_number = 10E1;
+    vec Test_numbers = zeros<vec>(Large_number);
+    for (int i=0; i<=Large_number; i++){
+        Test_numbers(i) = randomUniform();
+    }
+
+
+    //Want to check if integral gives 1/2
+    //vec X = linspace<vec>(0, 1.0, 1600);
+
+   // mat Z =  trapz(X,Test_numbers);
+    //double Z = trapz(Test_numbers);
+
+   // cout << "Integral of random numbers = " << Z << endl;
+
 }
 
 
