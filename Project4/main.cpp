@@ -10,7 +10,7 @@
 #include <random>
 
 #include <armadillo>    /* matrix operations */
-
+#include <mpi.h>
 
 
 using namespace std;
@@ -39,6 +39,11 @@ ofstream ofile;
 
 int main(int argc, char* argv[])
 {
+    int rank, numProcs;
+    MPI_Init(&argc,&argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+
     double start_T;    // [k_B T/J]
     double end_T;      // [k_B T/J]
     double step_T;    // Temperature Step
@@ -46,12 +51,20 @@ int main(int argc, char* argv[])
 
     int Tot_MCC;           // Number of MC cycles/sweeps
 
-    string filename=argv[1];
-    L = atoi(argv[2]);
-    Tot_MCC = atoi(argv[3]);
-    start_T = atof(argv[4]);
-    end_T = atof(argv[5]);
-    step_T = atof(argv[6]);
+//    string filename=argv[1];
+//    L = atoi(argv[2]);
+//    Tot_MCC = atoi(argv[3]);
+//    start_T = atof(argv[4]);
+//    end_T = atof(argv[5]);
+//    step_T = atof(argv[6]);
+
+
+    string filename;
+    L = 2;
+    //Tot_MCC = 100000000;
+    start_T = 1.0;
+    end_T = 1.0;
+    step_T = 0.1;
 
     //Test_RNG();
 
@@ -61,15 +74,17 @@ int main(int argc, char* argv[])
 
     //Initiate empty matrix to hold the expectation values; E, E*E, M, M*M, fabs(M)
     vec Expectation_Values = zeros<mat>(5);
+    vec TotExpectation_Values = zeros<mat>(5);
 
-    // Declare new file name and add lattice size to file name
-    string fileout = filename;
-    string argument = to_string(L);
-    fileout.append(argument);
-    ofile.open(fileout);
-    ofile << setiosflags(ios::showpoint | ios::uppercase);
-    ofile << "Temperature    Tot_MCC       E            Cv             M            Chi            |M| " << endl;
-
+    if(rank == 0){
+        // Declare new file name and add lattice size to file name
+        string fileout = filename;
+        string argument = to_string(L);
+        fileout.append(argument);
+        ofile.open(fileout);
+        ofile << setiosflags(ios::showpoint | ios::uppercase);
+        ofile << "Temperature    Total MCC       E            Cv             M            Chi            |M| " << endl;
+    }
 
     //---------------------------------------------
    //Everything under can go in Metropolis() - work in progress
@@ -105,8 +120,9 @@ int main(int argc, char* argv[])
 
 
 
-       int Tot_Tot_MCC = 10000000;
-       for (int Tot_MCC = 10000000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 100000){
+       int Tot_Tot_MCC = 100000000;
+       int i=1;
+       for (int Tot_MCC = 1000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += (1000*i)){
            //Loop over all MC cycles
            for (int MCC = 0; MCC <= Tot_MCC; MCC++){
                //Loop over all spins
@@ -134,15 +150,11 @@ int main(int argc, char* argv[])
                        Energy += (double) Delta_E;
                        Magnetic_Moment += (double) 2*Spin_Matrix(ix,iy);
 
-                       accepted_configurations +=1;
+                       //accepted_configurations +=1;
 
-//                       if(Delta_E == -8){ Bin(0) +=1;}
-//                       if(Delta_E == -4){ Bin(1) +=1;}
-//                       if(Delta_E == 0){ Bin(2) +=1;}
-//                       if(Delta_E == 4){ Bin(3) +=1;}
-//                       if(Delta_E == 8){ Bin(4) +=1;}
                    }
 
+                   i+=1;
 
                } //Terminates one MC Cycle
 
@@ -159,25 +171,22 @@ int main(int argc, char* argv[])
 
            } //Terminates all Tot_MC cycles
 
-           Total_number_MCC += Tot_MCC;
-           cout << "Total Number of MC sweeps so far = " << Total_number_MCC << endl;
+           //Total_number_MCC += Tot_MCC;
+           //cout << "Total Number of MC sweeps so far = " << Total_number_MCC << endl;
 
            //Solve part task 4c)
-           cout << "Number of Accepted energy configurations = " << accepted_configurations << endl;
-
-           //Solve task 4d) HISTOGRAM as function of T=1.0 and T=2.4 (and tot number of MCC)
-//           cout << "Number of bin elements for DeltaE -8 = " << Bin(0) << endl;
-//           cout << "Number of bin elements for DeltaE -4 = " << Bin(1) << endl;
-//           cout << "Number of bin elements for DeltaE 0 = " << Bin(2) << endl;
-//           cout << "Number of bin elements for DeltaE 4 = " << Bin(3) << endl;
-//           cout << "Number of bin elements for DeltaE 8 = " << Bin(4) << endl;
+           //cout << "Number of Accepted energy configurations = " << accepted_configurations << endl;
 
            //cout << "Total Number of MC cycles = " << Tot_MCC << endl;
 
            //----------------------------------------------
 
            //Want to write Expectation values to file
-           WriteResultstoFile(L, Tot_MCC, Temperature, Expectation_Values);
+           for(int i = 0; i < 5; i++)
+                MPI_Allreduce(&Expectation_Values[i],&TotExpectation_Values[i],1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+
+           if(rank == 0)
+                WriteResultstoFile(L, Tot_MCC, Temperature, Expectation_Values);
 
            Expectation_Values(0) = 0.0;
            Expectation_Values(1) = 0.0;
@@ -191,16 +200,11 @@ int main(int argc, char* argv[])
 //           cout << Energy_Bin(i) << endl;
 //       }
 
-//       Expectation_Values(0) = 0.0;
-//       Expectation_Values(1) = 0.0;
-//       Expectation_Values(2) = 0.0;
-//       Expectation_Values(3) = 0.0;
-//       Expectation_Values(4) = 0.0;
 
-   if(Temperature == end_T){ofile.close();} // close output file}
+   if(Temperature == end_T && rank == 0){ofile.close();} // close output file}
    }//Terminates for different Temperatures
 
-
+   MPI_Finalize();
    return 0;
 }
 
@@ -217,29 +221,29 @@ int PBC(int i, int L, int add)
 void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Moment)
 {
   // Setup random spin matrix
-//  for(int x =0; x < L; x++) {
-//    for (int y= 0; y < L; y++){
-//        double element = randomUniform();
-//        //cout << element << endl;
-//        if (element < 0.5){Spin_Matrix(x,y) = -1;}
-//        else {Spin_Matrix(x,y) = 1;}
-
-//        //cout << Spin_Matrix(x,y) << endl;
-
-//        //Setup initial magnetization
-//        Magnetic_Moment +=  (double) Spin_Matrix(x,y);
-//    }
-//  }
-
-  // Setup spin matrix for GROUND STATE T < 1.5
   for(int x =0; x < L; x++) {
     for (int y= 0; y < L; y++){
-        Spin_Matrix(x,y) = 1;
+        double element = randomUniform();
+        //cout << element << endl;
+        if (element < 0.5){Spin_Matrix(x,y) = -1;}
+        else {Spin_Matrix(x,y) = 1;}
+
+        //cout << Spin_Matrix(x,y) << endl;
 
         //Setup initial magnetization
         Magnetic_Moment +=  (double) Spin_Matrix(x,y);
     }
   }
+
+  // Setup spin matrix for GROUND STATE T < 1.5
+//  for(int x =0; x < L; x++) {
+//    for (int y= 0; y < L; y++){
+//        Spin_Matrix(x,y) = 1;
+
+//        //Setup initial magnetization
+//        Magnetic_Moment +=  (double) Spin_Matrix(x,y);
+//    }
+//  }
 
 
   // Setup initial energy
@@ -249,8 +253,8 @@ void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Momen
     }
   }
 
-  cout << "Energy of inital state = " << Energy << endl;
-  cout << "Magnetic Moment of inital state = " << Magnetic_Moment << endl;
+  //cout << "Energy of inital state = " << Energy << endl;
+  //cout << "Magnetic Moment of inital state = " << Magnetic_Moment << endl;
 }
 
 void WriteResultstoFile(int L, int Tot_MCC, double Temperature, vec Expectation_Values)
@@ -314,9 +318,9 @@ void Test_RNG(){
 
 
     //Want to check if integral gives 1/2
-    //vec X = linspace<vec>(0, 1.0, 1600);
+    vec X = linspace<vec>(0, 1.0, 100);
 
-   // mat Z =  trapz(X,Test_numbers);
+    //mat Z =  trapz(X,Test_numbers);
     //double Z = trapz(Test_numbers);
 
    // cout << "Integral of random numbers = " << Z << endl;
