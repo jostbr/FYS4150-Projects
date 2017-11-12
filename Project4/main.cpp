@@ -39,6 +39,9 @@ ofstream ofile;
 
 int main(int argc, char* argv[])
 {
+
+
+
     int rank, numProcs;
     MPI_Init(&argc,&argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -61,12 +64,13 @@ int main(int argc, char* argv[])
 
     string filename;
     L = 2;
-    //Tot_MCC = 100000000;
+    //Tot_MCC = 10000;
     start_T = 1.0;
     end_T = 1.0;
     step_T = 0.1;
 
-    //Test_RNG();
+    //Random number generator (RNG) Test
+    Test_RNG();
 
 
    //int N = L*L;         //Total number of Spins
@@ -120,10 +124,11 @@ int main(int argc, char* argv[])
 
 
 
-       int Tot_Tot_MCC = 100000000;
-       int i=1;
-       for (int Tot_MCC = 1000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += (1000*i)){
+       int Tot_Tot_MCC = 100000;
+
+       for (int Tot_MCC = 1000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 10000){
            //Loop over all MC cycles
+
            for (int MCC = 0; MCC <= Tot_MCC; MCC++){
                //Loop over all spins
                for (int i= 0; i<(L*L); i++){
@@ -154,7 +159,7 @@ int main(int argc, char* argv[])
 
                    }
 
-                   i+=1;
+
 
                } //Terminates one MC Cycle
 
@@ -205,6 +210,10 @@ int main(int argc, char* argv[])
    }//Terminates for different Temperatures
 
    MPI_Finalize();
+
+   //delete[] Spin_Matrix, Expectation_Values;
+
+
    return 0;
 }
 
@@ -310,19 +319,21 @@ void Analytical_Values(double Temperature, int L, int Tot_MCC){
 //I want to make a function that test if RNG is good to go:)
 
 void Test_RNG(){
-    int Large_number = 10E1;
+    int Large_number = 10E3;
     vec Test_numbers = zeros<vec>(Large_number);
-    for (int i=0; i<=Large_number; i++){
+    for (int i=0; i<Large_number; i++){
         Test_numbers(i) = randomUniform();
     }
 
+    //Want to check if mean is 1/2 for uniform distribution
+    double Test_result = mean(Test_numbers);
+    cout << "Mean of random numbers = " << Test_result << endl;
+
 
     //Want to check if integral gives 1/2
-    vec X = linspace<vec>(0, 1.0, 100);
-
+    //vec X = linspace<vec>(0, 1.0, 100);
     //mat Z =  trapz(X,Test_numbers);
     //double Z = trapz(Test_numbers);
-
    // cout << "Integral of random numbers = " << Z << endl;
 
 }
