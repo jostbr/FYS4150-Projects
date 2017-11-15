@@ -4,7 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    ising.cpp
+    ising.cpp \
+    unit_tests.cpp
 
 HEADERS += \
-    ising.h
+    ising.h \
+    unit_tests.h
