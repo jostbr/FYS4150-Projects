@@ -7,6 +7,7 @@ int main(){
     std::cout << "\nRUNNING TESTS..." << std::endl;
     std::cout << "===============================================" << std::endl;
     TEST_get_index();
+    TEST_initialize_spin_config();
     std::cout << "===============================================" << std::endl;
 
     double T_0 = 1.0;
