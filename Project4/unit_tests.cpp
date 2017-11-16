@@ -17,7 +17,7 @@ void TEST_get_index(){
 
 /* Unit test for spin configuration initialization function. Uses a known 2x2 lattice (all spin +1)and
  * checks if the function initializes the spins correctly and produces the expected energy and mag. moments. */
-void TEST_initialize_spin_config(){
+void TEST_compute_energy_and_moment(){
     double E = 0.0, M = 0.0;    // t hold the computed energy and magnetic moments of the config
     double T = 1.0;             // Sample temperature (below 1.5 to make sure all spins are +1)
     int num_spins = 2;          // Size of lattice, i.e. 2x2
@@ -28,15 +28,16 @@ void TEST_initialize_spin_config(){
         spins[i] = new int[num_spins];
     }
 
-    initialize_spin_config(spins, num_spins, E, M, T);  // Call spin config initializer
+    initialize_spin_config_prev(spins, num_spins, T);   // Call spin config initializer (all spins +1)
+    compute_energy_and_moment(spins, num_spins, E, M);  // Compute energy and moment for the config
 
     /* Compare with analytical values for E and M for the 2x2 lattice. */
     if (E != -8.0 || M != 4.0){
-        if (E != -8.0) std::cout << "TEST FAILED: Initial energy" << std::endl;
-        if (M != 4.0) std::cout << "TEST FAILED: Initial magnetic moment" << std::endl;
+        if (E != -8.0) std::cout << "TEST FAILED: Energy energy" << std::endl;
+        if (M != 4.0) std::cout << "TEST FAILED: Magnetic moment" << std::endl;
     }
 
-    else std::cout << "TEST PASSED: Initial spin setup" << std::endl;
+    else std::cout << "TEST PASSED: Energy and magnetic moment" << std::endl;
 
 
     /* Deallocate memory for spin array. */

@@ -6,6 +6,6 @@
 # include "ising.h"
 
 void TEST_get_index();
-void TEST_initialize_spin_config();
+void TEST_compute_energy_and_moment();
 
 #endif // UNIT_TESTS_H
