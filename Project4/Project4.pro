@@ -4,14 +4,13 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    ising.cpp \
     unit_tests.cpp \
-    ising_mpi.cpp
+    mem_alloc.cpp
 
 HEADERS += \
     ising.h \
     unit_tests.h \
-    ising_mpi.h
+    mem_alloc.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx
