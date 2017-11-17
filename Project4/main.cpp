@@ -6,11 +6,12 @@
 #include <math.h>       /* exp */
 #include <cmath>
 
+#include <ctime>        /* Timing */
 
-#include <random>
+#include <random>       /* Random Class */
 
 #include <armadillo>    /* matrix operations */
-#include <mpi.h>
+#include <mpi.h>        /* Parallization */
 
 
 using namespace std;
@@ -33,14 +34,13 @@ int PBC(int i, int L, int add);
 void WriteResultstoFile(int L, int MCC, double Temperature, vec Expectation_Values);
 void Analytical_Values(double Temperature, int L);
 void Test_RNG();
+void TEST_ALGO(int L, mat &Spin_Matrix_2,  double& Energy_2, double& Magnetic_Moment_2);
 
 // initiate output file
 ofstream ofile;
 
 int main(int argc, char* argv[])
 {
-
-
 
     int rank, numProcs;
     MPI_Init(&argc,&argv);
@@ -52,30 +52,31 @@ int main(int argc, char* argv[])
     double step_T;    // Temperature Step
     int L;
 
-    int Tot_MCC;           // Number of MC cycles/sweeps
-
-//    string filename=argv[1];
-//    L = atoi(argv[2]);
-//    Tot_MCC = atoi(argv[3]);
-//    start_T = atof(argv[4]);
-//    end_T = atof(argv[5]);
-//    step_T = atof(argv[6]);
-
-
     string filename;
-    L = 100;
-    start_T = 2.170;
-    end_T = 2.4;
+    //Values to be changed Manually between different experiments
+    L = 2;
+    start_T = 1.0;
+    end_T = 1.00001;
     step_T = 0.01;
 
-    //Random number generator (RNG) Test
 
-    Test_RNG();
+    if(rank == 0){
+        //Test Algorithm
+        double Energy_2 = 0.0;
+        double Magnetic_Moment_2 = 0.0;
+        mat Spin_Matrix_2 = zeros<mat>(2,2);
+        cout << "################ Unit Tests ####################################" << endl;
+        TEST_ALGO(2, Spin_Matrix_2, Energy_2, Magnetic_Moment_2);
+
+        //Random number generator (RNG) Test
+        //Should return a value close to 0.5
+        Test_RNG();
+    }
 
 
     //Initiate empty matrix to hold the expectation values; E, E*E, M, M*M, fabs(M)
-    vec Expectation_Values = zeros<mat>(5);
-    vec TotExpectation_Values = zeros<mat>(5);
+    vec Expectation_Values = zeros<mat>(5);             //Locally for each Core
+    vec TotExpectation_Values = zeros<mat>(5);          //Store all the Values from all the cores
 
     if(rank == 0){
         // Declare new file name and add lattice size to file name
@@ -87,45 +88,54 @@ int main(int argc, char* argv[])
         ofile << "Temperature    Total MCC       E            Cv             M            Chi            |M| " << endl;
     }
 
-    //---------------------------------------------
-   //Everything under can go in Metropolis() - work in progress
+   //---------------------------------------------
+   //Everything under can go in Metropolis()
 
 
 
-   //Initiate empty vector to hold the  for differnt energy changes (de)
-   //vec Energy_Bin = zeros<vec>(L*L*4); //may change to 2 400*2=800
+    /* Want to time my Algoritm */
+    clock_t t;
+    if(rank == 0){
+        t = clock();
+    }
+
+
 
    //Initiate empty variables
    double Energy = 0.0;
    double Magnetic_Moment = 0.0;
+
    //Initiate zero matrix to fill with spin
    mat Spin_Matrix = zeros<mat>(L,L);
 
    //Initalize a matrix with random or ground state spin configuration by function
    Initialize(L, Spin_Matrix, Energy, Magnetic_Moment);
 
-   //Precalculate Energydifferences at a given Temperature
+
    for (double Temperature = start_T; Temperature <= end_T; Temperature += step_T){
-
-
 
        //Values that should be reset for each Temperature
        //int accepted_configurations = 0;
        //int Total_number_MCC = 0;
 
-       //Remove this if-test for large simulations..
-       //if(L==2){Analytical_Values(Temperature, L, Tot_MCC);}
+       //vec Hist_Count = zeros<vec>(1000000);
+
+       //Remove this if-test for large simulations && L=! 2
+       if(rank == 0){
+           if(L==2){Analytical_Values(Temperature, L);}
+       }
+
 
        //Empty vector to store the five energy differences
        vec Energy_Change = zeros<vec>(17);
+       //Precalculate Energydifferences at a given Temperature
        for (int de=-8; de<=8; de+=4){Energy_Change(de+8)= exp(-de/Temperature);}
-       //cout << Energy_Change << endl;
 
 
-       //To loop over
+       /*To loop over intervall of different Tot_MCC values
+         If I only want to use ONE Tot_MCC value;
+         Set Tot_MCC = Tot_Tot_MCC */
        int Tot_Tot_MCC = 1250000;
-
-       //vec Hist_Count = zeros<vec>(1000000+1);
 
        for (int Tot_MCC = 1250000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 250){
            //Loop over all MC cycles
@@ -133,13 +143,11 @@ int main(int argc, char* argv[])
            for (int MCC = 1; MCC <= Tot_MCC; MCC++){
                //Loop over all spins
                for (int i= 0; i<(L*L); i++){
-                   //Pick spin at random from Spin_Matrix
-                   int ix = floor(randomUniform()*L);                             //gives random number in interval L-1:0
+                   //Pick spin at random from Spin_Matrix, floor returns integer value
+                   int ix = floor(randomUniform()*L);              //gives random integer number in interval 0:L-1
                    //cout << "random index = " << ix << endl;
                    int iy = floor(randomUniform()*L);
                    //cout << "random index = " << iy << endl;
-
-                   //Spin_Matrix(ix,iy) *= -1;    //Flips the spin we chose at random
 
                    //Find energy of new configuration
                    int Delta_E =  2*Spin_Matrix.at(ix,iy)*
@@ -150,26 +158,14 @@ int main(int argc, char* argv[])
 
 
                    if(randomUniform() <= Energy_Change(Delta_E+8)) {
+                       //Flips the spin
                        Spin_Matrix(ix,iy) *= -1;
+
                        Magnetic_Moment += (double) 2*Spin_Matrix(ix,iy);
                        Energy += (double) Delta_E;
                    }
 
                    //cout << "Delta_E = " << Delta_E << endl;
-                   /*
-                   //Want to change new spin configuration back if condition under is met
-                   if (Energy_Change(Delta_E+8) <= randomUniform() ){
-                       Spin_Matrix(ix,iy) *= -1;
-
-                   }
-                   else{
-                       Energy += (double) Delta_E;
-                       Magnetic_Moment += (double) 2*Spin_Matrix(ix,iy);
-
-                       //accepted_configurations +=1;
-
-                   }
-                    */
 
 
                } //Terminates one MC Cycle
@@ -181,10 +177,9 @@ int main(int argc, char* argv[])
                Expectation_Values(3) += Magnetic_Moment*Magnetic_Moment;
                Expectation_Values(4) += fabs(Magnetic_Moment);
 
-               //Energy_Bin(Energy+(L*L*2)) += 1;
 
-               //if(MCC>5000000){Hist_Count(MCC-5000000)=Energy/L/L;}
-               //cout << Hist_Count(MCC) << endl;
+               //if(rank == 0 && MCC>=5000000){Hist_Count(MCC-5000000)=Energy/L/L;}
+
 
            } //Terminates all Tot_MC cycles
 
@@ -196,7 +191,7 @@ int main(int argc, char* argv[])
 
            //cout << "Total Number of MC cycles = " << Tot_MCC << endl;
 
-           //----------------------------------------------
+
 
            //Want to write Expectation values to file
            for(int i = 0; i < 5; i++)
@@ -204,6 +199,9 @@ int main(int argc, char* argv[])
 
            if(rank == 0)
                 WriteResultstoFile(L, Tot_MCC, Temperature, TotExpectation_Values);
+
+           //----------------------------------------------
+           //Metropolis algorithm is ended
 
            Expectation_Values(0) = 0.0;
            Expectation_Values(1) = 0.0;
@@ -214,6 +212,9 @@ int main(int argc, char* argv[])
 
        }//Terminates loop over all Tot_Tot_MCC
 
+       /*Uncomment when I want to analyze Probability Distribution
+        - Need to comment out the other writing to file code also
+       To write results for Hist_Count to file */
 //       if (rank==0){
 //           string fileout2 = filename;
 //           string argument = to_string(L);
@@ -230,21 +231,23 @@ int main(int argc, char* argv[])
 
 
 
-
-//       if (rank==0){
-//           for (int i=0; i<(L*L*4); i++){
-//               cout << Energy_Bin(i) << endl;
-//           }
-//       }
-
-
-
    if(Temperature == end_T && rank == 0){ofile.close();} // close output file}
    }//Terminates for different Temperatures
 
+
+   if(rank == 0){
+       t = clock() - t;
+       double time = ((float)t)/CLOCKS_PER_SEC;
+       cout << "#################################################" << endl;
+       cout << "Time used = " << time << endl;
+       cout << "#################################################" << endl;
+   }
+
+
+
    MPI_Finalize();
 
-   //delete[] Spin_Matrix, Expectation_Values;
+
 
 
    return 0;
@@ -263,35 +266,30 @@ int PBC(int i, int L, int add)
 void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Moment)
 {
   // Setup random spin matrix
-  for(int x =0; x < L; x++) {
-    for (int y= 0; y < L; y++){
-        double element = randomUniform();
-        //cout << element << endl;
-        if (element < 0.5){Spin_Matrix(x,y) = -1;}
-        else {Spin_Matrix(x,y) = 1;}
-
-        //cout << Spin_Matrix(x,y) << endl;
-
-        //Setup initial magnetization
-        Magnetic_Moment +=  (double) Spin_Matrix(x,y);
-    }
-  }
-
-//    for(int x =0; x < L; x++) {
-//      for (int y= 0; y < L; y++){
-//          Spin_Matrix(x,y) = 1;
-//          Magnetic_Moment +=  (double) Spin_Matrix(x,y);
-//        }}
-
-  // Setup spin matrix for GROUND STATE T < 1.5
 //  for(int x =0; x < L; x++) {
 //    for (int y= 0; y < L; y++){
-//        Spin_Matrix(x,y) = 1;
+//        double element = randomUniform();
+//        //cout << element << endl;
+//        if (element < 0.5){Spin_Matrix(x,y) = -1;}
+//        else {Spin_Matrix(x,y) = 1;}
+
+//        //cout << Spin_Matrix(x,y) << endl;
 
 //        //Setup initial magnetization
 //        Magnetic_Moment +=  (double) Spin_Matrix(x,y);
 //    }
 //  }
+
+
+  // Setup spin matrix for GROUND STATE T < 1.5
+  for(int x =0; x < L; x++) {
+    for (int y= 0; y < L; y++){
+        Spin_Matrix(x,y) = 1;
+
+        //Setup initial magnetization
+        Magnetic_Moment +=  (double) Spin_Matrix(x,y);
+    }
+  }
 
 
   // Setup initial energy
@@ -336,42 +334,84 @@ void Analytical_Values(double Temperature, int L){
     double beta = 1.0/(k_B*Temperature);        //Inverse Temperature
     double Z_4 = (4*cosh(8*beta)+12);     //*N because we have all the expectation values per spin
 
+    cout << "##########################################################################" << endl;
+    cout << "All ANALYTICAL VALUES are per Spin" << endl;
+    cout << "##########################################################################" << endl;
     double Energy_analytical =  (-32*sinh(8*beta)/Z_4) / L / L;
-    cout << "Energy by Analytical calculations = " << Energy_analytical << endl;
+    cout << "Energy = " << Energy_analytical << endl;
 
     double Abs_Mag_Analytical = ((8*exp(8*beta) + 16)/Z_4);
-    cout << "Absolut value of magnetic moment by Analytical calculations = " << Abs_Mag_Analytical/L/L << endl;
+    cout << "Absolut value of magnetic moment  = " << Abs_Mag_Analytical/L/L << endl;
 
     double Mag_Mag_Analytical = ((32*exp(8*beta)+32)/(Z_4)) ;
-    cout << "M*M by Analytical Calculation = " << Mag_Mag_Analytical/L/L << endl;
+    cout << "M*M  = " << Mag_Mag_Analytical/L/L << endl;
 
     double sigmaE_Analytical = (((256*cosh(8*beta))/Z_4) - ((1024*sinh(8*beta)*sinh(8*beta))/(Z_4*Z_4))) / L /L ;
-    cout << "Variance of Energy by Analytical calculations = " << sigmaE_Analytical<< endl;
+    cout << "Variance of Energy = " << sigmaE_Analytical<< endl;
     double Cv = ( sigmaE_Analytical  )/(k_B*Temperature*Temperature);
-    cout << "Specific Heat by Analytical calculations = " << Cv << endl;
+    cout << "Specific Heat  = " << Cv << endl;
 
     double sigmaM_Analytical = (Mag_Mag_Analytical - Abs_Mag_Analytical*Abs_Mag_Analytical)/ L/L;
     //double sigmaM_Analytical = (((32*exp(8*beta)+32)/Z_4) - ((64*exp(8*beta)*exp(8*beta) + 256)/(Z_4*Z_4))) / L / L ;
-    cout << "Variance of Mean magnetization by Analytical calculations = " << sigmaM_Analytical << endl;
+    cout << "Variance of Mean magnetization  = " << sigmaM_Analytical << endl;
     double Suseptibility = (  sigmaM_Analytical  )/ (k_B*Temperature);
     cout << "Susceptibility by Analytical calculations = " << Suseptibility << endl;
+    cout << "############################################################################" << endl;
 }
 
 //I want to make a function that test if RNG is good to go:)
 void Test_RNG(){
-    int Large_number = 10E3;
+    int Large_number = 10E6;
     vec Test_numbers = zeros<vec>(Large_number);
     for (int i=0; i<Large_number; i++){
         Test_numbers(i) = randomUniform();
     }
 
+
     //Want to check if mean is 1/2 for uniform distribution
     double Test_result = mean(Test_numbers);
     cout << "Mean of random numbers = " << Test_result << endl;
+    double allowed_offset = 0.01;
+    if(fabs(Test_result - 0.5) < allowed_offset){
+        cout << "Random numer generator: OK" << endl;
+    }
+    else{
+        cout << "Random numer generator: NOT OK" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+
     //To proper test RNG, increase Large_number and repeat many times, then mean of all the means:)
-
-
 }
 
+void TEST_ALGO(int L, mat &Spin_Matrix_2,  double& Energy_2, double& Magnetic_Moment_2)
+{
+    // Setup spin matrix for GROUND STATE T < 1.5
+    for(int x =0; x < L; x++) {
+      for (int y= 0; y < L; y++){
+          Spin_Matrix_2(x,y) = 1;
+          //Setup initial magnetization
+          Magnetic_Moment_2 +=  (double) Spin_Matrix_2(x,y);
+      }
+    }
+    // Setup initial energy
+    for(int x = 0; x < L; x++) {
+      for (int y = 0; y < L; y++){
+        Energy_2 -= (double) Spin_Matrix_2(x,y)*(Spin_Matrix_2(PBC(x,L,-1),y) + Spin_Matrix_2(x,PBC(y,L,-1)));
+      }
+    }
+
+    //Ground state - All spins points up
+    //TEST_ALGO should return Energy_2 = -8
+    //TEST_ALGO should return Magnetic_Moment_2 = 4
+    if(Energy_2 == -8.0 & Magnetic_Moment_2 == + 4.0){
+        cout << "Test passed for a 2x2 spin matrix in Ground State" << endl;
+    }
+    else{
+        cout << "Test NOT passed for a 2x2 spin matrix in Ground State" << endl;
+        exit(EXIT_FAILURE);
+    }
+
+}
 
 
