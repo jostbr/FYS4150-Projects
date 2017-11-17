@@ -7,8 +7,9 @@
 void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycles){
     double E, M;                    // To hold energy and magentic moment each temperature iteration
     double T = T_min;               // Temperature starts at minimum
-    double delta_E[5], exp_dE[5];   // Arrays to hold pre-caclualted energy differences
     double expectation_values[5];   // Array to hold expectation values of E, E^2, M, M^2, |M|
+    int delta_E[5];                 // Array to hold pre-caclualted energy differences
+    double exp_dE[5];               // Array to hold pre-calculated w = exp(-dE/T)
 
     std::random_device rd;      // Instantiate random device
     std::mt19937_64 rng(rd());  // Instantiate random number generator
@@ -20,7 +21,7 @@ void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycl
         spins[i] = new int[num_spins];
     }
 
-    delta_E[0] = -8.0; delta_E[1] = -4.0; delta_E[2] = -0.0; delta_E[3] = 4.0; delta_E[4] = 8.0;  // Possible dE's
+    delta_E[0] = -8; delta_E[1] = -4; delta_E[2] = -0; delta_E[3] = 4; delta_E[4] = 8;  // Possible dE's
 
     /* Instantiate output file object and write header info to file. */
     std::ofstream outfile;
@@ -39,7 +40,7 @@ void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycl
 
         for (int m = 0; m < 5; m++){
             exp_dE[m] = exp(-delta_E[m]/T);     // Initialize w = exp(-dE/T) for current T
-            expectation_values[m] = 0.0;        // Initialize all averages to zero
+            expectation_values[m] = 0;        // Initialize all averages to zero
         }
 
         //initialize_spin_config_prev(spins, num_spins, T);  // Set initial spin config for current T
@@ -51,38 +52,47 @@ void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycl
         for (int n = 0; n < num_mc_cycles; n++){    // Loop over number of MC cycles
             for (int i = 0; i < num_spins; i++){        // Loop over rows in spins array
                 for (int j = 0; j < num_spins; j++){        // Loop over columns in spins array
-                    int k_rng = (int) uniform(rng)*(double)num_spins;  // Random spin row index
-                    int l_rng = (int) uniform(rng)*(double)num_spins;  // Random spin column index
-                    int dE = (double) 2*spins[k_rng][l_rng]*
+                    int k_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin row index
+                    int l_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin column index
+                    //std::cout << k_rng << ", " << l_rng << std::endl;
+                    //spins[k_rng][l_rng] *= -1;
+                    int dE = 2*spins[k_rng][l_rng]*
                             (spins[k_rng][get_periodic_index(l_rng+1, num_spins)] +
                              spins[get_periodic_index(k_rng+1, num_spins)][l_rng] +
                              spins[k_rng][get_periodic_index(l_rng-1, num_spins)] +
                              spins[get_periodic_index(k_rng-1, num_spins)][l_rng]);
+                    //std::cout << dE << std::endl;
 
-
-
-                    if (dE <= 0){    // If dE <= 0 or if random(0,1) < exp(-dE/T)
+                    if (dE <= 0){    // If dE <= 0
                         //std::cout << "Flipped a spin" << std::endl;
                         spins[k_rng][l_rng] *= -1;
-                        M += (double) 2*spins[k_rng][l_rng];
+                        M += (double) (2*spins[k_rng][l_rng]);
                         E += (double) dE;
                     }
 
                     else {
                         double current_exp_dE = 0.0;    // To hold current w = exp(-dE/T)
 
-                        for (int m = 0; m < 5; m++){
-                            if ((double) dE == delta_E[m]){
+                        for (int m = 0; m < 5; m++){    // Loop over delta_E array
+                            //std::cout << dE << ", " << delta_E[m] << std::endl;
+                            if (dE == delta_E[m]){
                                 //std::cout << "Found pre-calculated exp_dE" << std::endl;
                                 current_exp_dE = exp_dE[m];     // Found pre-calculated w = exp(-dE/T)
                             }
                         }
 
-                        if (uniform(rng) <= current_exp_dE){
+                        //std::cout << current_exp_dE << std::endl;
+
+                        if (uniform(rng) <= current_exp_dE){    // If r <= exp(-dE/T)
+                            //std::cout << "Flipped a spin" << std::endl;
                             spins[k_rng][l_rng] *= -1;
-                            M += (double) 2*spins[k_rng][l_rng];
+                            M += (double) (2*spins[k_rng][l_rng]);
                             E += (double) dE;
                         }
+
+                        //else {
+                        //    spins[k_rng][l_rng] *= -1;
+                        //}
                     }
                 }
             }
@@ -112,43 +122,7 @@ void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycl
 }
 
 //void metropolis(int**& spins, int num_spins, int num_mc_cycles, double* delta_E, double* exp_dE, double& E, double& M, double* expectation_values){
-//    std::random_device rd;      // Instantiate random device
-//    std::mt19937_64 rng(rd());  // Instantiate random number generator
-//    std::uniform_real_distribution<double> uniform(0.0, 1.0);  // Use a uniform dist for the generator
-
-//    for (int n = 0; n < num_mc_cycles; n++){    // Loop over number of MC cycles
-//        for (int i = 0; i < num_spins; i++){        // Loop over rows in spins array
-//            for (int j = 0; j < num_spins; j++){        // Loop over columns in spins array
-//                int k_rng = (int) uniform(rng)*(double)num_spins;  // Random spin row index
-//                int l_rng = (int) uniform(rng)*(double)num_spins;  // Random spin column index
-//                int dE = (double) 2*spins[k_rng][l_rng]*
-//                        (spins[k_rng][get_periodic_index(l_rng+1, num_spins)] +
-//                         spins[get_periodic_index(k_rng+1, num_spins)][l_rng] +
-//                         spins[k_rng][get_periodic_index(l_rng-1, num_spins)] +
-//                         spins[get_periodic_index(k_rng-1, num_spins)][l_rng]);
-
-//                double current_exp_dE = 0.0;    // To hold current w = exp(-dE/T)
-
-//                for (int m = 0; m < 5; m++){
-//                    if ((double) dE == delta_E[m]){
-//                        //std::cout << "Found pre-calculated exp_dE" << std::endl;
-//                        current_exp_dE = exp_dE[m];     // Found pre-calculated w = exp(-dE/T)
-//                    }
-//                }
-
-//                if (dE <= 0 || uniform(rng) <= current_exp_dE){    // If dE <= 0 or if random(0,1) < exp(-dE/T)
-//                    //std::cout << "Flipped a spin" << std::endl;
-//                    spins[k_rng][l_rng] *= -1;
-//                    M += (double) 2*spins[k_rng][l_rng];
-//                    E += (double) dE;
-//                }
-//            }
-//        }
-
-//        expectation_values[0] += E; expectation_values[1] += E*E;
-//        expectation_values[2] += M; expectation_values[3] += M*M;
-//        expectation_values[4] += fabs(M);
-//    }
+    // Stuff
 //}
 
 
@@ -188,9 +162,9 @@ void initialize_spin_config_rng(int**& spins, int num_spins){
 void compute_energy_and_moment(int** spins, int num_spins, double& E, double& M){
     for (int i = 0; i < num_spins; i++){
         for (int j = 0; j < num_spins; j++){
-            M += (double)spins[i][j];
-            E -= (double)spins[i][j]*(spins[i][get_periodic_index(j+1, num_spins)] +
-                    spins[get_periodic_index(i+1, num_spins)][j]);  // Nearest neighbour
+            M += (double) spins[i][j];
+            E -= (double) (spins[i][j]*(spins[i][get_periodic_index(j+1, num_spins)] +
+                    spins[get_periodic_index(i+1, num_spins)][j]));  // Nearest neighbour
         }
     }
 }
@@ -215,14 +189,14 @@ int get_periodic_index(int proposed_index, int array_lenght){
 
 /* Function that writes T, E, E^2, M M^2 and |M| to file (normilized for number of spins). */
 void write_to_file(std::ofstream& outfile, double T, double* expectation_values, int num_spins, int num_mc_cycles){
-    double one_over_mcs = 1.0/((double)num_mc_cycles);
+    double one_over_mcc = 1.0/((double)num_mc_cycles);
     double one_over_total_spins = 1.0/((double)(num_spins*num_spins));
 
-    double E_avg = expectation_values[0]*one_over_mcs;
-    double E2_avg = expectation_values[1]*one_over_mcs;
-    double M_avg = expectation_values[2]*one_over_mcs;
-    double M2_avg = expectation_values[3]*one_over_mcs;
-    double Mabs_avg = expectation_values[4]*one_over_mcs;
+    double E_avg = expectation_values[0]*one_over_mcc;
+    double E2_avg = expectation_values[1]*one_over_mcc;
+    double M_avg = expectation_values[2]*one_over_mcc;
+    double M2_avg = expectation_values[3]*one_over_mcc;
+    double Mabs_avg = expectation_values[4]*one_over_mcc;
 
     double C_v = (E2_avg - E_avg*E_avg)*one_over_total_spins/(T*T);
     double X = (M2_avg - Mabs_avg*Mabs_avg)*one_over_total_spins/T;
@@ -237,25 +211,25 @@ void write_to_file(std::ofstream& outfile, double T, double* expectation_values,
 }
 
 /* Function that prints out analytical values for the 2x2 lattice case. */
-void print_analytical_values(int num_spins, double T){
-    double one_over_total_spins = 1.0/((double)num_spins*num_spins);
+void print_analytical_values(double T){
+    double one_over_total_spins = 1.0/(2.0*2.0);
     double k_B = 1.0;
-    double beta = 1/(k_B*T);
+    double beta = 1.0/(k_B*T);
 
-    double Z = 4*cosh(8*beta) + 12;
-    double E = -32*sinh(8*beta)/Z;
-    double E2 = -256*sinh(8*beta)/Z;
-    double M = (8*exp(8*beta) + 16)/Z;
-    double M2 = 32*(32*exp(8*beta) + 32)/Z;
+    double Z = 4.0*cosh(8*beta) + 12.0;
+    double E = -32.0*sinh(8*beta)/Z;
+    double E2 = 256.0*sinh(8*beta)/Z;
+    double M = (8.0*exp(8.0*beta) + 16.0)/Z;
+    double M2 = 32.0*(exp(8.0*beta) + 1)/Z;
     double C_v = (E2 - E*E)/(k_B*T*T);
     double X = (M2 - M*M)/(k_B*T);
 
-    std::cout << "<E> = " << E*one_over_total_spins << std::endl;
+    std::cout << "<E>   = " << E*one_over_total_spins << std::endl;
     std::cout << "<E^2> = " << E2*one_over_total_spins << std::endl;
-    std::cout << "<M> = " << M*one_over_total_spins << std::endl;
+    std::cout << "<M>   = " << M*one_over_total_spins << std::endl;
     std::cout << "<M^2> = " << M2*one_over_total_spins << std::endl;
-    std::cout << "C_v = " << C_v*one_over_total_spins << std::endl;
-    std::cout << "X = " << X*one_over_total_spins << std::endl;
+    std::cout << "C_v   = " << C_v*one_over_total_spins << std::endl;
+    std::cout << "X     = " << X*one_over_total_spins << std::endl;
 }
 
 

@@ -33,8 +33,8 @@ void TEST_compute_energy_and_moment(){
 
     /* Compare with analytical values for E and M for the 2x2 lattice. */
     if (E != -8.0 || M != 4.0){
-        if (E != -8.0) std::cout << "TEST FAILED: Energy energy" << std::endl;
-        if (M != 4.0) std::cout << "TEST FAILED: Magnetic moment" << std::endl;
+        if (E != -8.0) std::cout << "TEST FAILED: Initialize energy" << std::endl;
+        if (M != 4.0) std::cout << "TEST FAILED: Initialize magnetic moment" << std::endl;
     }
 
     else std::cout << "TEST PASSED: Energy and magnetic moment" << std::endl;
@@ -47,3 +47,67 @@ void TEST_compute_energy_and_moment(){
 
     delete [] spins;
 }
+
+/* Unit test that checks if the random spins config initializer gives spins +1 or -1 for all spins. */
+void TEST_initialize_spin_config_prev(){
+    double T = 1.0;
+    int num_spins = 2;          // Size of lattice, i.e. 2x2
+
+    /* Allocate memory for 2D spin array. */
+    int** spins = new int*[num_spins];
+    for (int i = 0; i < num_spins; i++){
+        spins[i] = new int[num_spins];
+    }
+
+    initialize_spin_config_prev(spins, num_spins, T);   // Initialize all +1 spin config
+
+    for (int i = 0; i < num_spins; i++){
+        for (int j = 0; j < num_spins; j++){
+            if (spins[i][j] != 1){
+                std::cout << "TEST FAILED: All +1 spin configuration" << std::endl;
+                return;
+            }
+        }
+    }
+
+    std::cout << "TEST PASSED: All +1 spin configuration" << std::endl;
+
+    /* Deallocate memory for spin array. */
+    for(int i = 0; i < num_spins; i++){
+        delete [] spins[i];
+    }
+
+    delete [] spins;
+}
+
+/* Unit test that checks if the random spins config initializer gives spins +1 or -1 for all spins. */
+void TEST_initialize_spin_config_rng(){
+    int num_spins = 2;          // Size of lattice, i.e. 2x2
+
+    /* Allocate memory for 2D spin array. */
+    int** spins = new int*[num_spins];
+    for (int i = 0; i < num_spins; i++){
+        spins[i] = new int[num_spins];
+    }
+
+    initialize_spin_config_rng(spins, num_spins);   // Initialize random spin config
+
+    for (int i = 0; i < num_spins; i++){
+        for (int j = 0; j < num_spins; j++){
+            if (spins[i][j] != -1 && spins[i][j] != 1){
+                std::cout << "TEST FAILED: Random spin configuration" << std::endl;
+                return;
+            }
+        }
+    }
+
+    std::cout << "TEST PASSED: Random spin configuration" << std::endl;
+
+    /* Deallocate memory for spin array. */
+    for(int i = 0; i < num_spins; i++){
+        delete [] spins[i];
+    }
+
+    delete [] spins;
+}
+
