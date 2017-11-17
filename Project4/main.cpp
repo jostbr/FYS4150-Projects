@@ -17,7 +17,7 @@ using namespace std;
 using namespace arma;
 
 random_device rd;
-mt19937 randomEngine(rd());
+mt19937_64 randomEngine(rd());
 uniform_real_distribution<double> randomDist(0.0,1.0);
 
 
@@ -31,7 +31,7 @@ double randomUniform()
 void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Moment);
 int PBC(int i, int L, int add);
 void WriteResultstoFile(int L, int MCC, double Temperature, vec Expectation_Values);
-void Analytical_Values(double Temperature, int L, int Tot_MCC);
+void Analytical_Values(double Temperature, int L);
 void Test_RNG();
 
 // initiate output file
@@ -63,17 +63,14 @@ int main(int argc, char* argv[])
 
 
     string filename;
-    L = 2;
-    //Tot_MCC = 10000;
-    start_T = 1.0;
-    end_T = 1.0;
-    step_T = 0.1;
+    L = 100;
+    start_T = 2.170;
+    end_T = 2.4;
+    step_T = 0.01;
 
     //Random number generator (RNG) Test
+
     Test_RNG();
-
-
-   //int N = L*L;         //Total number of Spins
 
 
     //Initiate empty matrix to hold the expectation values; E, E*E, M, M*M, fabs(M)
@@ -96,7 +93,7 @@ int main(int argc, char* argv[])
 
 
    //Initiate empty vector to hold the  for differnt energy changes (de)
-   //vec Energy_Bin = zeros<vec>(L*L*4);
+   //vec Energy_Bin = zeros<vec>(L*L*4); //may change to 2 400*2=800
 
    //Initiate empty variables
    double Energy = 0.0;
@@ -110,12 +107,14 @@ int main(int argc, char* argv[])
    //Precalculate Energydifferences at a given Temperature
    for (double Temperature = start_T; Temperature <= end_T; Temperature += step_T){
 
+
+
        //Values that should be reset for each Temperature
-       int accepted_configurations = 0;
-       int Total_number_MCC = 0;
+       //int accepted_configurations = 0;
+       //int Total_number_MCC = 0;
 
        //Remove this if-test for large simulations..
-       if(L==2){Analytical_Values(Temperature, L, Tot_MCC);}
+       //if(L==2){Analytical_Values(Temperature, L, Tot_MCC);}
 
        //Empty vector to store the five energy differences
        vec Energy_Change = zeros<vec>(17);
@@ -123,13 +122,15 @@ int main(int argc, char* argv[])
        //cout << Energy_Change << endl;
 
 
+       //To loop over
+       int Tot_Tot_MCC = 1250000;
 
-       int Tot_Tot_MCC = 100000;
+       //vec Hist_Count = zeros<vec>(1000000+1);
 
-       for (int Tot_MCC = 1000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 10000){
+       for (int Tot_MCC = 1250000; Tot_MCC <= Tot_Tot_MCC; Tot_MCC += 250){
            //Loop over all MC cycles
 
-           for (int MCC = 0; MCC <= Tot_MCC; MCC++){
+           for (int MCC = 1; MCC <= Tot_MCC; MCC++){
                //Loop over all spins
                for (int i= 0; i<(L*L); i++){
                    //Pick spin at random from Spin_Matrix
@@ -138,14 +139,24 @@ int main(int argc, char* argv[])
                    int iy = floor(randomUniform()*L);
                    //cout << "random index = " << iy << endl;
 
-                   Spin_Matrix(ix,iy) *= -1;    //Flips the spin we chose at random
+                   //Spin_Matrix(ix,iy) *= -1;    //Flips the spin we chose at random
 
                    //Find energy of new configuration
-                   int Delta_E =  -2*Spin_Matrix.at(ix,iy)*
-                         (Spin_Matrix.at(ix,PBC(iy,L,-1))+Spin_Matrix.at(PBC(ix,L,-1),iy)+Spin_Matrix.at(ix,PBC(iy,L,1))+Spin_Matrix.at(PBC(ix,L,1),iy));
+                   int Delta_E =  2*Spin_Matrix.at(ix,iy)*
+                         (Spin_Matrix.at(ix,PBC(iy,L,-1))
+                         +Spin_Matrix.at(PBC(ix,L,-1),iy)
+                         +Spin_Matrix.at(ix,PBC(iy,L,1))
+                         +Spin_Matrix.at(PBC(ix,L,1),iy));
+
+
+                   if(randomUniform() <= Energy_Change(Delta_E+8)) {
+                       Spin_Matrix(ix,iy) *= -1;
+                       Magnetic_Moment += (double) 2*Spin_Matrix(ix,iy);
+                       Energy += (double) Delta_E;
+                   }
 
                    //cout << "Delta_E = " << Delta_E << endl;
-
+                   /*
                    //Want to change new spin configuration back if condition under is met
                    if (Energy_Change(Delta_E+8) <= randomUniform() ){
                        Spin_Matrix(ix,iy) *= -1;
@@ -158,7 +169,7 @@ int main(int argc, char* argv[])
                        //accepted_configurations +=1;
 
                    }
-
+                    */
 
 
                } //Terminates one MC Cycle
@@ -172,12 +183,13 @@ int main(int argc, char* argv[])
 
                //Energy_Bin(Energy+(L*L*2)) += 1;
 
-
+               //if(MCC>5000000){Hist_Count(MCC-5000000)=Energy/L/L;}
+               //cout << Hist_Count(MCC) << endl;
 
            } //Terminates all Tot_MC cycles
 
-           //Total_number_MCC += Tot_MCC;
-           //cout << "Total Number of MC sweeps so far = " << Total_number_MCC << endl;
+//           Total_number_MCC += Tot_MCC;
+//           cout << "Total Number of MC sweeps so far = " << Total_number_MCC << endl;
 
            //Solve part task 4c)
            //cout << "Number of Accepted energy configurations = " << accepted_configurations << endl;
@@ -191,7 +203,7 @@ int main(int argc, char* argv[])
                 MPI_Allreduce(&Expectation_Values[i],&TotExpectation_Values[i],1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
 
            if(rank == 0)
-                WriteResultstoFile(L, Tot_MCC, Temperature, Expectation_Values);
+                WriteResultstoFile(L, Tot_MCC, Temperature, TotExpectation_Values);
 
            Expectation_Values(0) = 0.0;
            Expectation_Values(1) = 0.0;
@@ -199,11 +211,32 @@ int main(int argc, char* argv[])
            Expectation_Values(3) = 0.0;
            Expectation_Values(4) = 0.0;
 
+
        }//Terminates loop over all Tot_Tot_MCC
 
-//       for (int i=0; i<(L*L); i++){
-//           cout << Energy_Bin(i) << endl;
+//       if (rank==0){
+//           string fileout2 = filename;
+//           string argument = to_string(L);
+//           fileout2.append(argument);
+//           ofile.open(fileout2);
+//           ofile << setiosflags(ios::showpoint | ios::uppercase);
+//           ofile << "Histogram" << endl;
+//           for (int i=0; i<(Tot_Tot_MCC); i++){
+//               ofile << setw(0) << setprecision(8) << Hist_Count(i) << endl;
+//               //cout << Hist_Count(i) << endl;
+//           }
+//           ofile.close();
 //       }
+
+
+
+
+//       if (rank==0){
+//           for (int i=0; i<(L*L*4); i++){
+//               cout << Energy_Bin(i) << endl;
+//           }
+//       }
+
 
 
    if(Temperature == end_T && rank == 0){ofile.close();} // close output file}
@@ -244,6 +277,12 @@ void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Momen
     }
   }
 
+//    for(int x =0; x < L; x++) {
+//      for (int y= 0; y < L; y++){
+//          Spin_Matrix(x,y) = 1;
+//          Magnetic_Moment +=  (double) Spin_Matrix(x,y);
+//        }}
+
   // Setup spin matrix for GROUND STATE T < 1.5
 //  for(int x =0; x < L; x++) {
 //    for (int y= 0; y < L; y++){
@@ -268,17 +307,20 @@ void Initialize(int L, mat &Spin_Matrix,  double& Energy, double& Magnetic_Momen
 
 void WriteResultstoFile(int L, int Tot_MCC, double Temperature, vec Expectation_Values)
 {
-  double norm = 1.0/((double) (Tot_MCC));  // divided by  number of cycles
+  double norm = 1.0/((double) (4.0*Tot_MCC));  // divided by  number of cycles
   double E = Expectation_Values(0)*norm;
   double EE = Expectation_Values(1)*norm;
   double M = Expectation_Values(2)*norm;
   double MM = Expectation_Values(3)*norm;
   double Mabs = Expectation_Values(4)*norm;
+  //cout << setprecision(8) << MM << endl;
+  //cout << setprecision(8) << Mabs*Mabs << endl;
   // all expectation values are per spin, divide by 1/NSpins/NSpins
   double E_variance = (EE- E*E)/L/L;
-  double M_variance = (MM - Mabs*Mabs)/L/L;
+  double M_variance = (MM- Mabs*Mabs)/L/L;
+  //cout << setprecision(8) << M_variance << endl;
   ofile << setw(0) << setprecision(8) << Temperature;
-  ofile << setw(15) << setprecision(8) << Tot_MCC;
+  ofile << setw(15) << setprecision(8) << Tot_MCC*4;
   ofile << setw(15) << setprecision(8) << E/L/L;
   ofile << setw(15) << setprecision(8) << E_variance/Temperature/Temperature;
   ofile << setw(15) << setprecision(8) << M/L/L;
@@ -287,8 +329,7 @@ void WriteResultstoFile(int L, int Tot_MCC, double Temperature, vec Expectation_
 } // end output function
 
 
-void Analytical_Values(double Temperature, int L, int Tot_MCC){
-    //double norm = 1.0/((double) (Tot_MCC));  // divided by  number of cycles
+void Analytical_Values(double Temperature, int L){
 
     //The analytical solutions only holds for the 2x2 spin matrix
     double k_B = 1.0;                           // [J/K]
@@ -317,7 +358,6 @@ void Analytical_Values(double Temperature, int L, int Tot_MCC){
 }
 
 //I want to make a function that test if RNG is good to go:)
-
 void Test_RNG(){
     int Large_number = 10E3;
     vec Test_numbers = zeros<vec>(Large_number);
@@ -328,13 +368,8 @@ void Test_RNG(){
     //Want to check if mean is 1/2 for uniform distribution
     double Test_result = mean(Test_numbers);
     cout << "Mean of random numbers = " << Test_result << endl;
+    //To proper test RNG, increase Large_number and repeat many times, then mean of all the means:)
 
-
-    //Want to check if integral gives 1/2
-    //vec X = linspace<vec>(0, 1.0, 100);
-    //mat Z =  trapz(X,Test_numbers);
-    //double Z = trapz(Test_numbers);
-   // cout << "Integral of random numbers = " << Z << endl;
 
 }
 
