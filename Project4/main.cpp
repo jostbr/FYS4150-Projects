@@ -1,4 +1,5 @@
 
+# include <string>
 # include <mpi.h>
 # include "ising.h"
 # include "mem_alloc.h"
@@ -16,7 +17,7 @@ int main(int argc, char* argv[]){
         std::cout << "===============================================" << std::endl;
         TEST_get_periodic_index();
         TEST_compute_energy_and_moment();
-        TEST_initialize_spin_config_prev();
+        TEST_initialize_spin_config_ordered();
         TEST_initialize_spin_config_rng();
         std::cout << "===============================================" << std::endl;
 
@@ -26,13 +27,21 @@ int main(int argc, char* argv[]){
     }
 
     double T_0 = 1.0;
-    double T_N = 1.0;
+    double T_N = 2.4;
     double dT = 0.05;
-    int num_spins = 100;
-    int num_mc_cycles = 1000000000;
+    int num_spins = 20;
+    int num_mc_cycles = 1000000;
 
-    //ising(T_0, T_N, dT, num_spins, num_mc_cycles);
-    ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs);
+    if (num_mc_cycles % num_procs != 0){    // If num_mc_cycles can't be evenly distributed
+        std::cout << "Error: Choose num_mc_cyles and num_procs --> num_mc_cycles % num_procs = 0" << std::endl;
+        std::cout << "Terminating program...\n" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string fileout_01 = "20x20_TR_RANDOM.txt";
+    //std::string fileout_02 = "20x20_T24_ORDERED.txt";
+
+    ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs, fileout_01);
 
     MPI_Finalize();
 }
@@ -41,10 +50,12 @@ int main(int argc, char* argv[]){
  * initial and final temperature of the system, a temperature step, number of spins in one direction (of
  * the 2D square lattice) and the number of Monte Carlo cycle one wishes to perform (the more the better).
  * Also, for the parallelization, it needs the rank of the caller and the total number of processes. */
-void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_cycles, int my_rank, int num_procs){
+void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_cycles,
+               int my_rank, int num_procs, std::string fileout){
     /* ================================== Variable declarations ================================== */
     double E, M;                    // To hold energy and magentic moment each temperature iteration
     double T = T_min;               // Temperature starts at minimum
+    long long accepted_states = 0;        // To count number of total accepted states
     double averages[5];             // Array to hold total expectation values of E, E^2, M, M^2, |M|
     double exp_dE[5];               // Array to hold pre-calculated w = exp(-dE/T)
     int delta_E[5];                 // Array to hold pre-caclualted energy differences
@@ -53,6 +64,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 
     /* Variables especially important on a per process-level. */
     double my_averages[5];              // Array to hold local expectation values of E, E^2, M, M^2, |M|
+    long long my_accepted_states;             // To count local number of total accepted states
     int my_num_mc_cycles = num_mc_cycles/num_procs;     // Assume integer division gives zero remainder
     std::cout << "Number of MC cycles performed by process "
               << my_rank << ": " << my_num_mc_cycles << std::endl;
@@ -66,11 +78,13 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 
     /* Open output file and write header info to file. */
     if (my_rank == 0){
-        outfile.open("results.txt");
+        outfile.open(fileout);
         outfile << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
-        outfile << std::setw(18) << "Num spins" << std::setw(18) << "MC cycles" << std::setw(18)
-                << "Temperature" << std::setw(18) << "Mean energy" << std::setw(18) << "Mean abs mag"
-                << std::setw(18) << "Heat cap" << std::setw(18) << "Mag susc" << std::endl;
+        outfile << std::setw(10) << "Num spins" << std::setw(18) << "Tempreature" << std::setw(18)
+                << "MC cycles" << std::setw(18) << "Mean energy" << std::setw(18) << "Mean abs mag"
+                << std::setw(18) << "Mean mag" << std::setw(18) << "Energy var" << std::setw(18)
+                << "Mean abs var" << std::setw(18) << "Heat cap" << std::setw(18)
+                << "Mag susc" << std::setw(18) << "Acc states"<< std::endl;
     }
 
     std::random_device rd;      // Instantiate random device
@@ -82,9 +96,11 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
     /* Main loop over temperature doing Monte Carlo simulations each temperature step. */
     /* ================================================================================= */
     while (T <= T_max){
+        std::cout << T << std::endl;
         /* ========================== Pre-MC-cycles initialization =========================== */
         E = 0;      // Start energy at zero for every temperature
         M = 0;      // Start magnetic moment at zero for every temperature
+        my_accepted_states = 0;   // Reset number of accepted states every temperature
 
         for (int m = 0; m < 5; m++){
             exp_dE[m] = exp(-delta_E[m]/T);     // Pre-calculate w = exp(-dE/T) for current T
@@ -92,14 +108,14 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
             averages[m] = 0;                    // Initialize all total averages to zero
         }
 
-        //initialize_spin_config_prev(spins, num_spins, T);   // Set initial spin config for current T
+        //initialize_spin_config_ordered(spins, num_spins);   // Set initial spin config for current T
         initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
         compute_energy_and_moment(spins, num_spins, E, M);  // Compute initial energy and moment
         //print_spin_array(spins, num_spins);
 
         //metropolis(spins, num_spins, num_mc_cycles, delta_E, exp_dE, E, M, expectation_values);
         /* ================================== MC cycles ================================== */
-        for (int n = 0; n < my_num_mc_cycles; n++){    // Loop over number of local MC cycles
+        for (int n = 1; n <= my_num_mc_cycles; n++){    // Loop over number of local MC cycles
             for (int i = 0; i < total_num_spins; i++){        // Loop over rows in spins array
                 int k_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin row index
                 int l_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin column index
@@ -117,6 +133,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
                     spins[k_rng][l_rng] *= -1;
                     M += (double) (2*spins[k_rng][l_rng]);
                     E += (double) dE;
+                    my_accepted_states += 1;
                 }
 
                 else {
@@ -127,6 +144,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
                         if (dE == delta_E[m]){
                             //std::cout << "Found pre-calculated exp_dE" << std::endl;
                             current_exp_dE = exp_dE[m];     // Found pre-calculated w = exp(-dE/T)
+                            break;                          // No need to search anymore if found
                         }
                     }
 
@@ -135,6 +153,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
                         spins[k_rng][l_rng] *= -1;
                         M += (double) (2*spins[k_rng][l_rng]);
                         E += (double) dE;
+                        my_accepted_states += 1;
                     }
                 }
                 /* =================================================================== */
@@ -147,22 +166,24 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 
             int mc_write = n*num_procs;
 
-            if (mc_write % 100000 == 0){
-                MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+//            if (mc_write % 10000 == 0 || n == 1){
+//                MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+//                MPI_Reduce(&my_accepted_states, &accepted_states, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
-                if (my_rank == 0){
-                    write_to_file(outfile, T, averages, num_spins, mc_write);    // Write averages to file.
-                }
-            }
+//                if (my_rank == 0){
+//                    write_to_file(outfile, T, averages, accepted_states, num_spins, mc_write);  // Write averages to file.
+//                }
+//            }
         }
 
         /* =========================== Post MC-cycles logistics ===========================*/
-        /* Sum expectation values from all processes and collect at process 0. Note: Reduce is blocking. */
-//        MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        /* Sum expectation values and num. accepted states from all processes and collect at process 0.*/
+        MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&my_accepted_states, &accepted_states, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 
-//        if (my_rank == 0){
-//            write_to_file(outfile, T, averages, num_spins, num_mc_cycles);    // Write averages to file.
-//        }
+        if (my_rank == 0){
+            write_to_file(outfile, T, averages, accepted_states, num_spins, num_mc_cycles);    // Write averages to file.
+        }
 
         T += dT;    // Increase temperature
     }
@@ -181,131 +202,12 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 }
 
 
-/* Function performing the Monte Carlo simulation in the Ising model. Takes input initial and final
- * temperature of the system, a temperature step, number of spins in one direction (of the 2D square
- * lattice) and the number of Monte Carlo cycle one wishes to perform (the more the better). */
-void ising(double T_min, double T_max, double dT, int num_spins, int num_mc_cycles){
-    double E, M;                    // To hold energy and magentic moment each temperature iteration
-    double T = T_min;               // Temperature starts at minimum
-    double expectation_values[5];   // Array to hold expectation values of E, E^2, M, M^2, |M|
-    int delta_E[5];                 // Array to hold pre-caclualted energy differences
-    double exp_dE[5];               // Array to hold pre-calculated w = exp(-dE/T)
-
-    std::random_device rd;      // Instantiate random device
-    std::mt19937_64 rng(rd());  // Instantiate random number generator
-    std::uniform_real_distribution<double> uniform(0.0, 1.0);  // Use a uniform dist for the generator
-
-    /* Allocate memory for 2D spin array. */
-    int** spins = new int*[num_spins];
-    for(int i = 0; i < num_spins; i++){
-        spins[i] = new int[num_spins];
-    }
-
-    delta_E[0] = -8; delta_E[1] = -4; delta_E[2] = -0; delta_E[3] = 4; delta_E[4] = 8;  // Possible dE's
-
-    /* Instantiate output file object and write header info to file. */
-    std::ofstream outfile;
-    outfile.open("results.txt");
-    outfile << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
-    outfile << std::setw(18) << "Num spins" << std::setw(18) << "MC cycles" << std::setw(18)
-            << "Temperature" << std::setw(18) << "Mean energy" << std::setw(18) << "Mean abs mag"
-            << std::setw(18) << "Heat cap" << std::setw(18) << "Mag susc" << std::endl;
-
-    clock_t t_0 = clock();
-
-    /* Main loop over temperature doing Monte Carlo simulations each temperature step. */
-    while (T <= T_max){
-        E = 0;      // Start energy at zero for every temperature
-        M = 0;      // Start magnetic moment at zero for every temperature
-
-        for (int m = 0; m < 5; m++){
-            exp_dE[m] = exp(-delta_E[m]/T);     // Pre-calculate w = exp(-dE/T) for current T
-            expectation_values[m] = 0;          // Initialize all averages to zero
-        }
-
-        //initialize_spin_config_prev(spins, num_spins, T);   // Set initial spin config for current T
-        initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
-        compute_energy_and_moment(spins, num_spins, E, M);
-        print_spin_array(spins, num_spins);
-
-        //metropolis(spins, num_spins, num_mc_cycles, delta_E, exp_dE, E, M, expectation_values);
-        for (int n = 0; n < num_mc_cycles; n++){    // Loop over number of MC cycles
-            for (int i = 0; i < num_spins; i++){        // Loop over rows in spins array
-                for (int j = 0; j < num_spins; j++){        // Loop over columns in spins array
-                    int k_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin row index
-                    int l_rng = (int) (uniform(rng)*(double)num_spins);  // Random spin column index
-                    int dE = 2*spins[k_rng][l_rng]*
-                            (spins[k_rng][get_periodic_index(l_rng+1, num_spins)] +
-                             spins[get_periodic_index(k_rng+1, num_spins)][l_rng] +
-                             spins[k_rng][get_periodic_index(l_rng-1, num_spins)] +
-                             spins[get_periodic_index(k_rng-1, num_spins)][l_rng]);
-                    //std::cout << dE << std::endl;
-
-                    if (dE <= 0){    // If dE <= 0
-                        //std::cout << "Flipped a spin" << std::endl;
-                        spins[k_rng][l_rng] *= -1;
-                        M += (double) (2*spins[k_rng][l_rng]);
-                        E += (double) dE;
-                    }
-
-                    else {
-                        double current_exp_dE = 0.0;    // To hold current w = exp(-dE/T)
-
-                        for (int m = 0; m < 5; m++){    // Loop over delta_E array
-                            //std::cout << dE << ", " << delta_E[m] << std::endl;
-                            if (dE == delta_E[m]){
-                                //std::cout << "Found pre-calculated exp_dE" << std::endl;
-                                current_exp_dE = exp_dE[m];     // Found pre-calculated w = exp(-dE/T)
-                            }
-                        }
-
-                        if (uniform(rng) <= current_exp_dE){    // If r <= exp(-dE/T)
-                            //std::cout << "Flipped a spin" << std::endl;
-                            spins[k_rng][l_rng] *= -1;
-                            M += (double) (2*spins[k_rng][l_rng]);
-                            E += (double) dE;
-                        }
-                    }
-                }
-            }
-
-            expectation_values[0] += E; expectation_values[1] += E*E;
-            expectation_values[2] += M; expectation_values[3] += M*M;
-            expectation_values[4] += fabs(M);
-        }
-
-        write_to_file(outfile, T, expectation_values, num_spins, num_mc_cycles);    // Write averages to file.
-
-        T += dT;
-    }
-
-    clock_t t_1 = clock();
-    double time_used = (double)(t_1 - t_0)/CLOCKS_PER_SEC;
-    std::cout << "\nTime used: " << std::setprecision(8) << time_used << " seconds.\n" << std::endl;
-
-    outfile.close();
-
-    /* Deallocate memory for spin array. */
-    for(int i = 0; i < num_spins; i++){
-        delete [] spins[i];
-    }
-
-    delete [] spins;
-}
-
-//void metropolis(int**& spins, int num_spins, int num_mc_cycles, double* delta_E, double* exp_dE, double& E, double& M, double* expectation_values){
-    // Stuff
-//}
-
-
 /* Function that initializes 2D spins array with the current spin config except if the
  * temperature is less than 1.5, then it initializes all spins up (+1). */
-void initialize_spin_config_prev(int**& spins, int num_spins, double T){
+void initialize_spin_config_ordered(int**& spins, int num_spins){
     for (int i = 0; i < num_spins; i++){
         for (int j = 0; j < num_spins; j++){
-            if (T < 1.5){
-                spins[i][j] = 1;
-            }
+            spins[i][j] = 1;
         }
     }
 }
@@ -359,8 +261,10 @@ int get_periodic_index(int proposed_index, int array_lenght){
 }
 
 
-/* Function that writes T, E, E^2, M M^2 and |M| to file (normilized for number of spins). */
-void write_to_file(std::ofstream& outfile, double T, double* expectation_values, int num_spins, int num_mc_cycles){
+/* Function that writes num_spins, T, num_mc_cycles, <E>, <|M|>, <M>, <E^2> <M^2>, C_v, X,
+ * accepted_states to file (normilized for number of spins). */
+void write_to_file(std::ofstream& outfile, double T, double* expectation_values,
+                   int accepted_states, int num_spins, int num_mc_cycles){
     double one_over_mcc = 1.0/((double)num_mc_cycles);
     double one_over_total_spins = 1.0/((double)(num_spins*num_spins));
 
@@ -370,16 +274,23 @@ void write_to_file(std::ofstream& outfile, double T, double* expectation_values,
     double M2_avg = expectation_values[3]*one_over_mcc;
     double Mabs_avg = expectation_values[4]*one_over_mcc;
 
-    double C_v = (E2_avg - E_avg*E_avg)*one_over_total_spins/(T*T);
-    double X = (M2_avg - Mabs_avg*Mabs_avg)*one_over_total_spins/T;
+    double E_var = E2_avg - E_avg*E_avg;
+    double M_abs_var = M2_avg - Mabs_avg*Mabs_avg;
 
-    outfile << std::setw(18) << std::setprecision(8) << num_spins;
-    outfile << std::setw(18) << std::setprecision(8) << num_mc_cycles;
+    double C_v = E_var*one_over_total_spins/(T*T);
+    double X = M_abs_var*one_over_total_spins/T;
+
+    outfile << std::setw(10) << std::setprecision(8) << num_spins;
     outfile << std::setw(18) << std::setprecision(8) << T;
+    outfile << std::setw(18) << std::setprecision(8) << num_mc_cycles;
     outfile << std::setw(18) << std::setprecision(8) << E_avg*one_over_total_spins;
     outfile << std::setw(18) << std::setprecision(8) << Mabs_avg*one_over_total_spins;
+    outfile << std::setw(18) << std::setprecision(8) << M_avg*one_over_total_spins;
+    outfile << std::setw(18) << std::setprecision(8) << E_var*one_over_total_spins;
+    outfile << std::setw(18) << std::setprecision(8) << M_abs_var*one_over_total_spins;
     outfile << std::setw(18) << std::setprecision(8) << C_v;
-    outfile << std::setw(18) << std::setprecision(8) << X << std::endl;
+    outfile << std::setw(18) << std::setprecision(8) << X;
+    outfile << std::setw(18) << std::setprecision(8) << accepted_states << std::endl;
 }
 
 /* Function that prints out analytical values for the 2x2 lattice case. */

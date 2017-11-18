@@ -19,13 +19,12 @@ void TEST_get_periodic_index(){
  * checks if the function initializes the spins correctly and produces the expected energy and mag. moments. */
 void TEST_compute_energy_and_moment(){
     double E = 0.0, M = 0.0;    // t hold the computed energy and magnetic moments of the config
-    double T = 1.0;             // Sample temperature (below 1.5 to make sure all spins are +1)
     int num_spins = 2;          // Size of lattice, i.e. 2x2
     int** spins;
 
     alloc_array_2D(spins, num_spins, num_spins);
 
-    initialize_spin_config_prev(spins, num_spins, T);   // Call spin config initializer (all spins +1)
+    initialize_spin_config_ordered(spins, num_spins);   // Call spin config initializer (all spins +1)
     compute_energy_and_moment(spins, num_spins, E, M);  // Compute energy and moment for the config
 
     /* Compare with analytical values for E and M for the 2x2 lattice. */
@@ -40,13 +39,12 @@ void TEST_compute_energy_and_moment(){
 }
 
 /* Unit test that checks if the random spins config initializer gives spins +1 or -1 for all spins. */
-void TEST_initialize_spin_config_prev(){
-    double T = 1.0;
+void TEST_initialize_spin_config_ordered(){
     int num_spins = 2;          // Size of lattice, i.e.
     int** spins;
 
     alloc_array_2D(spins, num_spins, num_spins);
-    initialize_spin_config_prev(spins, num_spins, T);   // Initialize all +1 spin config
+    initialize_spin_config_ordered(spins, num_spins);   // Initialize all +1 spin config
 
     for (int i = 0; i < num_spins; i++){
         for (int j = 0; j < num_spins; j++){
