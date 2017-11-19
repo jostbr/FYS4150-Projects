@@ -1,0 +1,827 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[margin=0.80in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{cite}
+
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mygray}{rgb}{0.97,0.97,0.97}
+  
+\lstset{
+  language=C++,
+  basicstyle=\footnotesize,
+  commentstyle=\color{mygreen},
+  keywordstyle=\color{blue},
+  stringstyle=\color{mymauve},
+  tabsize=4
+}
+
+\begin{document}
+\begin{titlepage}
+\title{Project 4 - FYS4150}
+\author{Trude Bjørgås Hjelmeland}
+\date{
+    Department of Physics\\%
+    University of Oslo\\[2ex]%
+    \today
+}
+\clearpage
+\maketitle
+
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent Magnetic phase transition is a area of great interest and modeling magnetic systems with the help of Monte Carlo simulations have showed to be especially fruitful. In this project the Ising model in two dimensions together with the Metropolis sampling rule is deployed to simulate a magnetic system and investigate the magnetic phase transition and we will find the critical temperature at which this take place for a infinite lattice.      \\
+
+\end{abstract}
+\vspace{2.00cm}
+
+\noindent The address \url{https://github.com/jostbr/FYS4150-Projects/tree/Trude/Project4} on Git-Hub is associated with this project. Here one can find all code used in the project. This includes C++ source files containing the core of the project, but also a Python plotting script for result visualization. There are also available benchmark results from running the code as well as \LaTeX \ source for this PDF. 
+
+\end{titlepage}
+\pagebreak
+\tableofcontents
+\pagebreak
+
+% ======================================================== Indicate new section
+\section{Introduction}
+
+
+\noindent In this project we utilize the Monte Carlo method and the Ising model in two dimensions with the Metropolis algorithm as a sampling rule to model and simulate how a magnetic system responds to thermal energy and thereby also model the phase transition from a ferromagnetic to a paramagnetic phase taking place at the critical temperature. We will also take a closer look at the probability distribution with respect to the systems energy at different temperatures and find the critical temperature for a infinite spin lattice trough our calculations on finite lattices and scaling relations. \\
+
+ 
+
+% ======================================================== Indicate new section
+\section{Theory}
+
+
+
+% -------- Indicate new subsection
+\subsection{Magnetic Systems and Spin}
+%Some introduction about the classical spin (quantum state of the electron) and properties of magnetic systems
+
+%Some introduction about magnetic materials
+%Paramagnetic and ferromagnetic.
+
+%Spontaneous magnetization as a tug of war between two fundamental principles, energy minimization and increasing entropy as thermal energy is provided to the magnetic system through increasing temperature.   
+
+\noindent Magnetic fields are created by the magnetic moment of elementary particles and electrical currents. The magnetic moment associated with spin is a quantum mechanical phenomenon, but in the scope of this project we can model all the spins as small individual magnetic dipoles. As a further simplification we limit our self to looking at the magnetic moment only along one spatial direction meaning that spins can take the value $\pm 1$. A widely used method to model magnetic systems in this manner is to set up a lattice which contain a spin or magnetic dipole at each lattice cite and we will in this project deploy the Ising model to do just that. This model will be described in greater detailed in the section \ref{sec:Ising} and we will see that this model is popular for good reason. Namely that it is both efficient and creates a good conceptual understanding of the problem at hand.  \\  
+
+
+
+
+
+
+
+
+% -------------------------------------------------.----- Indicate new subsection
+\subsection{Phase Transitions}
+\label{sec:Phase}
+
+%Should include some figure showing first order magnetic phase transition (para to ferro I think)
+%Should include some figure showing second order phase transition, I think Cv is one..
+
+\noindent The magnetic state of a material is also known as its magnetic phase and in this project we will investigate a ferromagnetic to a paramagnetic phase transition which means that below a certain critical temperature, in this case the Curie Temperature, the material displays a net magnetization, the spins align in the same direction in magnetic domains and the material is ferromagnetic, while above this critical temperature we see no net magnetization because all the spins are randomly distributed and cancels each other, the material is said to be paramagnetic.  \\
+
+%Note that the Ising model in two dimensions show both first- and second order transitions. 
+
+\noindent In this project we wish to study the phase transition taking place near the critical temperature, $T_C$, and we will see that some interesting phenomena arises in this temperature interval. As described above, the mean magnetization near $T_C$ approaches zero with an infinite slope. This behavior is an example of a critical phenomena which is typically marked by one or more thermodynamical variables vanishing, here the mean magnetization goes towards zero above the critical point. These critical phenomena have been studied to great extent, mainly because we lack a good model and understanding for the physics in our system near these critical points \cite{Comp}. As a simplified approach we can describe many of the physical quantities near $T_C$ using power laws. One of the important quantities is the correlation length, $\xi(T)$, which diverges as $T \rightarrow T_C$. Here it is expected that the correlation length is of the same order of magnitude as the lattice spacing when $T >> T_C$ \cite{Comp}, but increases as T move towards $T_C$. This discontinuous behavior near $T_C $ can be described using a power law as follows;
+
+\begin{equation}
+	\label{eq:xi}
+		\xi(T) \sim |T_c - T|^{-\nu} 
+\end{equation}
+
+\noindent A second order phase transition i characterized by a correlation length that spans the whole system. It is surprising and not yet full understood how a model like the Ising model, which energy is calculated using nearest neighbor interactions only, can give correlation lengths on the order of magnitude of macroscopic length near the critical points \cite{Comp}.   \\
+
+\noindent Similarly we can describe the expectation value for the mean magnetization, when $T < T_C$ as:
+
+\begin{equation}
+		\big \langle |M|(T) \big \rangle \sim (T - T_C)^{\beta} 
+\end{equation}
+
+
+\noindent Where the critical exponent $\beta = \frac{1}{8}$. Similarly for the heat capacity we have \cite{Comp}:
+
+\begin{equation}
+		C_V (T) \sim |T_C - T| ^{\alpha}
+\end{equation}
+
+\noindent where $\alpha$ is zero. For the susceptibility we have \cite{Comp}:
+
+\begin{equation}
+		\chi (T) \sim |T_C - T|^{-\gamma}
+\end{equation}
+
+\noindent where $\gamma = - \frac{7}{4}$. At the $T_C$ both $C_V$ and $\chi$ diverges or are discontinuous for a infinite large lattice, $ L \rightarrow \infty$. Here L denotes the number of spins in each spatial dimension. We will of course be limited to finite lattice sizes in our simulations, and here the variance will always scale as $\sim \frac{1}{\sqrt(M)}$, where M is the number of possible lattice configurations which we will see in the next section, \ref{sec:StatPhys}, scales with L as $2^{LxL}$. So with our finite lattices the divergent behavior will be seen as a broad maximum near the critical point and we will see that this maximum becomes increasingly sharp as the lattice size increases.  \\
+
+\noindent In this project we want to estimate the critical temperature, $T_C$, in the thermodynamical limit where $ L \rightarrow \infty $. Limited to finite lattices, we will use finite scaling relations to relate our results from a finite lattice with the infinite lattice \cite{Comp}. The critical temperature for a finite and an infinite lattice scales as:
+
+\begin{equation}
+	\label{eq:scaling}
+		T_C(L) - T_C(L=\infty) = a L^{\frac{-1}{\nu}}
+\end{equation}
+
+\noindent Where a is a constant and $\nu$ is defined through equation \eqref{eq:xi}. In section 
+\ref{sec:PhaseResult} we will see how we can massage the expression in equation \eqref{eq:scaling} to get the expression $T_C(L=\infty)$ and estimate the critical temperature, $T_C$, in the thermodynamical limit where $ L \rightarrow \infty $. \\
+
+
+
+
+% ------------------------------------------------------ Indicate new subsection
+\subsection{Statistical Physics and the Canonical Ensemble}
+\label{sec:StatPhys}
+
+%Something about Statistical Physics in general
+
+\noindent The most frequently used ensemble in statistical physics is the Canonical ensemble. Here our system is allowed to exchange energy with the environment through a thermal bath at temperature, T, but do not exchange particles with the environment meaning that the number of particles, in our case the number of spins, is kept constant. In this ensemble the temperature is an intensive variable and quantities as mean energy and magnetization at a given temperature are found as expectation values \cite{Comp}. \\
+
+\noindent In order to obtain expectation values we need to deploy a probability distribution function and here we use the Boltzmann distribution given as \cite{Comp}:
+
+\begin{equation}
+				P_i(\beta) = \frac{e^{-\beta E_i}}{Z}
+                \label{Boltzmann}
+\end{equation}
+
+\noindent Here $\beta$ expresses the inverse temperature through the relation $\beta = \frac{1}{k_B T}$ where $k_B$ is the Boltzmann constant. $E_i$ is the energy associated with a given microstate i and Z is the normalization factor, called the partition function, given as \cite{Comp}:
+
+\begin{equation}
+		Z = \sum_{i=1}^{M} e^{-\beta E_i}
+        \label{Partition}
+\end{equation}
+
+\noindent Here M is the total number of microstates, in our case the total number of different spin configurations, given as $M=2^N$ where N is total number of spins contained within our lattice. Further, Helmholtz free energy, F, expresses the potential in this ensemble and is given as \cite{Comp}:
+
+\begin{equation}
+		F = -k_B T lnZ = \big \langle E \big \rangle - TS
+        \label{Helmholtz}
+\end{equation}
+
+\noindent Here $\big \langle E \big \rangle$ is the expectation value of the mean energy and S is the entropy. With a closer look we can see that expression to the right in Helmholtz free energy shows the interplay between two fundamental principles in physics, the systems wish to minimize its energy and the tendency of increased entropy as the temperature increases.  \\
+
+\noindent The expectation value of the mean energy can be found through the use of the probability distribution $P_i$ from equation \eqref{Boltzmann} as \cite{Comp}: 
+
+\begin{equation}
+		\big \langle E \big \rangle =  \sum_{i=1}^{M} E_i P_i(\beta) = \frac{1}{Z}  \sum_{i=1}^{M} E_i e^{-\beta E_i}
+        \label{exp_E}
+\end{equation}
+
+\noindent An important quantity in statistical physics is the variance, $\sigma^2$, of the expectation value which is defined as;
+
+\begin{equation}
+			\sigma_E^2 =  \big \langle E^2 \big \rangle -  \big \langle E \big \rangle ^2
+            \label{var_E}
+\end{equation}
+
+\noindent The specific heat at a constant volume, $C_V$, is obtained by dividing the variance for the expectation value of the mean energy with $k_B T^2$ \cite{Comp}:
+
+\begin{equation}
+		C_V = \frac{\sigma_E^2}{k_B T^2}
+        \label{heat}
+\end{equation}
+
+\noindent Both the expectation value for the mean magnetization and its variance can be found in a similar manner \cite{Comp}:  
+
+\begin{equation}
+		\big \langle M \big \rangle = \frac{1}{Z}  \sum_{i=1}^{M} M_i e^{-\beta E_i}
+        \label{exp_M}
+\end{equation}
+
+\begin{equation}
+		\sigma_M^2 = \big \langle M^2 \big \rangle -  \big \langle M \big \rangle ^2
+        \label{var_M}
+\end{equation}
+
+\noindent The magnetic susceptibility, $\chi$, is an expression for the material response to an applied magnetic field and can be found by dividing the latter variance with the factor $k_B T$ as follow \cite{Comp}:
+
+\begin{equation}
+			\chi = \frac{\sigma_M^2}{k_B T}
+            \label{susceptibility}
+\end{equation}
+
+
+%--------------------------------Indicating new subsection
+\subsection{Random Number Generators}
+
+
+\noindent In this project the Mersenne Twister have been utilized as a random number generator. The Mersenne twister is an algorithm that generates a sequence of numbers with properties that approximate the properties of a sequence of random numbers. The Mersenne twister is a pseudo random number generator also called a deterministic random number generator meaning that there is a relationship between the numbers in the sequence. They are not truly random numbers. \\
+
+\noindent An important quality of our random number generator is it's period. The period is the number of random number generated before the same sequence of number reappears in our sequence. For the Mersenne Twister, the periode is $2^{19937}-1$. \\ 
+
+\noindent As a simple test of our random number generator I have implemented a test that returns the mean value of a long sequence of numbers generated by our random number generator in the interval [0.0, 1.0] given by the uniform distribution. The mean to be returned should be equal or close to 0.5 for our random number generator to pass the test. \\
+
+%can use Correlation function provided in program folder to test RNG
+%Notes, 10.11 p.3
+
+
+
+%--------------------------------Indicating new subsection
+%\subsection{Central Limit Theorem}
+%see lecture notes noted 9-10 nov.
+
+%Conditions are violated by the uniform distribution as there is some correlation between the random numbers generated. 
+%Theorem assumes stochastic independent and identical?? variables to rewrite integral as product of integrals
+%Include formula for uniform distribution N_{i-1}=N_0 is often refereed to as the seed. 
+
+
+% ======================================================== Indicate new section
+\section{Methods}
+
+
+
+% -------- Indicate new subsection
+\subsection{Monte Carlo Simulation}
+
+%Something about how this is a powerful tool in statistical physics
+
+\noindent Monte Carlo simulation is one of the most used method in almost every quantitative science. It is applied in field ranging from statistics and finance to physics and engineering. The method is both powerful and flexible and it allows us to solve problems that with other methods would possibly be unsolvable. \\
+
+\noindent This statistical simulation method is based on utilizing sequences of random numbers to preform numerical simulations of systems that can be described using probability distribution functions. Many simulations (or "trials") is preformed and the result is taken as the average of all the trials. This allows us to predict the statistical error, the variance, and this can be used to estimate how many Monte Carlo simulations that are needed to achieve an error which is acceptable for the scope of the model at hand. \\
+
+
+% -------- Indicate new subsection
+\subsection{The Ising Model}
+\label{sec:Ising}
+
+%Some intro about Ising - why is it great
+
+\noindent The Ising model in two dimensions models magnetic systems as lattices of spins, one spin at each lattice site, and these take the value $\pm 1$. Here we will use a square spin lattice, LxL, where L denotes the number of spins in each dimension. Further the model only allows for interactions between the nearest neighbors of spin and the energy of the system is found trough: 
+
+
+\begin{equation}
+		E = - J \sum_{<kl>}^{N} s_k s_l
+        \label{Ei}
+\end{equation}
+%This is derived from the Hamiltonian
+\noindent Here we use the notation $<kl>$ to indicate that we are summing over pairs of neighboring spins and J is the coupling constant that expresses the strength of the interaction between the neighboring spins. In this project we will use J=1.0. \\ 
+
+%May say something about J>0 means blabla.. side 421 i lecture notes
+
+
+\noindent The corresponding magnetizations of the microstate, $M_i$, can be found through:
+
+\begin{equation}
+		M_i = \sum_{i=1}^{N} s_i
+        \label{Mi}
+\end{equation}
+
+
+
+
+% -------- Indicate new subsection
+\subsection{The Metropolis Algorithm}
+\label{sec:Metropolis}
+%This is only the part about deciding weather to keep or reject new spin configuration + maybe the spin flipping part 
+%Metropolis sampling
+
+
+\noindent In statistical physics the Metropolis algorithm is a Markov chain Monte Carlo method and in our case the new spin configuration is generated from the previous spin configuration and the transition probability depends on the energy difference, $\Delta E$, between the two configurations. As mentioned above it is difficult to calculate the partition function for large spin lattices and thereby calculating the specific probability, $P_i$, of our system being in a specific state as well. But since the Metropolis algorithm only considers ratios between probabilities, the need to find the partition function is luckily made redundant. \\
+
+\noindent The Metropolis algorithm goes as follows:
+
+\begin{enumerate}
+  \item Initialize a Spin Configuration and find it's Energy, $E_i$
+  \item Flip one Spin at Random and Find Energy of New Configuration, $E_f$
+  \item Calculate $\Delta E = E_f - E_i$, where $\Delta E$ can only take five values
+  \item If $\Delta E \leqslant 0$ we accept the new spin configuration
+  \item Else if a random number in the interval [0.0, 1.0] $\leqslant e^{-(\Delta E \beta)}$ we accept the new spin configuration
+  \item Else we discard new spin configuration
+  \item Update various expectation values
+  \item Then we repeat steps 2-7 until we have a sufficiently good representation of the states 
+  \label{Metropolis}
+\end{enumerate}
+
+
+
+
+% -------- Indicate new subsection
+\subsection{Implementation of the Algorithm}
+\label{sec:Implimentation}
+
+
+%\clearepage
+
+\noindent A simplified and schematic overview of the algorithm is shown in \ref{alg:magsys}. Lets take a closer look at some technicalities when we implement our algorithm. To impose the periodic boundary condition for the spin interactions a function called PBC is implemented. This returns the modulus of the sum of the index, number of spins in one dimension and an integer $\pm 1$ with respect to the number of spins in one dimension. Under we see how the function is called when we find the energy change resulting from flipping one spin at random (element ix,iy in the spin matrix, $S_{ix,iy}$). \\    
+
+
+\begin{lstlisting}
+int Delta_E =  -2*Spin_Matrix.at(ix,iy)*[Spin_Matrix.at(ix,PBC(iy,L,-1))                 			      						 	 
+									   +Spin_Matrix.at(PBC(ix,L,-1),iy)
+									   +Spin_Matrix.at(ix,PBC(iy,L,1))
+									   +Spin_Matrix.at(PBC(ix,L,1),iy)];                              
+\end{lstlisting}
+
+
+\noindent To see how this function works, lets pick out a spin in a corner, say $S_{0,39}$, if we are dealing with a 40x40 spin lattice. According to the periodic boundary condition, this spin should interact with 4 nearest neighbors; the spin to the left $S_{0,38}$, the spin over $S_{39,39}$, the spin to the right $S_{0,0}$ and the spin under $S_{1,39}$. If we now look at the code listed above and do the math, we see that $S_{0,39}$ interacts with $S_{0,38}+S_{39,39}+S_{0,0}+S_{1,39}$ exactly as it should. The spins to the left and over is found by passing the integer -1 while the spin over and to the right is found by passing the integer 1 to PBC. \\
+
+\noindent To explain why we use the factor 2 in front off the expression for the change in energy, between the two states lets consider the energy change as we flip one spin at random and use equation \eqref{Ei};
+
+\begin{equation}
+	\Delta E = E_j - E_i = J \sum_{<kl>} S_k^{(i)} S_l^{(i)} - J \sum_{<kl>} S_k^{(j)} S_l^{(j)} 
+\end{equation}
+
+\noindent Where the only spin that changes is $S_k^{(i)}$
+
+\begin{equation}
+	\Delta E = - J \sum_{<kl>} S_k^{(i)} ( S_l^{(j)} - S_l^{(i)}) 
+\end{equation}
+
+\noindent Where the latter term always returns $\pm 2$ leading us to:
+
+\begin{equation}
+	\Delta E =  2J S_l^{(i)} \sum_{<k>} S_k^{(j)}  
+\end{equation}
+
+\noindent Where the latter sum, sums over all the surrounding spins and we see now why the factor 2 appears in our algorithm when we are calculating the energy differences. Since we only flip one spin at the time, $\Delta E$ can only take five possible values $\pm 8, \pm 4$ and 0. This allows us to calculate the possible energy differences between the states outside the Monte Carlo loops, leaving the need to calculating this in each spin flip trial redundant, and thereby saving CPU time. \\ 
+
+
+
+\begin{algorithm}
+\caption{Magnetic system} \label{alg:magsys}
+\begin{algorithmic}[1]
+\Procedure{Monte Carlo simulations and Metropolis Algorithm on Ising model}{}
+  \State \texttt{Initialize Spin Matrix}
+  \While {\texttt{temp<=temp\_max}}
+  	\For {\texttt{MCC=1} to \texttt{MCC\_Max}}
+	  	\For {\texttt{x=1} to \texttt{L}}
+        	\For {\texttt{y=1} to \texttt{L}}
+          		\State \texttt{Pick index ix and iy at random}
+                \State \texttt{Flip spin(ix,iy)}
+                \State \texttt{Calculate energy difference}
+                \If {\texttt{Energy change<=random number}}
+                	\State \texttt{Discard new spin configuration}
+                \Else
+                	\State \texttt{Update Energy and Magnetic Moment}
+                \EndIf
+           \EndFor
+        \EndFor
+         \State \texttt{Update expectation values}
+    \EndFor
+    \State \texttt{Write results to file}
+  \EndWhile
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+      
+
+\noindent As we can see in the outline of the algorithm \ref{alg:magsys} the algorithm allows us to loop over intervals of temperatures. Here the temperature step utilized is ensured to be small enough so that the spin matrix from the previous temperature step can be passed as input to the next temperature. Then there is no need to initialize a new spin matrix and calculate the energy and magnetic moment of the entire spin matrix between the temperature steps and thereby saving CPU time. \\ 
+
+ 
+
+\subsection{Parallelization}
+\label{sec:Parallelization}
+
+ 
+
+\noindent In this project the code have been parallelized by utilizing MPI to decrease the simulation time needed. I have utilized four cores meaning that I should experience a decrease in CPU time by a factor of four. As the result in table \ref{tab:Timing} show, this is not the case. We see a speed up by a factor of about 3.2. Because of this somewhat disappointing result, I have repeated the timing for different runs but find the same factor of a speed up by about a factor three. This is likely because when we parallelize our code we get some overhead time costs related to setting up the parallelization and sending info and commands to the different processes.  \\
+
+
+%MAKE A TABLE WITH RESULTS
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l | c |} \hline
+  Number of Possesses & Time used [s]  \\ \hline
+  1 & 150.77  \\ \hline
+  4 & 46.18 \\ \hline
+\end{tabular}
+ \label{tab:Timing}
+  \caption{A table showing the CPU time used to preforme 5 000 000 Monte Carlo cycles on a 20x20 lattice when utilizing 1 and 4 cores.}
+\end{table}
+
+
+\clearpage
+
+% ======================================================== Indicate new section
+\section{Results}
+
+% ------------------------------------------------------- Indicate new subsection
+\subsection{Analytical Results for the 2x2 Spin Lattice}
+
+\noindent For a spin lattice in two dimensions consisting of only two spins in each directions analytical solutions to the various expectation values is possible to derive. To come to these results it is important to clarify how we treat the boundaries of the lattice since within the Ising model, only interactions between the nearest neighbors are included. In this project periodic boundary conditions are enforced, meaning that the spin located at the edge of the lattice interacts with the spin on the edge of the opposite side of the lattice. In one dimension this can be visualized as a chain of spin being folded in to a ring, where the first and last spins in the chain is connected and free to interact. In two dimensions, the spin lattice with the periodic boundary condition can be visualized in a similar manner as a three dimensional torus. \\
+
+\noindent In our 2x2 spin lattice we find that there is $2^4 = 16$ possible spin configurations. These can be divided into only four significant spin configurations that can be geometrically varied to arrive at all the 16 possible configurations and these four is drawn below:
+
+$$
+1)
+\begin{matrix}
+			\uparrow & \uparrow \\ 
+            \uparrow & \uparrow \\ 
+\end{matrix}
+\quad \hspace{2cm} 2)
+\begin{matrix}
+			\uparrow & \downarrow \\ 
+            \uparrow & \uparrow \\ 
+\end{matrix}
+\quad \hspace{2cm} 3)
+\begin{matrix}
+			\uparrow & \uparrow \\ 
+            \downarrow & \downarrow \\ 
+\end{matrix}
+\quad \hspace{2cm} 4)
+\begin{matrix}
+			\uparrow & \downarrow \\ 
+            \downarrow & \uparrow \\ 
+\end{matrix}
+$$
+
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l | c | c | r |} \hline
+  Configuration & $E_i$ & $M_i$ & Degeneracy \\ \hline
+  1 & -8 & $\pm$ 4 & 2 \\
+  2 & 0 & $\pm$ 2 & 8 \\
+  3 & 0 & 0 & 4 \\
+  4 & 8 & 0 & 2 \\ \hline
+\end{tabular}
+ \label{tab:2x2}
+  \caption{Table showing the mean energy and magnetization of the four different significant configurations of our 2x2 spin lattice and their degeneracy.}
+\end{table}
+
+
+%use expressions in canonical ensemble section together with table for possible energy values (only - and + 8 with degeneracy 2 each, all other have e=0 gives exp(0)=1) 
+
+\noindent The resulting magnetization and mean energy of the four significant configurations are found through deploying equation \eqref{Ei} and \eqref{Mi} and the results are listed in the table \ref{tab:2x2}. Utilizing the equation \eqref{Partition} and the results from table \ref{tab:2x2} the analytical expression for the partition function for the 2x2 spin lattice with periodic boundary conditions is found to be:
+
+\begin{equation}
+		Z_4 = 2 e^{8 \beta J} + 2 e^{ - 8 \beta J} + 12 \\
+            = 4 \cosh(8 \beta J) + 12
+\end{equation}
+
+\noindent It is important to note that since we use expectation value per spin N (divide by L*L) I multiply the partition function with factor N when I compare the analytical and numerical expectation values for the 2x2 spin lattice. 
+
+\noindent In a similar manner, utilizing equations \eqref{exp_E} and \eqref{exp_M} we can find the analytical expressions for the expectation values for the mean energy, magnetization, these quantities squared and the absolute magnetizations:
+
+\begin{equation}
+	\big \langle E \big \rangle = - \frac{1}{Z} [ 16 J e^{8 \beta J} - 16 J e^{- 8 \beta J}]
+    \label{AnaE}
+\end{equation}
+
+\begin{equation}
+	\big \langle E^2 \big \rangle = \frac{1}{Z}  [128 J^2 e^{8 \beta J} + 128 J^2 e^{- 8 \beta J} ]
+    \label{AnaEE}
+\end{equation}
+
+\begin{equation}
+	\big \langle |M| \big \rangle = \frac{1}{Z} [8 e^{8 \beta J} + 16]  
+    \label{Ana_absM}
+\end{equation}
+
+\begin{equation}
+	\big \langle M^2 \big \rangle = \frac{1}{Z} [ 32  e^{8 \beta J} + 32]
+    \label{AnaMM}
+\end{equation}
+
+\noindent To find the analytical expectation value for the magnetization we need to split up the results in table \ref{tab:2x2} to look at the energies corresponding to negative and positive magnetization values and find that it all just cancels to 0. So there is no need to talk about magnetization and its expectation value. We move forward utilizing the mean magnetization as the expression for the magnetization. \\
+
+\begin{equation}
+	\big \langle M \big \rangle = \frac{1}{Z} [ 4  e^{8 \beta J} + 8 - 8 - 4 e^{8 \beta J}] = 0
+    \label{AnaM}
+\end{equation}
+
+
+\noindent Now that we have found the analytical expressions for the above listed expectation values it is straight forward to find the analytical expressions for the specific heat capacity, $C_V$, and the susceptibility, $\chi$, utilizing equation \eqref{heat} and \eqref{susceptibility}. The analytical expressions found here will serve as benchmark results for the algorithm we develop and utilize in this project. \\
+
+
+
+
+
+% -------- Indicate new subsection
+\subsection{Numerical Results for the 2x2 Spin Lattice}
+
+\noindent Since we are in the lucky situations that there exists analytical solutions to the expectation values for a 2x2 spin lattice, it is of great interests to compare the numerical results for the expectation values with those predicted by our analytical expressions. Table \ref{tab:2x2Analytical} and \ref{tab:2x2MC} seek to do just this. From these we can see that a minimum of $10^6$ Monte Carlo cycles are needed to achieve a good agreement for the numerical expectation values for the energy and magnetization compared with the analytical ones, however the numerical expectation values of the heat capacity and susceptibility seem to need more Monte Carlo cycles, $10^8$, to reach a good agreement with the analytical values. We can also see that reasonably good agreement can be obtained using fewer Monte Carlo cycles, so it is important to evaluate the need for numerical precision in the expectation values and the CPU time that requires. \\
+
+%This is likely because the letter two quantities depend on the variance of the first ones and we will see in plot \ref{fig:} that our system oscillates around the analytical value as number of Monte Carlo cycles increase, but with a steady decrease in the variance and standard deviation.    
+
+
+
+
+
+
+
+%Make a table for the numerical expectation values as function of MCC_tot and plot together with analytical
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l | c | c | c |} \hline
+  $\big \langle E \big \rangle$ & $\big \langle |M| \big \rangle$ & $C_V $ & $\chi$ \\ \hline
+  -1.99598 &  0.99866 &  0.032082 & 0.0040107 \\ \hline
+\end{tabular}
+ \label{tab:2x2Analytical}
+  \caption{A table showing the analytical results for the 2x2 spin lattice deploying periodic boundary conditions. A temperature of $T=1.0$ [kT/J] have been used.}
+\end{table}
+
+%T=1.0, kB=1.0, All values are per spin
+%Energy by Analytical calculations = -1.99598
+%Absolut value of magnetic moment by Analytical calculations = 0.998661
+%M*M by Analytical Calculation = 3.9933
+%Variance of Energy by Analytical calculations = 0.0320823
+%Specific Heat by Analytical calculations = 0.0320823
+%Variance of Mean magnetization by Analytical calculations = 0.00401074
+%Susceptibility by Analytical calculations = 0.00401074
+
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l | c | c | c | c |} \hline
+  Total number of MC cycles & $\big \langle E \big \rangle$ & $\big \langle |M| \big \rangle$ & $C_V $ & $\chi$ \\ \hline
+  1 000 & -1.9967 & 0.9990 & 0.02662 &   0.00266 \\
+  10 000 & -1.9956 & 0.99925 & 0.01917 &  0.00210\\ 
+  100 000 & -1.9956 & 0.99851 & 0.03528 & 0.00453 \\ 
+  1 000 000 & -1.99599 & 0.99868 & 0.03195 &  0.003932\\ 
+  10 000 000 & -1.99601 & 0,99867 & 0.031882 &  0.003974\\ 
+  1 000 000 000 & -1.99599 & 0.99866 & 0.032093 & 0.0040163 \\ \hline
+\end{tabular}
+ \label{tab:2x2MC}
+  \caption{A table showing the numerical results from my simulation for some selected number of MC cycles. Here MC stands for Monte Carlo, $C_V$ is the specific heat and $\chi$ the susceptibility. A temperature of $T=1.0$ [kT/J] and a ground state start configuration (all spins pointing up) was used. All values are listed per spin and based on the mean from three separate simulation runs.}
+\end{table}
+
+%T=1, Ground Start Configuration
+%Total MCC       E            Cv             M            Chi            |M| 
+%1000     -1.9960000    0.031936000    -0.81900000   0.0019960000     0.99900000
+%1000     -1.9960000    0.031936000     0.99900000   0.0019960000     0.99900000
+%1000     -1.9980000    0.015984000     0.99900000   0.0039960000     0.99900000
+%10 000     -1.9984000    0.012789760   -0.035950000   0.0016987900     0.99945000
+%10 000     -1.9970000    0.023964000     0.16015000   0.0026963900     0.99905000
+%10 000     -1.9974000    0.020772960     0.15755000   0.0018977500     0.99925000
+% 100 000     -1.9955600    0.035441146     0.16721500   0.0046408191     0.99848500
+%100 000     -1.9953400    0.037193138   -0.015760000   0.0047501404     0.99843000
+%100 000     -1.9958400    0.033210778   0.0089950000   0.0042022159     0.99860500
+%1 000000     -1.9960000    0.031936000    0.013148500   0.0038501408     0.99869050
+%1 000000     -1.9962040    0.030310362   -0.015878000   0.0038235382     0.99872900
+%1 000000     -1.9957920    0.033593171   -0.011611500   0.0041212772     0.99861050
+%10 000000     -1.9959354    0.032450716  -0.0047734000   0.0040340992     0.99864900
+%10 000000     -1.9960206    0.031778258   0.0019208500   0.0039918281     0.99867035
+%10 000000     -1.9960652    0.031416469  -0.0017718500   0.0038964738     0.99869365
+%100 000000     -1.9959627    0.032235281  -0.0074661000   0.0040331104     0.99865375
+%100 000000     -1.9959869    0.032042299   0.0043780500   0.0040127701     0.99866117
+%100 000000     -1.9959921    0.032002306   0.0041115700   0.0040028773     0.99866371
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.3]{2x2_expE.png}}
+ \caption{Figure shows the numerical expectation value for the energy per spin as function of number of Monte Carlo cycles for both a random and a ground start configuration compared with the corresponding analytical value. The step in Monte Carlo cycles is 10 000.}
+ \label{fig:exp_E}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.3]{2x2_expCv.png}}
+ \caption{Figure shows the numerical expectation value for the heat capacity per spin as function of number of Monte Carlo cycles for both a random and a ground start configuration compared with the corresponding analytical value. The step in Monte Carlo cycles is 10 000.}
+ \label{fig:exp_Cv}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.3]{2x2_expM.png}}
+ \caption{Figure shows the numerical expectation value for the mean magnetization per spin as function of number of Monte Carlo cycles for both a random and a ground start configuration compared with the corresponding analytical value. The step in Monte Carlo cycles is 10 000.}
+ \label{fig:exp_M}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.3]{2x2_expChi.png}}
+ \caption{Figure shows the numerical expectation value for the susceptibility per spin as function of number of Monte Carlo cycles for both a random and a ground start configuration compared with the corresponding analytical value. The step in Monte Carlo cycles is 10 000.}
+ \label{fig:exp_Chi}
+\end{figure}
+
+\clearpage
+
+
+% ------------------------------------------------------- Indicate new subsection
+\subsection{The 20x20 Spin Lattice and Equilibration time}
+
+\noindent Now we want to take a closer look at how long time it takes for our system to reach an equilibrium situation, it's most likely state. This is seen is figure \ref{fig:exp_4c_t1G}, \ref{fig:exp_4c_t1R} and \ref{fig:exp_4c_t2p4} as when the various expectation values flat out and we see them as almost straight lines. For the temperature T = 1.0 [kT/J] we see that at about 4 000 000 Monte Carlo cycles we reach a equilibration situation for the magnetic system and the various expectation values behave almost as constants. \\
+
+%Something about how random reaches equilibrium first
+%XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+\noindent For the temperature T = 2.4 [kT/J] we see that more Monte Carlo cycles are needed to reach the equilibrium situation, about 10 000 000, and that the fluctuations in the various expectation values is larger then for the lower temperature of T = 1.0 [kT/J]. From a physics perspective this makes sens as the thermal energy in the system increases, more states are available and more spin flips will take place. If we take a closer look at our algorithm, \ref{alg:magsys}, we see that the number of accepted spin flips increases as the temperature increases because it is increasingly likely to accept energy changes that are positive because the likelihood of the random number being smaller then or equal to $e^{-de \beta}$ increases as the temperature increases. \\    
+
+
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4c_20_t1G.png}}
+ \caption{Figure shows the numerical expectation value per spin as function of number of Monte Carlo cycles for a temperature of 1.0  and a ground start configuration. The step in Monte Carlo cycles is varied, with a increasing step size towards 400 000 Monte Carlo cycles. After 400 000 Monte Carlo cycles the step is 60 000 Monte Carlo cycles. }
+ \label{fig:exp_4c_t1G}
+\end{figure}
+
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4c_20_t1R.png}}
+ \caption{Figure shows the numerical expectation value per spin as function of number of Monte Carlo cycles for a temperature of 1.0 and random start configuration. The step in Monte Carlo cycles is 10 000 towards 1 000 000 Monte Carlo cycles and 100 000 after this point.}
+ \label{fig:exp_4c_t1R}
+\end{figure}
+
+%XXXXXXXXXXXXXXXXXXXXXXXXXX
+
+\noindent To take a closer look at the difference between the random and ground start configuration I have plotted the first expectation values for the mean energy for both start configurations in the same plot. The result is shown in figure \ref{fig:RVsG}. Here we can see that both start configurations converges towards the equilibrium situation at a rapid pace, already at 14 000 Monte Carlo cycles both configurations seams to return reasonable values for the expectation value. This is in great contrast to the equilibrium time estimated when we plot for a larger range of Monte Carlo cycles. So when we use this model it is important to evaluate the need for speed in the numerical simulation versus the need for expectation values that vary little between the number of Monte Carlo cycles. \\
+
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4c_randomVsground.png}}
+ \caption{Figure shows the numerical expectation value per spin as function of number of Monte Carlo cycles for a temperature of 1.0 and both a ground and random start configuration. The step in Monte Carlo cycles is 100.}
+ \label{fig:RVsG}
+\end{figure}
+
+%1.0000000        mcc=5000000    e= -1.9971522    cv= 0.023443941    m=-0.49964039   chi=0.0015746439     |m|=0.99927365
+
+%2.4000000        5000000     -e=1.2359903      cv=1.4059496   0.0013658060      8.8517371     0.45180883
+%sigma_e^2=1.4059496*2.4*2.4=8,098269696
+%std=2,845745894
+%XXXXXXXXXXXXXXXXXXXXXXXX
+
+\begin{figure}[!h]
+\centerline{\includegraphics[scale = 0.3]{4c_20_t2p4_normed.png}}
+ \caption{Figure shows the numerical expectation value per spin as function of number of Monte Carlo cycles for a temperature of 2.4. The step in Monte Carlo cycles is 10 000.}
+ \label{fig:exp_4c_t2p4}
+\end{figure}
+
+
+
+\clearpage
+
+
+% ------------------------------------------------------- Indicate new subsection
+\subsection{Accepted New Spin Configurations}
+
+\noindent One way to see how the system reacts to changes in the thermal energy is to see how many of the new spin configurations we propose are accepted by the metropolis algorithm as the temperature of the system is increased. The new spin configuration is accepted if one the criteria listed in section \ref{sec:Metropolis}. For a zero or negative values for the energy difference, $\Delta E$, between the old and new spin configurations, the new spin configuration is always accepted. If $\Delta E$ is positive, the extra condition is evoked as listed in point 5 of Metropolis algorithm. Here we see a strong temperature dependency for the exponential expression $e^{\frac{- \Delta E}{k_B T}}$ leading to that many more spin configurations get accepted as the temperature increases, because it becomes increasingly more likely to accept the new spin configuration as $e^{\frac{- \Delta E}{k_B T}}$ increases as the temperature increases. This also reflects the physics of our system. As the temperature increases more spin flips will take place, there are many more states available for our system and the system is more likely to be found outside its ground state. The system will tend towards more entropy, a higher degree of disorder, as the temperature increases. Both figure \ref{fig:accept} and \ref{fig:accept_tsweep} visualize the point outlined here. \\  
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.4]{4c_20_accept.png}}
+ \caption{Figure shows the number of accepted new spin configurations as function of the number of Monte Carlo cycles preformed on the system. In each Monte Carlo cycle the algorithm preforms 400 spin flips. The figure shows that the number of accepted new spin configurations increases by a factor $10^2$ when we increase the temperature in the system from 1.0 to 2.4.}
+ \label{fig:accept}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.35]{4c_20_accept_tsweep.png}}
+ \caption{Figure shows the number of accepted new spin configurations as function of the  temperature. The figure shows that as the temperature of our system the number of accepted new spin configurations increases at an exponential rate.}
+ \label{fig:accept_tsweep}
+\end{figure}
+
+
+
+\clearpage
+
+
+
+% ------------------------------------------------------- Indicate new subsection
+\subsection{Analyzing the Probability}
+%Task 4d)%
+%If I can not manage the histogram, found P(E=-800) when T=1.0K to be about 86-87%
+%Can I compare this value with sigmaE 
+%sigma=sigma/sqrt(m-1)
+
+\noindent To take a closer look at the probability of finding the magnetic system in a specific microstate, the energy of the system in our simulation have been sampled for a 20x20 spin lattice. The sampling started when the system have reach an equilibrium state sufficient for the scope of our project, 5 000 000 Monte Carlo cycles, and 1 000 000 energy values per spin were registered. This was done for a temperature of 1.0 [kT/J] with a random start configuration and the temperature 2.4 [kT/J]. The results are visualized as histograms in figure \ref{fig:hist_R} and \ref{fig:hist_t2p4} respectively. \\  
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.3]{4d_20_hist_t1R.png}}
+ \caption{Figure shows the probability distribution for the energy per spin represented as a histogram. Here a temperature of 1.0 and a random start configuration for the spin lattice have been used. The calculations were started when a steady state situation had been established, after 5 000 000 Monte Carlo cycles, and 1 000 000 energy values were registered.}
+ \label{fig:hist_R}
+\end{figure}
+
+%SigmaE^2 = 0.024205780
+%0.029169566/sqrt(m) = 0.001458
+%Husk å ta kvadrat rot for standard avvik
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale =0.35]{4d_20_hist_t2p4.png}}
+ \caption{Figure shows the probability distribution for the energy per spin represented as a histogram. Here a temperature of 2.4 have been used and calculations were started when a steady state situation had been established, after 5 000 000 Monte Carlo cycles, and 1 000 000 energy values were registered.}
+ \label{fig:hist_t2p4}
+\end{figure}
+
+%SigmaE^2 = 1.4063226 * (2.4**2) = 8.10041472
+%1.4087988* (2.4**2)
+
+\noindent From figure \ref{fig:hist_R} we can see that for the temperature of 1.0 [kT/J] the system is with very high probability, of about 87\%, found in its ground state. From visual inspection of this figure we can see that the variance in the energy is small, in good correlation with the variance found by numerical calculations. This reflects the physics of our system in that sense that when the temperature is low, few states are available for the system and the transition probability into higher laying energy states is very low. There for the probability of finding the system in its ground state is very high. This is in contrast to the behavior observed for a higher temperature of 2.4 [kT/J] as shown in figure \ref{fig:hist_t2p4} where we see that the variance in the energy is much larger and an almost uniform distribution, seen as the Gaussian bell curve enveloping the outline of the histogram, is obtained with a slight tail towards lower lying energies. From a physics prospective this represents the fact that as the temperature increases more states are available in the system and the transition probability into higher lying energy states becomes increasingly larger. \\       
+
+\clearpage
+
+
+% ------------------------------------------------------- Indicate new subsection
+\subsection{Phase transitions}\label{sec:PhaseResult}
+
+\noindent To take a closer look at how the magnetic system behaves as a function of both temperature and lattice size, numerical simulations for four different lattice sizes have been done for a temperature interval spanning from about 2.1 to 2.4 [kT/J] with a temperature step of 0.01 around the critical temperature. The resulting expectation values per spin is plotted in figure \ref{fig:4e_40} to \ref{fig:4e_100}. Here we can see that the phase transitions predicted to take place in the heat capacity and susceptibility become increasingly pronounced as the lattice size increases. The magnetization of the system is predicted to disappear above the critical temperature where the phase transition takes place, where the material moves from being ferromagnetic, net magnetization, to paramagnetic, all spins randomly distributed. At the critical temperature the magnetization should move towards zero with a infinite slope. In the plots \ref{fig:4e_40} to \ref{fig:4e_100} we see that the magnetization move towards zero as the temperature increases towards 2.4 but with a finite slope. \\ 
+
+
+\noindent Now we want to estimate the critical temperature, $T_C$, in the thermodynamical limit where $ L \rightarrow \infty $. We start by looking at equation \eqref{eq:scaling} and set up the expression for two different finite lattice sizes. \\
+
+\begin{equation}
+	\begin{split}
+		T_c(L_1) - T_C(L=\infty) =& a L_1^{\frac{-1}{\nu}} \\
+        T_c(L_2) - T_C(L=\infty) =& a L_2^{\frac{-1}{\nu}}
+\end{split}
+\end{equation}
+
+
+\noindent Here we use $\nu = 1$ giving us when solving for a in both equations:
+
+\begin{equation}
+\begin{split}
+		a &= L_1(T_C(L_1) - T_C(L=\infty)) \\
+        a &= L_1(T_C(L_1) - T_C(L=\infty))
+\end{split}
+\end{equation}
+
+\noindent Setting the two equation equal and solving for $ T_C(L=\infty)$ gives:
+
+\begin{equation}
+		 T_C(L=\infty) = \frac{T_C(L_2) - \frac{L_1}{L_2} T_C(L_1)}{1-\frac{L_1}{L_2}}
+         \label{eq:TC_infinity}
+\end{equation}
+
+\noindent To obtain the values for $T_C$ for the different lattice sizes, we read of the temperature corresponding to the peak value in susceptibility. The result are listed in table \ref{tab:TC_infinity}.\\
+
+
+
+%MAKE A TABLE WITH RESULTS
+\begin{table}[ht]
+\centering
+\begin{tabular}{| l | c |} \hline
+  L & $T_C$ ($\chi$) [kT/J]  \\ \hline
+  40 & 2.32  \\ \hline
+  60 & 2.30 \\ \hline
+  80 & 2.29 \\ \hline
+  100 & 2.29 \\  \hline
+\end{tabular}
+ \label{tab:TC_infinity}
+  \caption{A table showing the numerical values of the critical temperature, $T_C$, found as the temperature at the peak value of the susceptibility, $\chi$.}
+\end{table}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4e_40.png}}
+ \caption{Figure shows the various expectation values for a 40x40 spin lattice as function of temperature in the interval [2.0, 2.4]. Number of Monte Carlo cycles used in each temperature step is 5 000 000. }
+ \label{fig:4e_40}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4e_60.png}}
+ \caption{Figure shows the various expectation values for a 100x100 spin lattice as function of temperature in the interval [2.1, 2.4]. Number of Monte Carlo cycles used in each temperature step is 5 000 000. }
+ \label{fig:4e_60}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.25]{4e_80.png}}
+ \caption{Figure shows the various expectation values for a 40x40 spin lattice as function of temperature in the interval [2.14, 2.33]. Number of Monte Carlo cycles used in each temperature step is 5 000 000. }
+ \label{fig:4e_80}
+\end{figure}
+
+\begin{figure}[!h]
+ \centerline{\includegraphics[scale = 0.225]{4e_100.png}}
+ \caption{Figure shows the various expectation values for a 100x100 spin lattice as function of temperature in the interval [2.0, 2.4]. Number of Monte Carlo cycles used in each temperature step is 5 000 000. }
+ \label{fig:4e_100}
+\end{figure}
+
+\noindent To find the vale of $T_C (L = \infty)$ from equation \eqref{eq:TC_infinity} and the results listed in table \ref{tab:TC_infinity} we see that there are different combinations of lattice size that will yield slightly different results. These combinations and the resulting value of  $T_C (L = \infty)$ are listed in table \ref{tab:TC_infinity_final}. To obtain a final value for the approximated $T_C (L = \infty)$ the mean of the values listed in table \ref{tab:TC_infinity_final} is taken, and give us $T_C (L = \infty ) = 2.269$ [kT/J]. This is in good agreement with the critical temperature predicted by Lars Onsager, $kT_C/J = 2/ln(1-\sqrt{2}) \approx 2.269$, how solved the square Ising model analytical in two dimensions when the external magnetic field is set to zero. \\
+
+\begin{table}[h]
+\centering
+\begin{tabular}{| l | c | c |} \hline
+  $L _1$ & $L_2$ &  $T_C ( L = \infty)$ [kT/J] \\ \hline
+  40 & 60 &  2.26 \\ \hline
+  40 & 80 &  2.26 \\ \hline
+  40 & 100 & 2.27 \\ \hline
+  60 & 80 & 2.26 \\  \hline
+  60 & 100 & 2.275 \\ \hline
+  80 & 100 & 2.29 \\ \hline
+\end{tabular}
+ \label{tab:TC_infinity_final}
+  \caption{A table showing the numerical values of the critical temperature, $T_C$, found as the temperature at the peak value of the susceptibility, $\chi$.}
+\end{table}
+
+
+
+\clearpage
+
+
+% ======================================================== Indicate new section
+\section{Concluding Remarks}
+
+\noindent In this project we have utilized the powerful tool of Monte Carlo simulations to model the behavior of a magnetic system with the use of the Ising model in two dimensions and the Metropolis algorithm as a sampling rule. We have compared the analytical values for a 2x2 spin matrix with our numerical results for the same lattice and seen that the numerical expectation values converges with those predicted by the analytical expressions. Through our simulations on larger, but still, finite lattices and through scaling relations we have found the critical temperature for the phase transition in the thermodynamical limit where the lattice size goes towards infinity and here we found that our results for $T_C ( L=\infty)$ were in excellent agreement with that predicted by Lars Onsager. \\
+
+\noindent We have also taken a closer look at the equilibration time needed to reach the most likely state within this method and we have seen that this method is very useful and versatile in that it can predict fairly reasonable result for small amount of Monte Carlo cycles so if a quick and rough picture of the system is needed the result can be obtained in a short amount of simulation time. But if we need more precise results for the expectation values, increasing the number of Monte Carlo cycles results in expectation values with increasingly smaller variances, error estimates, and thereby higher precision in the expectation values are obtained but the cost of this is the additional CPU time it requires. So when utilizing this method is it important to have a clear view of the numerical precision needed. Should very high precision be needed it would be  of great help to reduce the CPU time this requires by utilizing more processes or cores for our simulations, especially as the code already is parallelized using MPI.  \\
+
+
+
+%\pagebreak
+
+\bibliography{sample}{}
+\bibliographystyle{plain}
+
+\end{document}
+
+
+
+
+
+
+
+
