@@ -6,11 +6,11 @@
 # include "unit_tests.h"
 
 int main(int argc, char* argv[]){
-    int my_rank, num_procs;
+    int my_rank, num_procs;     // Hold ID of every process and total num processes
 
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+    MPI_Init(&argc, &argv);                     // Initialize MPI region of code
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);    // Get ID's
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);  // Get total number of processes
 
     if (my_rank == 0){
         std::cout << "\nRUNNING TESTS..." << std::endl;
@@ -26,11 +26,11 @@ int main(int argc, char* argv[]){
         print_analytical_values(1.0);
     }
 
-    double T_0 = 2.2;
-    double T_N = 2.35;
-    double dT = 0.02;
-    int num_spins = 80;
-    int num_mc_cycles = 4000000;
+    double T_0 = 1.0;
+    double T_N = 1.0;
+    double dT = 0.05;
+    int num_spins = 2;
+    int num_mc_cycles = 1000000;
 
     if (num_mc_cycles % num_procs != 0){    // If num_mc_cycles can't be evenly distributed
         std::cout << "Error: Choose num_mc_cyles and num_procs --> num_mc_cycles % num_procs = 0" << std::endl;
@@ -38,11 +38,11 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
 
-    std::string fileout_01 = "PR_80x80_TR.txt";
+    std::string fileout = "test.txt";
 
-    ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs, fileout_01);
+    ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs, fileout);     // Call Ising model
 
-    MPI_Finalize();
+    MPI_Finalize();     // Finalize MPI region of code
 }
 
 /* Function implementing a parallel (MPI) Ising model performing Monte Carlo simulations. Takes input
@@ -92,14 +92,13 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
     std::mt19937_64 rng(rd());  // Instantiate random number generator
     std::uniform_real_distribution<double> uniform(0.0, 1.0);  // Use a uniform dist for the generator
 
-    initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
+    //initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
 
     double time_end, time_used, time_start = MPI_Wtime();   // Start timing on all processes
 
     /* Main loop over temperature doing Monte Carlo simulations each temperature step. */
     /* ================================================================================= */
     while (T <= T_max){
-        std::cout << T << std::endl;
         /* ========================== Pre-MC-cycles initialization =========================== */
         E = 0;      // Start energy at zero for every temperature
         M = 0;      // Start magnetic moment at zero for every temperature
@@ -112,7 +111,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
         }
 
         //initialize_spin_config_ordered(spins, num_spins);   // Set initial spin config for current T
-        //initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
+        initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
         compute_energy_and_moment(spins, num_spins, E, M);  // Compute initial energy and moment
         //print_spin_array(spins, num_spins);
 
@@ -127,12 +126,10 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
                          spins[get_periodic_index(k_rng+1, num_spins)][l_rng] +
                          spins[k_rng][get_periodic_index(l_rng-1, num_spins)] +
                          spins[get_periodic_index(k_rng-1, num_spins)][l_rng]);
-                //std::cout << dE << std::endl;
 
                 /* Metropolis algorithm for accepting or discarding new configuration.
                  * =================================================================== */
                 if (dE <= 0){    // If dE <= 0
-                    //std::cout << "Flipped a spin" << std::endl;
                     spins[k_rng][l_rng] *= -1;
                     M += (double) (2*spins[k_rng][l_rng]);
                     E += (double) dE;
@@ -143,16 +140,13 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
                     double current_exp_dE = 0.0;    // To hold current w = exp(-dE/T)
 
                     for (int m = 0; m < 5; m++){    // Loop over delta_E array
-                        //std::cout << dE << ", " << delta_E[m] << std::endl;
                         if (dE == delta_E[m]){
-                            //std::cout << "Found pre-calculated exp_dE" << std::endl;
                             current_exp_dE = exp_dE[m];     // Found pre-calculated w = exp(-dE/T)
                             break;                          // No need to search anymore if found
                         }
                     }
 
                     if (uniform(rng) <= current_exp_dE){    // If r <= exp(-dE/T)
-                        //std::cout << "Flipped a spin" << std::endl;
                         spins[k_rng][l_rng] *= -1;
                         M += (double) (2*spins[k_rng][l_rng]);
                         E += (double) dE;
@@ -174,7 +168,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 //                outfile_02 << std::setw(15) << std::setprecision(8) << E/((double)total_num_spins) << std::endl;
 //            }
 
-//            /* IF statement uncommented for writing averages as functions of MC cycles. */
+//            /* If statement uncommented for writing averages as functions of MC cycles. */
 //            if (mc_write % 10000 == 0 || n == 1){
 //                MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 //                MPI_Reduce(&my_accepted_states, &accepted_states, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
