@@ -27,10 +27,10 @@ int main(int argc, char* argv[]){
     }
 
     double T_0 = 1.0;
-    double T_N = 2.4;
+    double T_N = 1.0;
     double dT = 0.05;
     int num_spins = 20;
-    int num_mc_cycles = 1000000;
+    int num_mc_cycles = 10500000;
 
     if (num_mc_cycles % num_procs != 0){    // If num_mc_cycles can't be evenly distributed
         std::cout << "Error: Choose num_mc_cyles and num_procs --> num_mc_cycles % num_procs = 0" << std::endl;
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
 
-    std::string fileout_01 = "20x20_TR_RANDOM.txt";
+    std::string fileout_01 = "results.txt";
     //std::string fileout_02 = "20x20_T24_ORDERED.txt";
 
     ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs, fileout_01);
@@ -74,12 +74,14 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 
     delta_E[0] = -8; delta_E[1] = -4; delta_E[2] = -0; delta_E[3] = 4; delta_E[4] = 8;  // Possible dE's
 
-    std::ofstream outfile;  // Only used by process 0
+    std::ofstream outfile, outfile_02;  // Only used by process 0
 
     /* Open output file and write header info to file. */
     if (my_rank == 0){
         outfile.open(fileout);
+        outfile_02.open("energy_dist.txt");
         outfile << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
+        outfile_02 << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
         outfile << std::setw(10) << "Num spins" << std::setw(18) << "Tempreature" << std::setw(18)
                 << "MC cycles" << std::setw(18) << "Mean energy" << std::setw(18) << "Mean abs mag"
                 << std::setw(18) << "Mean mag" << std::setw(18) << "Energy var" << std::setw(18)
@@ -96,7 +98,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
     /* Main loop over temperature doing Monte Carlo simulations each temperature step. */
     /* ================================================================================= */
     while (T <= T_max){
-        std::cout << T << std::endl;
+        //std::cout << T << std::endl;
         /* ========================== Pre-MC-cycles initialization =========================== */
         E = 0;      // Start energy at zero for every temperature
         M = 0;      // Start magnetic moment at zero for every temperature
@@ -166,6 +168,10 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
 
             int mc_write = n*num_procs;
 
+            if (n >= 10000000 && my_rank == 0){
+                outfile_02 << std::setw(15) << std::setprecision(8) << my_averages[0]/((double)n) << std::endl;
+            }
+
 //            if (mc_write % 10000 == 0 || n == 1){
 //                MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 //                MPI_Reduce(&my_accepted_states, &accepted_states, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -196,6 +202,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
         time_used = time_end - time_start;
         std::cout << "\nTime used by process " << my_rank << ": " << time_used << " seconds.\n" << std::endl;
         outfile.close();
+        outfile_02.close();
     }
 
     free_array_2D(spins, num_spins);
