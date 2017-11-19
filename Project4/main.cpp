@@ -26,11 +26,11 @@ int main(int argc, char* argv[]){
         print_analytical_values(1.0);
     }
 
-    double T_0 = 1.0;
-    double T_N = 1.0;
-    double dT = 0.05;
-    int num_spins = 20;
-    int num_mc_cycles = 10500000;
+    double T_0 = 2.2;
+    double T_N = 2.35;
+    double dT = 0.02;
+    int num_spins = 80;
+    int num_mc_cycles = 4000000;
 
     if (num_mc_cycles % num_procs != 0){    // If num_mc_cycles can't be evenly distributed
         std::cout << "Error: Choose num_mc_cyles and num_procs --> num_mc_cycles % num_procs = 0" << std::endl;
@@ -38,8 +38,7 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
 
-    std::string fileout_01 = "results.txt";
-    //std::string fileout_02 = "20x20_T24_ORDERED.txt";
+    std::string fileout_01 = "PR_80x80_TR.txt";
 
     ising_mpi(T_0, T_N, dT, num_spins, num_mc_cycles, my_rank, num_procs, fileout_01);
 
@@ -79,7 +78,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
     /* Open output file and write header info to file. */
     if (my_rank == 0){
         outfile.open(fileout);
-        outfile_02.open("energy_dist.txt");
+        outfile_02.open("energy_count.txt");
         outfile << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
         outfile_02 << std::setiosflags(std::ios::showpoint | std::ios::uppercase);
         outfile << std::setw(10) << "Num spins" << std::setw(18) << "Tempreature" << std::setw(18)
@@ -93,12 +92,14 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
     std::mt19937_64 rng(rd());  // Instantiate random number generator
     std::uniform_real_distribution<double> uniform(0.0, 1.0);  // Use a uniform dist for the generator
 
+    initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
+
     double time_end, time_used, time_start = MPI_Wtime();   // Start timing on all processes
 
     /* Main loop over temperature doing Monte Carlo simulations each temperature step. */
     /* ================================================================================= */
     while (T <= T_max){
-        //std::cout << T << std::endl;
+        std::cout << T << std::endl;
         /* ========================== Pre-MC-cycles initialization =========================== */
         E = 0;      // Start energy at zero for every temperature
         M = 0;      // Start magnetic moment at zero for every temperature
@@ -111,7 +112,7 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
         }
 
         //initialize_spin_config_ordered(spins, num_spins);   // Set initial spin config for current T
-        initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
+        //initialize_spin_config_rng(spins, num_spins);       // Set initial spin config for current T
         compute_energy_and_moment(spins, num_spins, E, M);  // Compute initial energy and moment
         //print_spin_array(spins, num_spins);
 
@@ -166,12 +167,14 @@ void ising_mpi(double T_min, double T_max, double dT, int num_spins, int num_mc_
             my_averages[2] += M; my_averages[3] += M*M;
             my_averages[4] += fabs(M);
 
-            int mc_write = n*num_procs;
+            //int mc_write = n*num_procs;
 
-            if (n >= 10000000 && my_rank == 0){
-                outfile_02 << std::setw(15) << std::setprecision(8) << my_averages[0]/((double)n) << std::endl;
-            }
+//            /* If statement uncommented when counting energy for probability distribution. */
+//            if (n >= 6000000 && my_rank == 0){
+//                outfile_02 << std::setw(15) << std::setprecision(8) << E/((double)total_num_spins) << std::endl;
+//            }
 
+//            /* IF statement uncommented for writing averages as functions of MC cycles. */
 //            if (mc_write % 10000 == 0 || n == 1){
 //                MPI_Reduce(my_averages, averages, 5, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 //                MPI_Reduce(&my_accepted_states, &accepted_states, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
