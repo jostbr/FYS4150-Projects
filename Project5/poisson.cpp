@@ -9,7 +9,7 @@
  * d^2(solution)/dx^2 = y
  *
  * Note that this only solves for the interior points. */
-void tridiag(double* a, double* b, double* c, double* y, int N, double* solution){
+void tridiag_general(double* a, double* b, double* c, double* y, int N, double*& solution){
     /* STEP 1: Forward substitution. */
     for (int i = 1; i < N; i++){
         b[i] = b[i] - a[i-1]*c[i-1]/b[i-1];     // Eliminating lower diagonal
@@ -23,6 +23,33 @@ void tridiag(double* a, double* b, double* c, double* y, int N, double* solution
         solution[i] = (y[i] - c[i]*solution[i+1])/b[i];  // Eliminating upper diag and dividing by main diag
     }
 }
+
+
+/* Function for solving the linear system Ax = y where A is a special tridiagonal matrix (NxN) with
+ * all elements along lower and upper diag equal to -1, while the main diag has all values equal to
+ * 2. Further y is the known right-hand-side vector and solution is the array to hold the solution x.
+ * Can e.g. be applied to solve the 1D Poisson equation
+ *
+ * d^2(solution)/dx^2 = y
+ *
+ * Note that this only solves for the interior points. */
+void tridiag_ferrari(double* b, double* y, int N, double*& solution){
+    //b[0] = 2.0;
+
+    /* STEP 1: Forward substitution. */
+    for (int i = 1; i < N; i++){
+        b[i] = (i + 2)/((double)(i + 1));       // Eliminating lower diagonal
+        y[i] = y[i] + (y[i-1]/b[i-1]);      // Corresponding change to RHS of eq.
+    }
+
+    /* STEP 2: Backward substitution. */
+    solution[N-1] = y[N-1]/b[N-1];          // Special case for obtaining final element of solution
+
+    for (int i = N-2; i >= 0; i--){
+        solution[i] = (y[i] + solution[i+1])/b[i];  // Eliminating upper diag and dividing by main diag
+    }
+}
+
 
 /* Function that implements the iterative Jacobi algorithm for solving the 2D Poisson equation
  *
