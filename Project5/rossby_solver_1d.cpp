@@ -8,6 +8,7 @@ rossby_solver_1d::rossby_solver_1d(double dx, double dt, int N, double T){
     this->N = N;
 
     alloc_array_1D(this->psi_0, N);
+    alloc_array_1D(this->zeta_0, N);
 }
 
 
@@ -19,4 +20,5 @@ void rossby_solver_1d::write_state_to_file(double t, double* psi) const{
 /* Destructor cleaning performing cleanup upon object destruction. */
 rossby_solver_1d::~rossby_solver_1d(){
     free_array_1D(this->psi_0);
+    free_array_1D(this->zeta_0);
 }

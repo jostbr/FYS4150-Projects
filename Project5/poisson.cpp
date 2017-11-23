@@ -9,7 +9,7 @@
  * d^2(solution)/dx^2 = y
  *
  * Note that this only solves for the interior points. */
-void tridiag_general(double* a, double* b, double* c, double* y, int N, double*& solution){
+void tridiag_general(double* a, double* b, double* c, double* y, int N, double* solution){
     /* STEP 1: Forward substitution. */
     for (int i = 1; i < N; i++){
         b[i] = b[i] - a[i-1]*c[i-1]/b[i-1];     // Eliminating lower diagonal
@@ -33,8 +33,8 @@ void tridiag_general(double* a, double* b, double* c, double* y, int N, double*&
  * d^2(solution)/dx^2 = y
  *
  * Note that this only solves for the interior points. */
-void tridiag_ferrari(double* b, double* y, int N, double*& solution){
-    //b[0] = 2.0;
+void tridiag_ferrari(double* b, double* y, int N, double* solution){
+    b[0] = 2.0;
 
     /* STEP 1: Forward substitution. */
     for (int i = 1; i < N; i++){

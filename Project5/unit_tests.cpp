@@ -38,28 +38,28 @@ void TEST_tridiag_general(){
     free_array_1D(solution);
 }
 
-/* Unit test for testing if the basin initial condition are set correctly. */
-void TEST_set_basin_IC(){
-    int N = 10;
-    double bc = 12.0;
-    double* init_con;
+///* Unit test for testing if the basin initial condition are set correctly. */
+//void TEST_set_basin_IC(){
+//    int N = 10;
+//    double bc = 12.0;
+//    double* init_con;
 
-    alloc_array_1D(init_con, N);
+//    alloc_array_1D(init_con, N);
 
-    for (int i = 0; i < N; i++){
-        init_con[i] = bc;
-    }
+//    for (int i = 0; i < N; i++){
+//        init_con[i] = bc;
+//    }
 
-    basin_solver_1d solver(1.0, 1.0, N, 1.0);
-    solver.set_boundary_conditions(bc, bc);
-    solver.set_initial_condition(init_con);
+//    basin_solver_1d solver(1.0, 1.0, N, 1.0);
+//    solver.set_boundary_conditions(bc, bc);
+//    solver.set_initial_condition(init_con);
 
-    for (int i = 0; i < N; i++){
-        if (solver.psi_0[i] != init_con[i]){
-            std::cout << "TEST FAILED: Basin initial condition" << std::endl;
-            return;
-        }
-    }
+//    for (int i = 0; i < N; i++){
+//        if (solver.psi_0[i] != init_con[i]){
+//            std::cout << "TEST FAILED: Basin initial condition" << std::endl;
+//            return;
+//        }
+//    }
 
-    std::cout << "TEST PASSED: Basin initial condition" << std::endl;
-}
+//    std::cout << "TEST PASSED: Basin initial condition" << std::endl;
+//}
