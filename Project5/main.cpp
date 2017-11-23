@@ -1,10 +1,11 @@
 
 # include <iostream>
+# include <string>
+# include <cmath>
 # include "periodic_solver_1d.hpp"
 # include "basin_solver_1d.hpp"
 # include "array_alloc.hpp"
 # include "unit_tests.hpp"
-# include <cmath>
 
 void func(double *arr, int n);
 
@@ -39,30 +40,30 @@ int main(int argc, char* argv[]){
         init_zeta[i] = 4.0*pi*cos(4.0*pi*x);
     }
 
-    basin_solver_1d solver(dx, dt, N, T);
+    std::string fileout = "results.txt";
+    basin_solver_1d solver(dx, dt, N, T, fileout);
     solver.set_boundary_conditions(0.0, 0.0);
     solver.set_initial_condition(init_psi, init_zeta);
     solver.basin_euler();
-    //std::cout << "Sup?" << std::endl;
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
 
-//    double* arr;
-//    alloc_array_1D(arr, 6);
+    double* arr;
+    alloc_array_1D(arr, 6);
 
-//    for (int i = 0; i < 6; i++){
-//        arr[i] = i;
-//    }
+    for (int i = 0; i < 6; i++){
+        arr[i] = i;
+    }
 
-//    func(arr, 6);
+    func(arr, 6);
 
-//    for (int i = 0; i < 6; i++){
-//        std::cout << "\nGadhjgsfv" << std::endl;
-//        std::cout << arr[i] << std::endl;
-//    }
+    for (int i = 0; i < 6; i++){
+        std::cout << "\nGadhjgsfv" << std::endl;
+        std::cout << arr[i] << std::endl;
+    }
 
-//    free_array_1D(arr);
+    free_array_1D(arr);
 
     return 0;
 }

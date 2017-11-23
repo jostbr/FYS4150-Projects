@@ -3,7 +3,7 @@
 
 /* Constructor calling constructor of base class wit input parameters. */
 basin_solver_1d::basin_solver_1d(double dx, double dt,
-                     int N, double T) : rossby_solver_1d(dx, dt, N, T) {
+                     int N, double T, std::string fileout) : rossby_solver_1d(dx, dt, N, T, fileout) {
     // No more initialization in derived class needed
 }
 
@@ -55,11 +55,12 @@ void basin_solver_1d::basin_euler(){
         zeta_prev[i] = this->zeta_0[i];     // Set previous zeta to initial zeta (takes care of BC as well)
     }
 
+    this->write_state_to_file(0.0, psi_prev);
+
     psi_curr[0] = this->bc_0; psi_curr[this->N-1] = this->bc_N;                       // Also apply BC here
     zeta_curr[0] = zeta_prev[0]; zeta_curr[this->N-1] = zeta_prev[this->N-1];   // Also apply BC here
 
-    while (t < this->T){
-
+    for (int n = 1; t < T; n++){
         /* STEP 1: Time-step for vorticity. */
         for (int i = 1; i < this->N-1; i++){
             zeta_curr[i] = zeta_prev[i] - alpha*(psi_prev[i+1] - psi_prev[i-1]);
@@ -79,7 +80,11 @@ void basin_solver_1d::basin_euler(){
         }
 
         t += this->dt;
-        // Write state to file every some t step.
+
+        if (n % 10 == 0){
+            this->write_state_to_file(t, psi_curr);
+            std::cout << n << std::endl;
+        }
     }
 
     free_array_1D(psi_prev);
@@ -88,7 +93,6 @@ void basin_solver_1d::basin_euler(){
     free_array_1D(zeta_curr);
     free_array_1D(diag);
     free_array_1D(rhs_tridiag);
-    std::cout << "Sup?" << std::endl;
 }
 
 

@@ -7,7 +7,7 @@
 
 class periodic_solver_1d : public rossby_solver_1d {
     public:
-        periodic_solver_1d(double dx, double dy, int N, double T);
+        periodic_solver_1d(double dx, double dy, int N, double T, std::string fileout);
         ~periodic_solver_1d();
         void set_initial_condition(double* psi_0);
         void periodic_euler();
