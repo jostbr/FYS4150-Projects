@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     double dx = 1.0/40.0;   // Spatial step
     int N = L/dx + 1;       // Number of spatial points
 
-    double T = 100.0;        // Upper time limit
+    double T = 150.0;        // Upper time limit
     double dt = 0.001;     // Temporal step
 
     double *init_psi, *init_zeta;   // Initial conditions
