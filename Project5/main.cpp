@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     double dx = 1.0/40.0;   // Spatial step
     int N = L/dx + 1;       // Number of spatial points
 
-    double T = 10.0;        // Upper time limit
+    double T = 100.0;        // Upper time limit
     double dt = 0.001;     // Temporal step
 
     double *init_psi, *init_zeta;   // Initial conditions
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
         x = i*dx;
         //std::cout << x << std::endl;
         init_psi[i] = sin(4.0*pi*x);
-        init_zeta[i] = 4.0*pi*cos(4.0*pi*x);
+        init_zeta[i] = -16.0*pi*pi*sin(4.0*pi*x);
     }
 
     std::string fileout = "results.txt";

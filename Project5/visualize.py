@@ -6,7 +6,7 @@ from matplotlib import animation
 def animate_wave(t, x, psi):
     plt.style.use("ggplot")
     fig = plt.figure(figsize = (8, 8))
-    ax = plt.axes(xlim = (x[0], x[-1]))
+    ax = plt.axes(xlim = (x[0], x[-1]), ylim = (psi.min(), psi.max()))
     ax.set_title("Streamfunction $\psi$ after {:.2f} time".format(t[0]),
         fontname = "serif", fontsize = 18)
     ax.set_xlabel("x [dim-less]", fontname = "serif", fontsize = 12)

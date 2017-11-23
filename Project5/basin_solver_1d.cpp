@@ -81,7 +81,7 @@ void basin_solver_1d::basin_euler(){
 
         t += this->dt;
 
-        if (n % 10 == 0){
+        if (n % 200 == 0){
             this->write_state_to_file(t, psi_curr);
             std::cout << n << std::endl;
         }
