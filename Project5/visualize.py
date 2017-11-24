@@ -38,6 +38,17 @@ def plot_psi_at_times(x, t, psi, plot_times):
 
     ax.legend()
 
+def compute_analytical_basin(x, t):
+    L = 1.0
+    k = 4.0*np.pi/L
+    omega = -1.0
+    psi = np.zeros((t.shape[0], x.shape[0]))
+
+    for i in range(len(t)):
+        psi[i, :] = np.sin(k*x)*np.cos(k*x - omega*t[i])
+
+    return psi
+
 
 
 
@@ -48,7 +59,11 @@ t = data[:, 0]
 psi = data[:, 1:]
 x = np.linspace(0, 1, psi.shape[1])
 
-#anim = animate_wave(t, x, psi)
-plot_psi_at_times(x, t, psi, [0, 50, 100, 150])
+psi_analytical = compute_analytical_basin(x, t)
+print(psi_analytical.shape)
+
+anim_basin_numerical = animate_wave(t, x, psi)
+anim_basin_analytical = animate_wave(t, x, psi_analytical)
+#plot_psi_at_times(x, t, psi, [0, 50, 100, 150])
 
 plt.show()

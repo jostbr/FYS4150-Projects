@@ -38,6 +38,36 @@ void TEST_tridiag_general(){
     free_array_1D(solution);
 }
 
+
+/* Unit test for the general tridiag solver. The test is based on using small arbitrary
+ * tridiagonal matrix (3x3) with a arbitrary known right-hand- side. We compute the
+ * solution by hand and compare with the output of tridiag(). */
+void TEST_tridiag_ferrari(){
+    int N = 3;
+    double *diag, *rhs, *solution;
+    alloc_array_1D(diag, N);          // Main diagonal
+    alloc_array_1D(rhs, N);          // Right hand side of Av = g
+    alloc_array_1D(solution, N);   // To hold solution from algorithm
+
+    /* Testing with an abitrary matrix for the general algorithm. */
+    rhs[0] = rhs[1] = rhs[2] = -1.0;      // Right hand side fortest of general
+
+    tridiag_ferrari(diag, rhs, N, solution);   // Call the Thomas algorithm
+
+    /* Examine results and see if results are as computed by hand. */
+    if (solution[0] == -1.5 && solution[1] == 0.5 && solution[2] == -0.5){
+        std::cout << "TEST PASSED: Ferrari tridiag solver" << std::endl;
+    }
+
+    else {
+        std::cout << "TEST FAILED: Ferrari tridiag solver!" << std::endl;
+    }
+
+    free_array_1D(diag);
+    free_array_1D(rhs);
+    free_array_1D(solution);
+}
+
 ///* Unit test for testing if the basin initial condition are set correctly. */
 //void TEST_set_basin_IC(){
 //    int N = 10;

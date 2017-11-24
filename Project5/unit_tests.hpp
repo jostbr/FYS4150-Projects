@@ -8,6 +8,7 @@
 # include "array_alloc.hpp"
 
 void TEST_tridiag_general();
+void TEST_tridiag_ferrari();
 //void TEST_set_basin_IC();
 
 #endif // UNIT_TESTS_HPP

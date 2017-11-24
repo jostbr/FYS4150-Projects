@@ -13,6 +13,7 @@ int main(int argc, char* argv[]){
     std::cout << "\nRUNNING TESTS..." << std::endl;
     std::cout << "===============================================" << std::endl;
     TEST_tridiag_general();
+    TEST_tridiag_ferrari();
     //TEST_set_basin_IC();
     std::cout << "===============================================\n" << std::endl;
 
@@ -44,7 +45,7 @@ int main(int argc, char* argv[]){
     basin_solver_1d solver(dx, dt, N, T, fileout);
     solver.set_boundary_conditions(0.0, 0.0);
     solver.set_initial_condition(init_psi, init_zeta);
-    solver.basin_euler();
+    solver.basin_leapfrog();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
