@@ -60,7 +60,7 @@ void TEST_tridiag_ferrari(){
     }
 
     else {
-        std::cout << "TEST FAILED: Ferrari tridiag solver!" << std::endl;
+        std::cout << "TEST FAILED: Ferrari tridiag solver" << std::endl;
     }
 
     free_array_1D(diag);
@@ -68,28 +68,34 @@ void TEST_tridiag_ferrari(){
     free_array_1D(solution);
 }
 
-///* Unit test for testing if the basin initial condition are set correctly. */
-//void TEST_set_basin_IC(){
-//    int N = 10;
-//    double bc = 12.0;
-//    double* init_con;
+/* Unit test for testing if the basin initial condition are set correctly. */
+void TEST_set_initial_condition_basin(){
+    int N = 10;
+    double bc = 12.0;
+    double *init_psi, *init_zeta, *set_init_psi, *set_init_zeta;
+    std::string fileout = "filename.txt";
 
-//    alloc_array_1D(init_con, N);
+    alloc_array_1D(init_psi, N);
+    alloc_array_1D(init_zeta, N);
+    alloc_array_1D(set_init_psi, N);
+    alloc_array_1D(set_init_zeta, N);
 
-//    for (int i = 0; i < N; i++){
-//        init_con[i] = bc;
-//    }
+    for (int i = 0; i < N; i++){
+        init_psi[i] = bc;
+        init_zeta[i] = 0.0;
+    }
 
-//    basin_solver_1d solver(1.0, 1.0, N, 1.0);
-//    solver.set_boundary_conditions(bc, bc);
-//    solver.set_initial_condition(init_con);
+    basin_solver_1d solver(1.0, 1.0, N, 1.0, fileout);
+    solver.set_boundary_conditions(bc, bc);
+    solver.set_initial_condition(init_psi, init_zeta);
+    solver.get_initial_condition(set_init_psi, set_init_zeta);
 
-//    for (int i = 0; i < N; i++){
-//        if (solver.psi_0[i] != init_con[i]){
-//            std::cout << "TEST FAILED: Basin initial condition" << std::endl;
-//            return;
-//        }
-//    }
+    for (int i = 0; i < N; i++){
+        if (set_init_psi[i] != init_psi[i] || set_init_zeta[i] != init_zeta[i]){
+            std::cout << "TEST FAILED: Basin initial condition" << std::endl;
+            return;
+        }
+    }
 
-//    std::cout << "TEST PASSED: Basin initial condition" << std::endl;
-//}
+    std::cout << "TEST PASSED: Basin initial condition" << std::endl;
+}

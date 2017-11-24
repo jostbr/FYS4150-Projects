@@ -14,7 +14,7 @@ int main(int argc, char* argv[]){
     std::cout << "===============================================" << std::endl;
     TEST_tridiag_general();
     TEST_tridiag_ferrari();
-    //TEST_set_basin_IC();
+    TEST_set_initial_condition_basin();
     std::cout << "===============================================\n" << std::endl;
 
 
@@ -46,34 +46,10 @@ int main(int argc, char* argv[]){
     solver.set_boundary_conditions(0.0, 0.0);
     solver.set_initial_condition(init_psi, init_zeta);
     //solver.basin_euler();
+    solver.basin_leapfrog();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
 
-    double* arr;
-    alloc_array_1D(arr, 6);
-
-    for (int i = 0; i < 6; i++){
-        arr[i] = i;
-    }
-
-    func(arr, 6);
-
-    for (int i = 0; i < 6; i++){
-        std::cout << "\nGadhjgsfv" << std::endl;
-        std::cout << arr[i] << std::endl;
-    }
-
-    free_array_1D(arr);
-
     return 0;
-}
-
-void func(double* arr, int n){
-    for (int i = 0; i < n; i++){
-        std::cout << "Gadhjgsfv" << std::endl;
-        std::cout << arr[i] << std::endl;
-    }
-
-    arr[0] = 276.0;
 }

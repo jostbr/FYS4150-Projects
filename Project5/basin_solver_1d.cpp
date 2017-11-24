@@ -39,6 +39,8 @@ void basin_solver_1d::set_initial_condition(double* init_psi, double* init_zeta)
  * time-stepping for the vorticity and centered differences for the the streamfunction. Solves the
  * 1D Poisson equation at every time step using a tridiagonal linear algebra solver (Thomas algorithm)*/
 void basin_solver_1d::basin_euler(){
+    this->display_model_config();
+
     /* Initialize variables and allocate memory. */
     /* ================================================================================== */
     double alpha = this->dt/(2.0*this->dx);     // Pre-calculate constant for Euler step
@@ -108,6 +110,8 @@ void basin_solver_1d::basin_euler(){
  * and centered differences for the the streamfunction. Solves the 1D Poisson equation
  * at every time step using a tridiagonal linear algebra solver (Thomas algorithm)*/
 void basin_solver_1d::basin_leapfrog(){
+    this->display_model_config();
+
     /* Initialize variables and allocate memory. */
     /* ================================================================================== */
     double alpha = this->dt/(2.0*this->dx);     // Pre-calculate constant for Euler step
