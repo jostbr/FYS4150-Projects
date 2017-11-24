@@ -15,6 +15,7 @@ int main(int argc, char* argv[]){
     TEST_tridiag_general();
     TEST_tridiag_ferrari();
     TEST_set_initial_condition_basin();
+    TEST_set_initial_condition_periodic();
     std::cout << "===============================================\n" << std::endl;
 
 
