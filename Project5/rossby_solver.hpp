@@ -8,15 +8,16 @@
 # include <string>
 # include "array_alloc.hpp"
 
-class rossby_solver_1d {
+class rossby_solver {
     public:
-        rossby_solver_1d(double dx, double dt, int N, double T, std::string fileout);
-        ~rossby_solver_1d();
-        void get_initial_condition(double* psi_holder, double* zeta_holder);
-        void display_model_config();
+        rossby_solver(double dx, int N, double dt, double T, std::string fileout);
+        ~rossby_solver();
+        void get_initial_condition(double* psi_holder, double* zeta_holder) const;
+        void display_model_config() const;
 
     protected:
         void write_state_to_file(double t, double* psi);
+
         double *psi_0, *zeta_0;
         double dx, dt, T;
         int N;

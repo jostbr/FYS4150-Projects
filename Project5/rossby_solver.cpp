@@ -1,7 +1,7 @@
 
-#include "rossby_solver_1d.hpp"
+#include "rossby_solver.hpp"
 
-rossby_solver_1d::rossby_solver_1d(double dx, double dt, int N, double T, std::string fileout){
+rossby_solver::rossby_solver(double dx, int N, double dt, double T, std::string fileout){
     this->dx = dx;
     this->dt = dt;
     this->T = T;
@@ -17,7 +17,7 @@ rossby_solver_1d::rossby_solver_1d(double dx, double dt, int N, double T, std::s
 
 
 /* Function to retrieve the previously set initial conditions. */
-void rossby_solver_1d::get_initial_condition(double* psi_holder, double* zeta_holder){
+void rossby_solver::get_initial_condition(double* psi_holder, double* zeta_holder) const {
     for (int i = 0; i < this->N; i++){
         psi_holder[i] = this->psi_0[i];
         zeta_holder[i] = this->zeta_0[i];
@@ -26,7 +26,7 @@ void rossby_solver_1d::get_initial_condition(double* psi_holder, double* zeta_ho
 
 
 /* Function that writes a time and a psi array to file (on one line). */
-void rossby_solver_1d::write_state_to_file(double t, double* psi) {
+void rossby_solver::write_state_to_file(double t, double* psi) {
     this->outfile << std::setw(15) << std::setprecision(8) << t;
 
     for (int i = 0; i < this->N; i++){
@@ -37,7 +37,7 @@ void rossby_solver_1d::write_state_to_file(double t, double* psi) {
 }
 
 /* Function for printing the numerical model parameters to screen. */
-void rossby_solver_1d::display_model_config(){
+void rossby_solver::display_model_config() const {
     std::cout << "Simulation parameters:" << std::endl;
     std::cout << "-------------------------" << std::endl;
     std::cout << "dx = " << std::setw(8) << this->dx << std::endl;
@@ -49,7 +49,7 @@ void rossby_solver_1d::display_model_config(){
 
 
 /* Destructor cleaning performing cleanup upon object destruction. */
-rossby_solver_1d::~rossby_solver_1d(){
+rossby_solver::~rossby_solver(){
     free_array_1D(this->psi_0);
     free_array_1D(this->zeta_0);
     this->outfile.close();

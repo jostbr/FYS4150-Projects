@@ -52,8 +52,8 @@ def compute_analytical_basin(x, t):
 
 
 
-filename = "../build-Project5/results.txt"
-data = np.loadtxt(filename, dtype = np.float64)
+filename_01 = "../build-Project5/sine_basin.txt"
+data = np.loadtxt(filename_01, dtype = np.float64)
 
 t = data[:, 0]
 psi = data[:, 1:]

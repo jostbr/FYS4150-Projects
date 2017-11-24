@@ -2,8 +2,8 @@
 #include "basin_solver_1d.hpp"
 
 /* Constructor calling constructor of base class with input parameters. */
-basin_solver_1d::basin_solver_1d(double dx, double dt,
-                     int N, double T, std::string fileout) : rossby_solver_1d(dx, dt, N, T, fileout) {
+basin_solver_1d::basin_solver_1d(double dx, int N,
+                     double dt, double T, std::string fileout) : rossby_solver(dx, N, dt, T, fileout) {
     // No more initialization in derived class needed
 }
 

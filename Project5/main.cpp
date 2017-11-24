@@ -42,12 +42,16 @@ int main(int argc, char* argv[]){
         init_zeta[i] = -16.0*pi*pi*sin(4.0*pi*x);
     }
 
-    std::string fileout = "results.txt";
-    basin_solver_1d solver(dx, dt, N, T, fileout);
-    solver.set_boundary_conditions(0.0, 0.0);
-    solver.set_initial_condition(init_psi, init_zeta);
-    //solver.basin_euler();
-    solver.basin_leapfrog();
+    std::string fileout_01 = "sine_basin.txt";
+    basin_solver_1d bsolver(dx, N, dt, T, fileout_01);
+    bsolver.set_boundary_conditions(0.0, 0.0);
+    bsolver.set_initial_condition(init_psi, init_zeta);
+    bsolver.basin_euler();
+    //bsolver.basin_leapfrog();
+
+//    std::string fileout_02 = "sine_periodic.txt";
+//    periodic_solver_1d psolver(dx, N, dt, T, fileout_02);
+//    psolver.set_initial_condition(init_psi, init_zeta);
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);

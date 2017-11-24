@@ -3,11 +3,12 @@
 #define PERIODIC_SOLVER_1D_HPP
 
 # include <iostream>
-# include "rossby_solver_1d.hpp"
+# include <cmath>
+# include "rossby_solver.hpp"
 
-class periodic_solver_1d : public rossby_solver_1d {
+class periodic_solver_1d : public rossby_solver {
     public:
-        periodic_solver_1d(double dx, double dy, int N, double T, std::string fileout);
+        periodic_solver_1d(double dx, int N, double dt, double T, std::string fileout);
         ~periodic_solver_1d();
         void set_initial_condition(double* init_psi, double* init_zeta);
         void periodic_euler();

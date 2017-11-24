@@ -85,7 +85,7 @@ void TEST_set_initial_condition_basin(){
         init_zeta[i] = 0.0;
     }
 
-    basin_solver_1d solver(1.0, 1.0, N, 1.0, fileout);
+    basin_solver_1d solver(1.0, N, 1.0, 1.0, fileout);
     solver.set_boundary_conditions(bc, bc);
     solver.set_initial_condition(init_psi, init_zeta);
     solver.get_initial_condition(set_init_psi, set_init_zeta);
@@ -116,7 +116,7 @@ void TEST_set_initial_condition_periodic(){
         init_zeta[i] = 0.0;
     }
 
-    periodic_solver_1d solver(1.0, 1.0, N, 1.0, fileout);
+    periodic_solver_1d solver(1.0, N, 1.0, 1.0, fileout);
     solver.set_initial_condition(init_psi, init_zeta);
     solver.get_initial_condition(set_init_psi, set_init_zeta);
 
