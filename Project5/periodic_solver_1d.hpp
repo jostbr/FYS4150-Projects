@@ -9,7 +9,7 @@ class periodic_solver_1d : public rossby_solver_1d {
     public:
         periodic_solver_1d(double dx, double dy, int N, double T, std::string fileout);
         ~periodic_solver_1d();
-        void set_initial_condition(double* psi_0);
+        void set_initial_condition(double* init_psi, double* init_zeta);
         void periodic_euler();
         void periodic_leapfrog();
 };

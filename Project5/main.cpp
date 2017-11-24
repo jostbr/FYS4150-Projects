@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
     basin_solver_1d solver(dx, dt, N, T, fileout);
     solver.set_boundary_conditions(0.0, 0.0);
     solver.set_initial_condition(init_psi, init_zeta);
-    solver.basin_leapfrog();
+    //solver.basin_euler();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);

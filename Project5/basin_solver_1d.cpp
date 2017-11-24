@@ -1,7 +1,7 @@
 
 #include "basin_solver_1d.hpp"
 
-/* Constructor calling constructor of base class wit input parameters. */
+/* Constructor calling constructor of base class with input parameters. */
 basin_solver_1d::basin_solver_1d(double dx, double dt,
                      int N, double T, std::string fileout) : rossby_solver_1d(dx, dt, N, T, fileout) {
     // No more initialization in derived class needed
@@ -25,11 +25,12 @@ void basin_solver_1d::set_initial_condition(double* init_psi, double* init_zeta)
         std::cout << init_psi[0] << ", " << init_psi[this->N-1] << std::endl;
         std::cout << "Error: Chosen initial condition does not satisfy BC!" << std::endl;
         std::cout << "Terminating program..." << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     for (int i = 0; i < this->N; i++){
-        this->psi_0[i] = init_psi[i];
-        this->zeta_0[i] = init_zeta[i];
+        this->psi_0[i] = init_psi[i];       // Store initial psi in member variable
+        this->zeta_0[i] = init_zeta[i];     // Store initial zeta in member variable
     }
 }
 
@@ -75,8 +76,8 @@ void basin_solver_1d::basin_euler(){
         }
 
         /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
-        for (int i = 1; i < this->N-1; i++){
-            rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
+        for (int i = 1; i < this->N-1; i++){    // Loop over all interior zeta-values
+            rhs_tridiag[i-1] = -dxdx*zeta_curr[i];     // Right-hand-side of Poisson eq.
         }
 
         tridiag_ferrari(diag, rhs_tridiag, this->N-2, psi_curr+1);   // Solve Poisson eq. in interior
@@ -91,7 +92,6 @@ void basin_solver_1d::basin_euler(){
 
         if (n % 200 == 0){
             this->write_state_to_file(t, psi_curr);
-            std::cout << n << std::endl;
         }
     }
 
@@ -144,8 +144,8 @@ void basin_solver_1d::basin_leapfrog(){
         zeta_prev[i] = this->zeta_0[i] - alpha*(this->psi_0[i+1] - this->psi_0[i-1]);
     }
 
-    for (int i = 1; i < this->N-1; i++){
-        rhs_tridiag[i-1] = -dxdx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
+    for (int i = 1; i < this->N-1; i++){    // Loop over all interior zeta-values
+        rhs_tridiag[i-1] = -dxdx*zeta_curr[i];     // Right-hand-side of Poisson eq.
     }
 
     tridiag_ferrari(diag, rhs_tridiag, this->N-2, psi_prev+1);   // Solve Poisson eq. in interior
@@ -159,7 +159,7 @@ void basin_solver_1d::basin_leapfrog(){
         }
 
         /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
-        for (int i = 1; i < this->N-1; i++){
+        for (int i = 1; i < this->N-1; i++){    // Loop over all interior zeta-values
             rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Right-hand-side of Poisson eq.
         }
 
@@ -176,7 +176,6 @@ void basin_solver_1d::basin_leapfrog(){
 
         if (n % 200 == 0){
             this->write_state_to_file(t, psi_curr);
-            std::cout << n << std::endl;
         }
     }
 
