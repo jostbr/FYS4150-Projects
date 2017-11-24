@@ -63,7 +63,7 @@ psi_analytical = compute_analytical_basin(x, t)
 print(psi_analytical.shape)
 
 anim_basin_numerical = animate_wave(t, x, psi)
-anim_basin_analytical = animate_wave(t, x, psi_analytical)
+#anim_basin_analytical = animate_wave(t, x, psi_analytical)
 #plot_psi_at_times(x, t, psi, [0, 50, 100, 150])
 
 plt.show()

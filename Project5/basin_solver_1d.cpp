@@ -34,13 +34,17 @@ void basin_solver_1d::set_initial_condition(double* init_psi, double* init_zeta)
 }
 
 
-/* Function that solves the vorticity equation as a coupled set of two PDE's. Uses Forward Euler
- * time-stepping for the vorticity and centered differences for the the streamfunction. */
+/* Function that solves the vorticity equation as a set of two coupled PDE's. Uses Forward Euler
+ * time-stepping for the vorticity and centered differences for the the streamfunction. Solves the
+ * 1D Poisson equation at every time step using a tridiagonal linear algebra solver (Thomas algorithm)*/
 void basin_solver_1d::basin_euler(){
-    double alpha = this->dt/(2.0*this->dx);     // Pre-calcualte constant for scheme below
+    /* Initialize variables and allocate memory. */
+    /* ================================================================================== */
+    double alpha = this->dt/(2.0*this->dx);     // Pre-calculate constant for Euler step
+    double dxdx = this->dx*this->dx;            // Pre-calculate for use in Poisson eq. below
     double t = 0.0;                             // To keep track of time
 
-    double *psi_prev, *psi_curr, *zeta_prev, *zeta_curr;    // Prevois and current states
+    double *psi_prev, *psi_curr, *zeta_prev, *zeta_curr;    // Previous and current states
     alloc_array_1D(psi_prev, this->N);
     alloc_array_1D(psi_curr, this->N);
     alloc_array_1D(zeta_prev, this->N);
@@ -50,6 +54,8 @@ void basin_solver_1d::basin_euler(){
     alloc_array_1D(diag, this->N-2);
     alloc_array_1D(rhs_tridiag, this->N-2);
 
+    /* Apply boundary consditions. */
+    /* ================================================================================== */
     for (int i = 0; i < this->N; i++){
         psi_prev[i] = this->psi_0[i];       // Set previous psi to initial psi (takes care of BC as well)
         zeta_prev[i] = this->zeta_0[i];     // Set previous zeta to initial zeta (takes care of BC as well)
@@ -60,13 +66,15 @@ void basin_solver_1d::basin_euler(){
     psi_curr[0] = this->bc_0; psi_curr[this->N-1] = this->bc_N;                 // Also apply BC here
     zeta_curr[0] = zeta_prev[0]; zeta_curr[this->N-1] = zeta_prev[this->N-1];   // Also apply BC here
 
+    /* Main loop over time using leapfrog time-stepping for vorticity. */
+    /* ================================================================================== */
     for (int n = 1; t < T; n++){
-        /* STEP 1: Time-step for vorticity. */
+        /* STEP 1: Advance vorticity for ward in time (forward Euler). */
         for (int i = 1; i < this->N-1; i++){
             zeta_curr[i] = zeta_prev[i] - alpha*(psi_prev[i+1] - psi_prev[i-1]);
         }
 
-        /* STEP 2: Solve the 1D Poisson equation. */
+        /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
         for (int i = 1; i < this->N-1; i++){
             rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
         }
@@ -74,7 +82,7 @@ void basin_solver_1d::basin_euler(){
         tridiag_ferrari(diag, rhs_tridiag, this->N-2, psi_curr+1);   // Solve Poisson eq. in interior
 
 
-        for (int i = 1; i < this->N-1; i++){    // All points except at boundaries (always)
+        for (int i = 1; i < this->N-1; i++){
             psi_prev[i] = psi_curr[i];      // Set previous psi to current for next iter
             zeta_prev[i] = zeta_curr[i];    // Set previous zeta to current for next iter
         }
@@ -95,10 +103,16 @@ void basin_solver_1d::basin_euler(){
     free_array_1D(rhs_tridiag);
 }
 
-
+/* Function that solves the vorticity equation as a set of two coupled PDE's. Uses
+ * Leapfrog time-stepping for the vorticity (forward Euler for the firat time step)
+ * and centered differences for the the streamfunction. Solves the 1D Poisson equation
+ * at every time step using a tridiagonal linear algebra solver (Thomas algorithm)*/
 void basin_solver_1d::basin_leapfrog(){
-    double alpha = this->dt/(2.0*this->dx);     // Pre-calculate constant for scheme below
-    double gamma = this->dt/this->dx;     // Pre-calculate constant for scheme below
+    /* Initialize variables and allocate memory. */
+    /* ================================================================================== */
+    double alpha = this->dt/(2.0*this->dx);     // Pre-calculate constant for Euler step
+    double gamma = this->dt/this->dx;           // Pre-calculate constant for leapfrog steps
+    double dxdx = this->dx*this->dx;            // Pre-calculate for use in Poisson eq. below
     double t = 0.0;                             // To keep track of time
 
     double *psi_prev, *psi_curr, * zeta_prev, *zeta_pp, *zeta_curr;    // Prev-prev, prev and current states
@@ -112,6 +126,8 @@ void basin_solver_1d::basin_leapfrog(){
     alloc_array_1D(diag, this->N-2);
     alloc_array_1D(rhs_tridiag, this->N-2);
 
+    /* Apply boundary consditions. */
+    /* ================================================================================== */
     for (int i = 0; i < this->N; i++){
         psi_prev[i] = this->psi_0[i];       // Set previous psi to initial psi (takes care of BC as well)
         zeta_pp[i] = this->zeta_0[i];     // Set prev-prev zeta to initial zeta (takes care of BC as well)
@@ -119,38 +135,40 @@ void basin_solver_1d::basin_leapfrog(){
 
     this->write_state_to_file(0.0, psi_prev);   // Write initial condition to file
 
-    psi_curr[0] = this->bc_0; psi_curr[this->N-1] = this->bc_N;                       // Also apply BC here
-    zeta_curr[0] = zeta_pp[0]; zeta_curr[this->N-1] = zeta_pp[this->N-1];   // Also apply BC here
+    psi_curr[0] = this->bc_0; psi_curr[this->N-1] = this->bc_N;             // Also apply BC for curr arrays
+    zeta_curr[0] = zeta_pp[0]; zeta_curr[this->N-1] = zeta_pp[this->N-1];   // Also apply BC for curr arrays
 
     /* Initial Euler step. */
+    /* ================================================================================== */
     for (int i = 1; i < this->N-1; i++){
         zeta_prev[i] = this->zeta_0[i] - alpha*(this->psi_0[i+1] - this->psi_0[i-1]);
     }
 
     for (int i = 1; i < this->N-1; i++){
-        rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
+        rhs_tridiag[i-1] = -dxdx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
     }
 
     tridiag_ferrari(diag, rhs_tridiag, this->N-2, psi_prev+1);   // Solve Poisson eq. in interior
 
-
+    /* Main loop over time using leapfrog time-stepping for vorticity. */
+    /* ================================================================================== */
     for (int n = 2; t < T; n++){
-        /* STEP 1: Time-step for vorticity. */
+        /* STEP 1: Advance vorticity for ward in time (leapfrog). */
         for (int i = 1; i < this->N-1; i++){
             zeta_curr[i] = zeta_pp[i] - gamma*(psi_prev[i+1] - psi_prev[i-1]);
         }
 
-        /* STEP 2: Solve the 1D Poisson equation. */
+        /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
         for (int i = 1; i < this->N-1; i++){
-            rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Rght-hand-side of Poisson eq.
+            rhs_tridiag[i-1] = -this->dx*this->dx*zeta_curr[i];     // Right-hand-side of Poisson eq.
         }
 
         tridiag_ferrari(diag, rhs_tridiag, this->N-2, psi_curr+1);   // Solve Poisson eq. in interior
 
 
-        for (int i = 1; i < this->N-1; i++){    // All points except at boundaries (always)
+        for (int i = 1; i < this->N-1; i++){
             psi_prev[i] = psi_curr[i];      // Set previous psi to current for next iter
-            zeta_pp[i] = zeta_prev[i];      // Set prev-prev zeta to current for next iter
+            zeta_pp[i] = zeta_prev[i];      // Set prev-prev zeta to prev for next iter
             zeta_prev[i] = zeta_curr[i];    // Set previous zeta to current for next iter
         }
 
