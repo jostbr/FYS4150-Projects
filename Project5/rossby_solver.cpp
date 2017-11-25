@@ -42,9 +42,9 @@ void rossby_solver::display_model_config() const {
     std::cout << "-------------------------" << std::endl;
     std::cout << "dx = " << std::setw(8) << this->dx << std::endl;
     std::cout << "dt = " << std::setw(8) << this->dt << std::endl;
-    std::cout << "N = " << std::setw(8) << this->dx << std::endl;
-    std::cout << "T = " << std::setw(8) << this->dx << std::endl;
-    std::cout << "Output in " << std::setw(8) << this->fileout << std::endl << std::endl;
+    std::cout << "N  = " << std::setw(8) << this->dx << std::endl;
+    std::cout << "T  = " << std::setw(8) << this->T << std::endl;
+    std::cout << "\nOutput in " << std::setw(8) << this->fileout << std::endl << std::endl;
 }
 
 
