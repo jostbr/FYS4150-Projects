@@ -4,14 +4,8 @@
 /* Constructor calling constructor of base class with input parameters. */
 basin_solver_1d::basin_solver_1d(double dx, int N,
                      double dt, double T, std::string fileout) : rossby_solver(dx, N, dt, T, fileout) {
-    // No more initialization in derived class needed
-}
-
-
-/* Function that sets what psi should be at the boundaries. */
-void basin_solver_1d::set_boundary_conditions(double bc_0, double bc_N){
-    this->bc_0 = bc_0;
-    this->bc_N = bc_N;
+    this->bc_0 = 0.0;   // Basin boundary condition; psi(0,t) = 0
+    this->bc_N = 0.0;   // Basin boundary condition; psi(1,t) = 0
 }
 
 

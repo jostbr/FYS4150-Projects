@@ -43,7 +43,6 @@ int main(int argc, char* argv[]){
 
     std::string fileout_01 = "sine_basin.txt";
     basin_solver_1d bsolver(dx, N, dt, T, fileout_01);
-    bsolver.set_boundary_conditions(0.0, 0.0);
     bsolver.set_initial_condition(init_psi, init_zeta);
     bsolver.basin_euler();
     //bsolver.basin_leapfrog();

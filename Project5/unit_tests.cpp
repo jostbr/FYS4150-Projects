@@ -71,7 +71,6 @@ void TEST_tridiag_ferrari(){
 /* Unit test for testing if the basin initial condition are set correctly. */
 void TEST_set_initial_condition_basin(){
     int N = 10;
-    double bc = 12.0;
     double *init_psi, *init_zeta, *set_init_psi, *set_init_zeta;
     std::string fileout = "filename.txt";
 
@@ -81,12 +80,11 @@ void TEST_set_initial_condition_basin(){
     alloc_array_1D(set_init_zeta, N);
 
     for (int i = 0; i < N; i++){
-        init_psi[i] = bc;
+        init_psi[i] = 0.0;
         init_zeta[i] = 0.0;
     }
 
     basin_solver_1d solver(1.0, N, 1.0, 1.0, fileout);
-    solver.set_boundary_conditions(bc, bc);
     solver.set_initial_condition(init_psi, init_zeta);
     solver.get_initial_condition(set_init_psi, set_init_zeta);
 
