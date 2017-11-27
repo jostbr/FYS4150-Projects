@@ -25,7 +25,7 @@ int main(int argc, char* argv[]){
     double dx = 1.0/40.0;   // Spatial step
     int N = L/dx + 1;       // Number of spatial points
 
-    double T = 150.0;        // Upper time limit
+    double T = 100.0;        // Upper time limit
     double dt = 0.001;     // Temporal step
 
     double *init_psi, *init_zeta;   // Initial conditions
@@ -41,15 +41,25 @@ int main(int argc, char* argv[]){
         init_zeta[i] = -16.0*pi*pi*sin(4.0*pi*x);
     }
 
-    std::string fileout_01 = "sine_basin.txt";
-    basin_solver_1d bsolver(dx, N, dt, T, fileout_01);
-    bsolver.set_initial_condition(init_psi, init_zeta);
-    bsolver.basin_euler();
-    //bsolver.basin_leapfrog();
+    std::string fileout_01 = "sine_basin_euler.txt";
+    basin_solver_1d be_solver(dx, N, dt, T, fileout_01);
+    be_solver.set_initial_condition(init_psi, init_zeta);
+    be_solver.basin_euler();
 
-//    std::string fileout_02 = "sine_periodic.txt";
-//    periodic_solver_1d psolver(dx, N, dt, T, fileout_02);
-//    psolver.set_initial_condition(init_psi, init_zeta);
+    std::string fileout_02 = "sine_basin_leapfrog.txt";
+    basin_solver_1d bl_solver(dx, N, dt, T, fileout_02);
+    bl_solver.set_initial_condition(init_psi, init_zeta);
+    bl_solver.basin_leapfrog();
+
+    std::string fileout_03 = "sine_periodic_euler.txt";
+    periodic_solver_1d pe_solver(dx, N, dt, T, fileout_03);
+    pe_solver.set_initial_condition(init_psi, init_zeta);
+    pe_solver.periodic_euler();
+
+    std::string fileout_04 = "sine_periodic_leapfrog.txt";
+    periodic_solver_1d pb_solver(dx, N, dt, T, fileout_04);
+    pb_solver.set_initial_condition(init_psi, init_zeta);
+    pb_solver.periodic_leapfrog();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);

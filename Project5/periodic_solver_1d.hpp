@@ -4,6 +4,7 @@
 
 # include <iostream>
 # include <cmath>
+# include <armadillo>
 # include "rossby_solver.hpp"
 
 class periodic_solver_1d : public rossby_solver {

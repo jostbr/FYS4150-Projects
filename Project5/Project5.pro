@@ -18,3 +18,7 @@ HEADERS += \
     periodic_solver_1d.hpp \
     basin_solver_1d.hpp \
     rossby_solver.hpp
+
+INCLUDEPATH += /usr/local/include
+LIBS += -L/usr/local/lib
+LIBS += -larmadillo -llapack -lblas
