@@ -9,7 +9,8 @@ SOURCES += main.cpp \
     poisson.cpp \
     periodic_solver_1d.cpp \
     basin_solver_1d.cpp \
-    rossby_solver.cpp
+    rossby_solver.cpp \
+    basin_solver_2d.cpp
 
 HEADERS += \
     array_alloc.hpp \
@@ -17,7 +18,8 @@ HEADERS += \
     poisson.hpp \
     periodic_solver_1d.hpp \
     basin_solver_1d.hpp \
-    rossby_solver.hpp
+    rossby_solver.hpp \
+    basin_solver_2d.hpp
 
 INCLUDEPATH += /usr/local/include
 LIBS += -L/usr/local/lib

@@ -9,7 +9,7 @@
 
 class basin_solver_1d : public rossby_solver {
     public:
-        basin_solver_1d(double dx, int N, double dt, double T, std::string fileout);
+        basin_solver_1d(double dx, int N_x, double dt, double T, std::string fileout);
         ~basin_solver_1d();
         void set_initial_condition(double* init_psi, double* init_zeta);
         void basin_euler();
