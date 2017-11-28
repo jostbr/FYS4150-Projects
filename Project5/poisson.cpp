@@ -63,8 +63,8 @@ void tridiag_ferrari(double* b, double* y, int N, double* solution){
  * f(x,1) = bc_x1
  *
  * using num_iter number of iterations for convergence at each of the (N_x, N_y) spatial points. */
-void jacobi(double** g, double bc_0y, double bc_1y, double bc_x0, double bc_x1, double dx,
-            double dy, int num_iter, int N_x, int N_y, double**& f){
+void poisson_jacobi(double* g, double* bc_0y, double* bc_1y, double* bc_x0, double* bc_x1, double dx,
+            double dy, int N_x, int N_y, int max_iter, double* f){
     /* UNTESTED FUNCTION! */
     double dxdx = dx*dx;
     double dydy = dy*dy;
@@ -72,21 +72,49 @@ void jacobi(double** g, double bc_0y, double bc_1y, double bc_x0, double bc_x1, 
     double dxdx_pluss_dydy_2 = 2*(dxdx + dydy);
 
     for (int j = 0; j < N_y; j++){
-        f[0][j] = bc_0y;         // Boundary condition at (x = 0, y)
-        f[N_x-1][j] = bc_1y;     // Boundary condition at (x = 1, y)
+        f[0 + j] = bc_0y[j];                // Boundary condition at (x = 0, y)
+        f[(N_x-1)*N_y + j] = bc_1y[j];      // Boundary condition at (x = 1, y)
     }
 
-    for (int i = 0; i < N_y; i++){
-        f[i][0] = bc_x0;         // Boundary condition at (x, y = 0)
-        f[i][N_y-1] = bc_x1;     // Boundary condition at (x, y = 1)
+    for (int i = 0; i < N_x; i++){
+        f[i*N_y + 0] = bc_x0[i];            // Boundary condition at (x, y = 0)
+        f[i*N_y + (N_y-1)] = bc_x1[i];      // Boundary condition at (x, y = 1)
     }
 
-    for (int iter = 0; iter < num_iter; iter++){    // Iterations for convergence
-        for (int i = 1; i < N_x-1; i++){
-            for (int j = 1; j < N_y-1; j++){
-                f[i][j] = (dydy*(f[i+1][j] + f[i-1][j]) + dxdx*(f[i][j+1] + f[i][j-1]) -
-                        dxdxdydy*g[i][j])/dxdx_pluss_dydy_2;
+    int iter = 0;
+    double diff = 1.0E+20;      // To check for convergence
+    double eps = 1.0E-6;    // Tolerance for convergence
+    double* f_tmp;          // To temporary hold solution for each iteration
+    alloc_array_1D(f_tmp, N_x*N_y);
+
+    /* Iterate until satisafactory convergence is reached (or max iter is reached). */
+    while (iter <= max_iter && fabs(diff) > eps){
+        diff = 0.0;
+
+        for (int i = 0; i < N_x; i++){
+            for (int j = 0; j < N_y; j++){
+                f_tmp[i*N_y + j] = f[i*N_y + j];    // Need previous "solution"
             }
         }
+
+        /* Do one sweep over the array step each point closer to the solution. */
+        for (int i = 1; i < N_x-1; i++){
+            for (int j = 1; j < N_y-1; j++){
+                f[i*N_y + j] = (dydy*(f_tmp[(i+1)*N_y + j] + f_tmp[(i-1)*N_y + j]) +
+                        dxdx*(f_tmp[i*N_y + (j+1)] + f_tmp[i*N_y + (j-1)]) -
+                        dxdxdydy*g[i*N_y + j])/dxdx_pluss_dydy_2;
+                diff += f[i*N_y + j] - f_tmp[i*N_y + j];
+            }
+        }
+
+        //std::cout << diff << std::endl;
+
+        iter++;
     }
+
+    if (fabs(diff) > eps){
+        //std::cout << "Did not reach satisfactory convergence!" << std::endl;
+    }
+
+    free_array_1D(f_tmp);
 }

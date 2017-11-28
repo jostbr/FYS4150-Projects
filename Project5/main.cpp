@@ -21,8 +21,10 @@ int main(int argc, char* argv[]){
     TEST_set_initial_condition_periodic();
     std::cout << "===============================================\n" << std::endl;
 
-    run_1d_simulations();
-    //run_2d_simulations();
+    //run_1d_simulations();
+    run_2d_simulations();
+
+    std::cout << "Sup?" << std::endl;
 
     return 0;
 }
@@ -81,12 +83,12 @@ void run_2d_simulations(){
     double pi = acos(-1.0);
 
     double L = 1.0;         // Length of domain (non-dim)
-    double dx = 1.0/40.0;   // Spatial step in x-direction
-    double dy = 1.0/40.0;   // Spatial step in x-direction
+    double dx = 1.0/100.0;   // Spatial step in x-direction
+    double dy = 1.0/100.0;   // Spatial step in x-direction
     int N_x = L/dx + 1;       // Number of spatial points in x-direction
     int N_y = L/dy + 1;       // Number of spatial points in x-direction
 
-    double T = 100.0;        // Upper time limit
+    double T = 50.0;        // Upper time limit
     double dt = 0.001;      // Time step
 
     /* Initial conditions. */
@@ -112,7 +114,5 @@ void run_2d_simulations(){
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
-
-    std::cout << "Sup?" << std::endl;
 }
 

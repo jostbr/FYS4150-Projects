@@ -69,8 +69,8 @@ void rossby_solver::write_state_to_file(double t, double* psi){
     }
 
     else if (this->system_dim.compare("2D") == 0){
-        for (int i = 0; i < this->N_x; i++){
-            for (int j = 0; j < this->N_y; j++){
+        for (int j = 0; j < this->N_y; j++){
+            for (int i = 0; i < this->N_x; i++){
                 this->outfile << std::setw(15) << std::setprecision(8) << psi[i*this->N_y + j];
             }
         }
@@ -84,20 +84,20 @@ void rossby_solver::write_state_to_file(double t, double* psi){
 void rossby_solver::display_model_config() const {
     std::cout << "Simulation parameters:" << std::endl;
     std::cout << "-------------------------" << std::endl;
-    std::cout << "dx = " << std::setw(8) << this->dx << std::endl;
+    std::cout << "dx  = " << std::setw(8) << this->dx << std::endl;
 
     if (this->system_dim.compare("2D") == 0){
-        std::cout << "dx = " << std::setw(8) << this->dy << std::endl;
+        std::cout << "dy  = " << std::setw(8) << this->dy << std::endl;
     }
 
-    std::cout << "N_x  = " << std::setw(8) << this->N_x << std::endl;
+    std::cout << "N_x = " << std::setw(8) << this->N_x << std::endl;
 
     if (this->system_dim.compare("2D") == 0){
         std::cout << "N_y = " << std::setw(8) << this->N_y << std::endl;
     }
 
-    std::cout << "dt = " << std::setw(8) << this->dt << std::endl;
-    std::cout << "T  = " << std::setw(8) << this->T << std::endl;
+    std::cout << "dt  = " << std::setw(8) << this->dt << std::endl;
+    std::cout << "T   = " << std::setw(8) << this->T << std::endl;
     std::cout << "\nOutput in " << std::setw(8) << this->fileout << std::endl << std::endl;
 }
 

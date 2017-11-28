@@ -66,7 +66,7 @@ void basin_solver_1d::basin_euler(){
     /* Main loop over time using leapfrog time-stepping for vorticity. */
     /* ================================================================================== */
     for (int n = 1; t < T; n++){
-        /* STEP 1: Advance vorticity for ward in time (forward Euler). */
+        /* STEP 1: Advance vorticity forward in time (forward Euler). */
         for (int i = 1; i < this->N_x-1; i++){
             zeta_curr[i] = zeta_prev[i] - alpha*(psi_prev[i+1] - psi_prev[i-1]);
         }
@@ -151,7 +151,7 @@ void basin_solver_1d::basin_leapfrog(){
     /* Main loop over time using leapfrog time-stepping for vorticity. */
     /* ================================================================================== */
     for (int n = 2; t < T; n++){
-        /* STEP 1: Advance vorticity for ward in time (leapfrog). */
+        /* STEP 1: Advance vorticity forward in time (leapfrog). */
         for (int i = 1; i < this->N_x-1; i++){
             zeta_curr[i] = zeta_pp[i] - gamma*(psi_prev[i+1] - psi_prev[i-1]);
         }
