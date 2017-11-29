@@ -21,8 +21,8 @@ int main(int argc, char* argv[]){
     TEST_set_initial_condition_periodic();
     std::cout << "===============================================\n" << std::endl;
 
-    //run_1d_simulations();
-    run_2d_simulations();
+    run_1d_simulations();
+    //run_2d_simulations();
 
     std::cout << "Sup?" << std::endl;
 
@@ -37,7 +37,7 @@ void run_1d_simulations(){
     double dx = 1.0/40.0;   // Spatial step in x-direction
     int N_x = L/dx + 1;       // Number of spatial points in x-direction
 
-    double T = 20.0;        // Upper time limit
+    double T = 150.0;        // Upper time limit
     double dt = 0.001;      // Time step
 
     /* Initial conditions for 1D case. */
@@ -64,15 +64,15 @@ void run_1d_simulations(){
     bl_solver.set_initial_condition(init_psi, init_zeta);
     bl_solver.basin_leapfrog();
 
-    std::string fileout_03 = "sine_periodic_euler.txt";
-    periodic_solver_1d pe_solver(dx, N_x, dt, T, fileout_03);
-    pe_solver.set_initial_condition(init_psi, init_zeta);
-    pe_solver.periodic_euler();
+//    std::string fileout_03 = "sine_periodic_euler.txt";
+//    periodic_solver_1d pe_solver(dx, N_x, dt, T, fileout_03);
+//    pe_solver.set_initial_condition(init_psi, init_zeta);
+//    pe_solver.periodic_euler();
 
-    std::string fileout_04 = "sine_periodic_leapfrog.txt";
-    periodic_solver_1d pb_solver(dx, N_x, dt, T, fileout_04);
-    pb_solver.set_initial_condition(init_psi, init_zeta);
-    pb_solver.periodic_leapfrog();
+//    std::string fileout_04 = "sine_periodic_leapfrog.txt";
+//    periodic_solver_1d pb_solver(dx, N_x, dt, T, fileout_04);
+//    pb_solver.set_initial_condition(init_psi, init_zeta);
+//    pb_solver.periodic_leapfrog();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
@@ -83,12 +83,12 @@ void run_2d_simulations(){
     double pi = acos(-1.0);
 
     double L = 1.0;         // Length of domain (non-dim)
-    double dx = 1.0/100.0;   // Spatial step in x-direction
-    double dy = 1.0/100.0;   // Spatial step in x-direction
+    double dx = 1.0/40.0;   // Spatial step in x-direction
+    double dy = 1.0/40.0;   // Spatial step in x-direction
     int N_x = L/dx + 1;       // Number of spatial points in x-direction
     int N_y = L/dy + 1;       // Number of spatial points in x-direction
 
-    double T = 50.0;        // Upper time limit
+    double T = 100.0;        // Upper time limit
     double dt = 0.001;      // Time step
 
     /* Initial conditions. */

@@ -12,6 +12,16 @@ def get_data(filename):
 
     return x, t, psi
 
+def hovmuller(x, t, psi):
+    plt.style.use("ggplot")
+    fig, ax = plt.subplots(figsize = (8, 7))
+    ax.set_title("Hovmüller diagram of $\psi(x,t)$", fontname = "serif", fontsize = 18)
+    ax.set_xlabel("$x$ [dim-less]", fontname = "serif", fontsize = 13)
+    ax.set_ylabel("$t$ [dim-less]", fontname = "serif", fontsize = 13)
+    CS = ax.contourf(x, t, psi, 15, vmin = -2, vmax = 2, cmap = plt.cm.BuPu_r)
+    fig.colorbar(CS, orientation = "vertical")
+    fig.tight_layout()
+
 def animate_wave(x, t, psi):
     plt.style.use("ggplot")
     fig = plt.figure(figsize = (8, 8))
@@ -89,7 +99,7 @@ plt.show()
 filename_bleap = "../build-Project5/sine_basin_leapfrog.txt"
 x_bleap, t_bleap, psi_bleap = get_data(filename_bleap)
 
-# anim_bleap_numerical = animate_wave(x_bleap, t_bleap, psi_bleap)
+anim_bleap_numerical = animate_wave(x_bleap, t_bleap, psi_bleap)
 # ====================================================================================
 
 plt.show()
@@ -120,7 +130,9 @@ plt.show()
 # psi_periodic_analytical = compute_analytical_periodic(x_pleap, t_pleap)
 # anim_periodic_analytical = animate_wave(x_pleap, t_pleap, psi_periodic_analytical)
 
-fig, ax = plot_psi_at_times(x_peuler, t_peuler, psi_peuler, [0, 10])
-plot_psi_at_times(x_pleap, t_pleap, psi_pleap, [0, 10], fig, ax)
+# fig, ax = plot_psi_at_times(x_peuler, t_peuler, psi_peuler, [0, 10])
+# plot_psi_at_times(x_pleap, t_pleap, psi_pleap, [0, 10], fig, ax)
+
+hovmuller(x_bleap, t_bleap, psi_bleap)
 
 plt.show()

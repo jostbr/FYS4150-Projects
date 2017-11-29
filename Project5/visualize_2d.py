@@ -8,8 +8,8 @@ def get_data(filename):
 
     t = data[:, 0]
     psi = data[:, 1:]
-    x = np.linspace(0, 1, 101)
-    y = np.linspace(0, 1, 101)
+    x = np.linspace(0, 1, 41)
+    y = np.linspace(0, 1, 41)
 
     return x, y, t, psi
 
@@ -88,7 +88,7 @@ def animate_contourf(x, y, t, psi, filename_save = None):
 filename_2D = "../build-Project5/results_2d.txt"
 x, y, t, psi = get_data(filename_2D)
 
-psi_0 = psi.reshape((psi.shape[0], 101, 101))
+psi_0 = psi.reshape((psi.shape[0], 41, 41))
 
 #contour_results(x, y, psi_0)
 #anim = animate_pcolormesh(x, y, t, psi_0)
