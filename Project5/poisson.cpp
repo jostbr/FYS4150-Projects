@@ -65,7 +65,6 @@ void tridiag_ferrari(double* b, double* y, int N, double* solution){
  * using num_iter number of iterations for convergence at each of the (N_x, N_y) spatial points. */
 void poisson_jacobi(double* g, double* bc_0y, double* bc_1y, double* bc_x0, double* bc_x1, double dx,
             double dy, int N_x, int N_y, int max_iter, double* f){
-    /* UNTESTED FUNCTION! */
     double dxdx = dx*dx;
     double dydy = dy*dy;
     double dxdxdydy = dxdx*dydy;
@@ -103,6 +102,114 @@ void poisson_jacobi(double* g, double* bc_0y, double* bc_1y, double* bc_x0, doub
                 f[i*N_y + j] = (dydy*(f_tmp[(i+1)*N_y + j] + f_tmp[(i-1)*N_y + j]) +
                         dxdx*(f_tmp[i*N_y + (j+1)] + f_tmp[i*N_y + (j-1)]) -
                         dxdxdydy*g[i*N_y + j])/dxdx_pluss_dydy_2;
+                diff += f[i*N_y + j] - f_tmp[i*N_y + j];
+            }
+        }
+
+        //std::cout << diff << std::endl;
+
+        iter++;
+    }
+
+    if (fabs(diff) > eps){
+        //std::cout << "Did not reach satisfactory convergence!" << std::endl;
+    }
+
+    free_array_1D(f_tmp);
+}
+
+
+/* Function that implements the iterative Jacobi algorithm for solving the 2D Poisson equation
+ *
+ * d^2f/dx^2 + d^f/dy^2 = g
+ *
+ * with source function g(x,y) and (constant) boundary conditions
+ *
+ * f(0,y) = bc_0y
+ * f(1,y) = bc_1y
+ * f(x,0) = bc_x0
+ * f(x,1) = bc_x1
+ *
+ * using num_iter number of iterations for convergence at each of the (N_x, N_y) spatial points. */
+void poisson_jacobi_periodic(double* g, double dx, double dy, int N_x, int N_y, int max_iter, double* f){
+    double dxdx = dx*dx;
+    double dydy = dy*dy;
+    double dxdxdydy = dxdx*dydy;
+    double dxdx_pluss_dydy_2 = 2*(dxdx + dydy);
+
+    int iter = 0;
+    double diff = 1.0E+20;      // To check for convergence
+    double eps = 1.0E-6;    // Tolerance for convergence
+    double* f_tmp;          // To temporary hold solution for each iteration
+    alloc_array_1D(f_tmp, N_x*N_y);
+
+    /* Iterate until satisafactory convergence is reached (or max iter is reached). */
+    while (iter <= max_iter && fabs(diff) > eps){
+        diff = 0.0;
+
+        for (int i = 0; i < N_x; i++){
+            for (int j = 0; j < N_y; j++){
+                f_tmp[i*N_y + j] = f[i*N_y + j];    // Need previous "solution"
+            }
+        }
+
+        /* Do one sweep over the array step each point closer to the solution. */
+        for (int i = 0; i < N_x; i++){
+            for (int j = 0; j < N_y; j++){
+                if (i == 0 && j == 0){
+                    f[0*N_y + 0] = (dydy*(f_tmp[1*N_y + 0] + f_tmp[(N_x-2)*N_y + 0]) +
+                            dxdx*(f_tmp[0*N_y + 1] + f_tmp[0*N_y + N_y-2]) -
+                            dxdxdydy*g[0*N_y + 0])/dxdx_pluss_dydy_2;
+                }
+
+                else if (i == N_x-1 && j == 0){
+                    f[(N_x-1)*N_y + 0] = (dydy*(f_tmp[1*N_y + 0] + f_tmp[(N_x-2)*N_y + 0]) +
+                            dxdx*(f_tmp[(N_x-1)*N_y + 1] + f_tmp[(N_x-1)*N_y + (N_y-2)]) -
+                            dxdxdydy*g[(N_x-1)*N_y + 0])/dxdx_pluss_dydy_2;
+                }
+
+                else if (i == 0 && j == N_y-1){
+                    f[0*N_y + (N_y-1)] = (dydy*(f_tmp[1*N_y + (N_y-1)] + f_tmp[(N_x-2)*N_y + (N_y-1)]) +
+                            dxdx*(f_tmp[0*N_y + 1] + f_tmp[0*N_y + (N_y-2)]) -
+                            dxdxdydy*g[0*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
+                }
+
+                else if (i == N_x-1 && j == N_y-1){
+                    f[(N_x-1)*N_y + (N_y-1)] = (dydy*(f_tmp[1*N_y + (N_y-1)] + f_tmp[(N_x-2)*N_y + (N_y-1)]) +
+                            dxdx*(f_tmp[(N_x-1)*N_y + 1] + f_tmp[(N_x-1)*N_y + N_y-2]) -
+                            dxdxdydy*g[(N_x-1)*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
+                }
+
+                else if (i == 0){
+                    f[0*N_y + j] = (dydy*(f_tmp[1*N_y + j] + f_tmp[(N_x-2)*N_y + j]) +
+                            dxdx*(f_tmp[0*N_y + (j+1)] + f_tmp[0*N_y + (j-1)]) -
+                            dxdxdydy*g[0*N_y + j])/dxdx_pluss_dydy_2;
+                }
+
+                else if (i == N_x-1){
+                    f[(N_x-1)*N_y + j] = (dydy*(f_tmp[1*N_y + j] + f_tmp[(N_x-2)*N_y + j]) +
+                            dxdx*(f_tmp[(N_x-1)*N_y + (j+1)] + f_tmp[(N_x-1)*N_y + (j-1)]) -
+                            dxdxdydy*g[(N_x-1)*N_y + j])/dxdx_pluss_dydy_2;
+                }
+
+                else if (j == 0){
+                    f[i*N_y + 0] = (dydy*(f_tmp[(i+1)*N_y + 0] + f_tmp[(i-1)*N_y + 0]) +
+                            dxdx*(f_tmp[i*N_y + 1] + f_tmp[i*N_y + (N_y-2)]) -
+                            dxdxdydy*g[i*N_y + 0])/dxdx_pluss_dydy_2;
+                }
+
+                else if (j == N_y-1){
+                    f[i*N_y + (N_y-1)] = (dydy*(f_tmp[(i+1)*N_y + (N_y-1)] + f_tmp[(i-1)*N_y + N_y-1]) +
+                            dxdx*(f_tmp[i*N_y + 1] + f_tmp[i*N_y + (N_y-2)]) -
+                            dxdxdydy*g[i*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
+                }
+
+                else {
+                    f[i*N_y + j] = (dydy*(f_tmp[(i+1)*N_y + j] + f_tmp[(i-1)*N_y + j]) +
+                            dxdx*(f_tmp[i*N_y + (j+1)] + f_tmp[i*N_y + (j-1)]) -
+                            dxdxdydy*g[i*N_y + j])/dxdx_pluss_dydy_2;
+                }
+
                 diff += f[i*N_y + j] - f_tmp[i*N_y + j];
             }
         }

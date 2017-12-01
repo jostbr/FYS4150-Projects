@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     periodic_solver_1d.cpp \
     basin_solver_1d.cpp \
     rossby_solver.cpp \
-    basin_solver_2d.cpp
+    basin_solver_2d.cpp \
+    periodic_solver_2d.cpp
 
 HEADERS += \
     array_alloc.hpp \
@@ -19,7 +20,8 @@ HEADERS += \
     periodic_solver_1d.hpp \
     basin_solver_1d.hpp \
     rossby_solver.hpp \
-    basin_solver_2d.hpp
+    basin_solver_2d.hpp \
+    periodic_solver_2d.hpp
 
 INCLUDEPATH += /usr/local/include
 LIBS += -L/usr/local/lib

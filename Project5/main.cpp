@@ -5,6 +5,7 @@
 # include "basin_solver_1d.hpp"
 # include "periodic_solver_1d.hpp"
 # include "basin_solver_2d.hpp"
+# include "periodic_solver_2d.hpp"
 # include "array_alloc.hpp"
 # include "unit_tests.hpp"
 
@@ -21,8 +22,8 @@ int main(int argc, char* argv[]){
     TEST_set_initial_condition_periodic();
     std::cout << "===============================================\n" << std::endl;
 
-    run_1d_simulations();
-    //run_2d_simulations();
+    //run_1d_simulations();
+    run_2d_simulations();
 
     std::cout << "Sup?" << std::endl;
 
@@ -107,10 +108,15 @@ void run_2d_simulations(){
         }
     }
 
-    std::string fileout_05 = "results_2d.txt";
-    basin_solver_2d b2d_solver(dx, dy, N_x, N_y, dt, T, fileout_05);
-    b2d_solver.set_initial_condition(init_psi, init_zeta);
-    b2d_solver.basin_leapfrog();
+//    std::string fileout_05 = "results_2d.txt";
+//    basin_solver_2d b2d_solver(dx, dy, N_x, N_y, dt, T, fileout_05);
+//    b2d_solver.set_initial_condition(init_psi, init_zeta);
+//    b2d_solver.basin_leapfrog();
+
+    std::string fileout_06 = "results_2d.txt";
+    periodic_solver_2d p2d_solver(dx, dy, N_x, N_y, dt, T, fileout_06);
+    p2d_solver.set_initial_condition(init_psi, init_zeta);
+    p2d_solver.periodic_leapfrog();
 
     free_array_1D(init_psi);
     free_array_1D(init_zeta);
