@@ -42,10 +42,10 @@ void periodic_solver_1d::periodic_euler(){
     arma::vec zeta_prev(this->N_x);
     arma::vec zeta_curr(this->N_x);
 
-    arma::vec rhs_poisson(this->N_x);     // Vector to hold right-hand-side of Poisson eq.
-    arma::mat A = arma::zeros(this->N_x, this->N_x);    // Matrix to store second-derivative coefficients
+    arma::vec rhs_poisson(this->N_x-1);     // Vector to hold right-hand-side of Poisson eq.
+    arma::mat A = arma::zeros(this->N_x-1, this->N_x-1);    // Matrix to store second-derivative coefficients
 
-    this->initialize_periodic_matrix(A);    // Initialize A for Armadillo LU solver used every time-step
+    this->initialize_periodic_matrix(A, this->N_x-1, this->N_x-1);    // Initialize A for Armadillo LU solver used every time-step
 
     /* Set initial conditions. */
     /* ================================================================================== */
@@ -64,18 +64,16 @@ void periodic_solver_1d::periodic_euler(){
             zeta_curr[i] = zeta_prev[i] - alpha*(psi_prev[i+1] - psi_prev[i-1]);
         }
 
-//        zeta_curr[0] = zeta_prev[0] - alpha*(psi_prev[1] - psi_prev[this->N_x-1]);                    // Periodic BC
-//        zeta_curr[this->N_x-1] = zeta_prev[this->N_x-1] - alpha*(psi_prev[0] - psi_prev[this->N_x-2]);    // Periodic BC
-
         zeta_curr[0] = zeta_prev[0] - alpha*(psi_prev[1] - psi_prev[this->N_x-2]);                    // Periodic BC
-        zeta_curr[this->N_x-1] = zeta_prev[this->N_x-1] - alpha*(psi_prev[1] - psi_prev[this->N_x-2]);    // Periodic BC
+        zeta_curr[this->N_x-1] = zeta_curr[0];    // Periodic BC
 
         /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
-        for (int i = 0; i < this->N_x; i++){    // Loop over all interior zeta-values
+        for (int i = 0; i < this->N_x-1; i++){    // Loop over all interior zeta-values
             rhs_poisson[i] = -dxdx*zeta_curr[i];     // Right-hand-side of Poisson eq. (interior + boundary)
         }
 
         psi_curr = arma::solve(A, rhs_poisson);     // Solve 1D Poisson eq. to get psi at current time-step
+        psi_curr[this->N_x-1] = psi_curr[0];
 
         for (int i = 0; i < this->N_x; i++){
             psi_prev[i] = psi_curr[i];      // Set previous psi to current for next iter
@@ -84,7 +82,7 @@ void periodic_solver_1d::periodic_euler(){
 
         t += this->dt;
 
-        if (n % 200 == 0){
+        if (n % 20 == 0){
             this->write_state_to_file(t, psi_curr.memptr());
         }
     }
@@ -111,10 +109,10 @@ void periodic_solver_1d::periodic_leapfrog(){
     arma::vec zeta_prev(this->N_x);
     arma::vec zeta_curr(this->N_x);
 
-    arma::vec rhs_poisson(this->N_x);     // Vector to hold right-hand-side of Poisson eq.
-    arma::mat A = arma::zeros(this->N_x, this->N_x);    // Matrix to store second-derivative coefficients
+    arma::vec rhs_poisson(this->N_x-1);     // Vector to hold right-hand-side of Poisson eq.
+    arma::mat A = arma::zeros(this->N_x-1, this->N_x-1);    // Matrix to store second-derivative coefficients
 
-    this->initialize_periodic_matrix(A);    // Initialize A for Armadillo LU solver used every time-step
+    this->initialize_periodic_matrix(A, this->N_x-1, this->N_x-1);    // Initialize A for Armadillo LU solver used every time-step
 
     /* Set initial conditions. */
     /* ================================================================================== */
@@ -132,13 +130,14 @@ void periodic_solver_1d::periodic_leapfrog(){
     }
 
     zeta_prev[0] = this->zeta_0[0] - alpha*(this->psi_0[1] - this->psi_0[this->N_x-2]);                    // Periodic BC
-    zeta_prev[this->N_x-1] = this->zeta_0[this->N_x-1] - alpha*(this->psi_0[1] - this->psi_0[this->N_x-2]);    // Periodic BC
+    zeta_prev[this->N_x-1] = zeta_prev[0];    // Periodic BC
 
-    for (int i = 0; i < this->N_x; i++){    // Loop over all interior zeta-values
+    for (int i = 0; i < this->N_x-1; i++){    // Loop over all interior zeta-values
         rhs_poisson[i] = -dxdx*zeta_prev[i];     // Right-hand-side of Poisson eq. (interior + boundary)
     }
 
     psi_prev = arma::solve(A, rhs_poisson);     // Solve 1D Poisson eq. to get psi at time-step 1
+    psi_prev[this->N_x-1] = psi_prev[0];
 
     /* Main loop over time using leapfrog time-stepping for vorticity. */
     /* ================================================================================== */
@@ -149,14 +148,15 @@ void periodic_solver_1d::periodic_leapfrog(){
         }
 
         zeta_curr[0] = zeta_pp[0] - gamma*(psi_prev[1] - psi_prev[this->N_x-2]);                    // Periodic BC
-        zeta_curr[this->N_x-1] = zeta_pp[this->N_x-1] - gamma*(psi_prev[1] - psi_prev[this->N_x-2]);    // Periodic BC
+        zeta_curr[this->N_x-1] = zeta_curr[0];    // Periodic BC
 
         /* STEP 2: Solve the 1D Poisson equation to update streamfunction. */
-        for (int i = 0; i < this->N_x; i++){    // Loop over all interior zeta-values
+        for (int i = 0; i < this->N_x-1; i++){    // Loop over all interior zeta-values
             rhs_poisson[i] = -dxdx*zeta_curr[i];     // Right-hand-side of Poisson eq. (interior + boundary)
         }
 
         psi_curr = arma::solve(A, rhs_poisson);     // Solve 1D Poisson eq. to get psi at current time-step
+        psi_curr[this->N_x-1] = psi_curr[0];
 
 
         for (int i = 0; i < this->N_x; i++){
@@ -167,17 +167,19 @@ void periodic_solver_1d::periodic_leapfrog(){
 
         t += this->dt;
 
-        if (n % 200 == 0){
+        if (n % 20 == 0){
             this->write_state_to_file(t, psi_curr.memptr());
         }
     }
+
+    std::cout << arma::det(A);
 }
 
 
 /* Function to initialize periodic BC matrix to pass to Armadillo to solve Poisson at every time step. */
-void periodic_solver_1d::initialize_periodic_matrix(arma::mat& A){
-    for (int i = 0; i < this->N_x; i++){
-        for (int j = 0; j < this->N_x; j++){
+void periodic_solver_1d::initialize_periodic_matrix(arma::mat& A, int num_rows, int num_cols){
+    for (int i = 0; i < num_rows; i++){
+        for (int j = 0; j < num_cols; j++){
             if (i == j){
                 A(i,j) = 2.0;       // Main diagonal elements
             }
@@ -188,8 +190,8 @@ void periodic_solver_1d::initialize_periodic_matrix(arma::mat& A){
         }
     }
 
-    A(0,this->N_x-2) = -1.0;      // Semi-corners value due to periodic BC
-    A(this->N_x-1,1) = -1.0;      // Semi-corners value due to periodic BC
+    A(0,num_cols-1) = -1.0;      // Corners value due to periodic BC
+    A(num_rows-1,0) = -1.0;      // Corners value due to periodic BC
 }
 
 

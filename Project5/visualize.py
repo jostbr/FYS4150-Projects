@@ -99,7 +99,7 @@ plt.show()
 filename_bleap = "../build-Project5/sine_basin_leapfrog.txt"
 x_bleap, t_bleap, psi_bleap = get_data(filename_bleap)
 
-anim_bleap_numerical = animate_wave(x_bleap, t_bleap, psi_bleap)
+# anim_bleap_numerical = animate_wave(x_bleap, t_bleap, psi_bleap)
 # ====================================================================================
 
 plt.show()
@@ -109,7 +109,7 @@ plt.show()
 filename_peuler = "../build-Project5/sine_periodic_euler.txt"
 x_peuler, t_peuler, psi_peuler = get_data(filename_peuler)
 
-# anim_peuler_numerical = animate_wave(x_peuler, t_peuler, psi_peuler)
+anim_peuler_numerical = animate_wave(x_peuler, t_peuler, psi_peuler)
 # ====================================================================================
 
 plt.show()
@@ -119,7 +119,7 @@ plt.show()
 filename_pleap = "../build-Project5/sine_periodic_leapfrog.txt"
 x_pleap, t_pleap, psi_pleap = get_data(filename_pleap)
 
-# anim_pleap_numerical = animate_wave(x_pleap, t_pleap, psi_pleap)
+#anim_pleap_numerical = animate_wave(x_pleap, t_pleap, psi_pleap)
 # ====================================================================================
 
 plt.show()
@@ -133,6 +133,7 @@ plt.show()
 # fig, ax = plot_psi_at_times(x_peuler, t_peuler, psi_peuler, [0, 10])
 # plot_psi_at_times(x_pleap, t_pleap, psi_pleap, [0, 10], fig, ax)
 
-hovmuller(x_bleap, t_bleap, psi_bleap)
+#hovmuller(x_bleap, t_bleap, psi_bleap)
+hovmuller(x_pleap, t_pleap, psi_pleap)
 
 plt.show()

@@ -16,7 +16,7 @@ class periodic_solver_1d : public rossby_solver {
         void periodic_leapfrog();
 
     private:
-        void initialize_periodic_matrix(arma::mat& A);
+        void initialize_periodic_matrix(arma::mat& A, int num_rows, int num_cols);
 };
 
 #endif // PERIODIC_SOLVER_1D_HPP
