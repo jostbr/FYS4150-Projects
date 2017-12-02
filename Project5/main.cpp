@@ -13,7 +13,7 @@ void run_1d_simulations();
 void run_2d_simulations();
 void func(double *arr, int n);
 
-int main(int argc, char* argv[]){
+int main(){
     std::cout << "\nRUNNING TESTS..." << std::endl;
     std::cout << "===============================================" << std::endl;
     TEST_tridiag_general();
@@ -89,7 +89,7 @@ void run_2d_simulations(){
     int N_x = L/dx + 1;       // Number of spatial points in x-direction
     int N_y = L/dy + 1;       // Number of spatial points in x-direction
 
-    double T = 100.0;        // Upper time limit
+    double T = 50.0;        // Upper time limit
     double dt = 0.001;      // Time step
 
     /* Initial conditions. */

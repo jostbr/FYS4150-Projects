@@ -32,7 +32,7 @@ void tridiag_general(double* a, double* b, double* c, double* y, int N, double* 
  *
  * d^2(solution)/dx^2 = y
  *
- * Note that this only solves for the interior points. */
+ * Note that this only solves for the interior points. This algorithm is optimized; cost = 5*N. */
 void tridiag_ferrari(double* b, double* y, int N, double* solution){
     b[0] = 2.0;
 
@@ -123,12 +123,10 @@ void poisson_jacobi(double* g, double* bc_0y, double* bc_1y, double* bc_x0, doub
  *
  * d^2f/dx^2 + d^f/dy^2 = g
  *
- * with source function g(x,y) and (constant) boundary conditions
+ * with source function g(x,y) and periodic boundary conditions
  *
- * f(0,y) = bc_0y
- * f(1,y) = bc_1y
- * f(x,0) = bc_x0
- * f(x,1) = bc_x1
+ * f(0,y) = f(1,y)
+ * f(x,0) = f(x,1)
  *
  * using num_iter number of iterations for convergence at each of the (N_x, N_y) spatial points. */
 void poisson_jacobi_periodic(double* g, double dx, double dy, int N_x, int N_y, int max_iter, double* f){
@@ -156,54 +154,64 @@ void poisson_jacobi_periodic(double* g, double dx, double dy, int N_x, int N_y, 
         /* Do one sweep over the array step each point closer to the solution. */
         for (int i = 0; i < N_x; i++){
             for (int j = 0; j < N_y; j++){
+
+                /* Corner: x = 0, y = 0. */
                 if (i == 0 && j == 0){
                     f[0*N_y + 0] = (dydy*(f_tmp[1*N_y + 0] + f_tmp[(N_x-2)*N_y + 0]) +
                             dxdx*(f_tmp[0*N_y + 1] + f_tmp[0*N_y + N_y-2]) -
                             dxdxdydy*g[0*N_y + 0])/dxdx_pluss_dydy_2;
                 }
 
+                /* Corner: x = 1, y = 0. */
                 else if (i == N_x-1 && j == 0){
                     f[(N_x-1)*N_y + 0] = (dydy*(f_tmp[1*N_y + 0] + f_tmp[(N_x-2)*N_y + 0]) +
                             dxdx*(f_tmp[(N_x-1)*N_y + 1] + f_tmp[(N_x-1)*N_y + (N_y-2)]) -
                             dxdxdydy*g[(N_x-1)*N_y + 0])/dxdx_pluss_dydy_2;
                 }
 
+                /* Corner: x = 0, y = 1. */
                 else if (i == 0 && j == N_y-1){
                     f[0*N_y + (N_y-1)] = (dydy*(f_tmp[1*N_y + (N_y-1)] + f_tmp[(N_x-2)*N_y + (N_y-1)]) +
                             dxdx*(f_tmp[0*N_y + 1] + f_tmp[0*N_y + (N_y-2)]) -
                             dxdxdydy*g[0*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
                 }
 
+                /* Corner: x = 1, y = 1. */
                 else if (i == N_x-1 && j == N_y-1){
                     f[(N_x-1)*N_y + (N_y-1)] = (dydy*(f_tmp[1*N_y + (N_y-1)] + f_tmp[(N_x-2)*N_y + (N_y-1)]) +
                             dxdx*(f_tmp[(N_x-1)*N_y + 1] + f_tmp[(N_x-1)*N_y + N_y-2]) -
                             dxdxdydy*g[(N_x-1)*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
                 }
 
-                else if (i == 0){
+                /* Wall: x = 0, y. */
+                else if (i == 0 && j != 0 && j != N_y-1){
                     f[0*N_y + j] = (dydy*(f_tmp[1*N_y + j] + f_tmp[(N_x-2)*N_y + j]) +
                             dxdx*(f_tmp[0*N_y + (j+1)] + f_tmp[0*N_y + (j-1)]) -
                             dxdxdydy*g[0*N_y + j])/dxdx_pluss_dydy_2;
                 }
 
-                else if (i == N_x-1){
+                /* Wall: x = 1, y. */
+                else if (i == N_x-1 && j != 0 && j != N_y-1){
                     f[(N_x-1)*N_y + j] = (dydy*(f_tmp[1*N_y + j] + f_tmp[(N_x-2)*N_y + j]) +
                             dxdx*(f_tmp[(N_x-1)*N_y + (j+1)] + f_tmp[(N_x-1)*N_y + (j-1)]) -
                             dxdxdydy*g[(N_x-1)*N_y + j])/dxdx_pluss_dydy_2;
                 }
 
-                else if (j == 0){
+                /* Wall: x, y = 0. */
+                else if (j == 0 && i != 0 && i != N_x-1){
                     f[i*N_y + 0] = (dydy*(f_tmp[(i+1)*N_y + 0] + f_tmp[(i-1)*N_y + 0]) +
                             dxdx*(f_tmp[i*N_y + 1] + f_tmp[i*N_y + (N_y-2)]) -
                             dxdxdydy*g[i*N_y + 0])/dxdx_pluss_dydy_2;
                 }
 
-                else if (j == N_y-1){
+                /* Wall: x, y = 1. */
+                else if (j == N_y-1 && i != 0 && i != N_x-1){
                     f[i*N_y + (N_y-1)] = (dydy*(f_tmp[(i+1)*N_y + (N_y-1)] + f_tmp[(i-1)*N_y + N_y-1]) +
                             dxdx*(f_tmp[i*N_y + 1] + f_tmp[i*N_y + (N_y-2)]) -
                             dxdxdydy*g[i*N_y + (N_y-1)])/dxdx_pluss_dydy_2;
                 }
 
+                /* Interior: x, y. */
                 else {
                     f[i*N_y + j] = (dydy*(f_tmp[(i+1)*N_y + j] + f_tmp[(i-1)*N_y + j]) +
                             dxdx*(f_tmp[i*N_y + (j+1)] + f_tmp[i*N_y + (j-1)]) -

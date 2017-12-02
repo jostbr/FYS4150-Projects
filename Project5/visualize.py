@@ -124,8 +124,8 @@ x_pleap, t_pleap, psi_pleap = get_data(filename_pleap)
 
 plt.show()
 
-psi_basin_analytical = compute_analytical_basin(x_bleap, t_bleap)
-anim_basin_analytical = animate_wave(x_bleap, t_bleap, psi_basin_analytical)
+# psi_basin_analytical = compute_analytical_basin(x_bleap, t_bleap)
+# anim_basin_analytical = animate_wave(x_bleap, t_bleap, psi_basin_analytical)
 
 # psi_periodic_analytical = compute_analytical_periodic(x_pleap, t_pleap)
 # anim_periodic_analytical = animate_wave(x_pleap, t_pleap, psi_periodic_analytical)
