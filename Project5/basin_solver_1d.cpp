@@ -86,7 +86,7 @@ void basin_solver_1d::basin_euler(){
 
         t += this->dt;
 
-        if (n % 200 == 0){
+        if (n % 20 == 0){
             this->write_state_to_file(t, psi_curr);
         }
     }
@@ -172,7 +172,7 @@ void basin_solver_1d::basin_leapfrog(){
 
         t += this->dt;
 
-        if (n % 200 == 0){
+        if (n % 20 == 0){
             this->write_state_to_file(t, psi_curr);
         }
     }

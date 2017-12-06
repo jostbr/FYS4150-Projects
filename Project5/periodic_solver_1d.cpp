@@ -171,8 +171,6 @@ void periodic_solver_1d::periodic_leapfrog(){
             this->write_state_to_file(t, psi_curr.memptr());
         }
     }
-
-    std::cout << arma::det(A);
 }
 
 

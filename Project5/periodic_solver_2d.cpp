@@ -40,7 +40,7 @@ void periodic_solver_2d::set_initial_condition(double* init_psi, double* init_ze
 }
 
 
-/* Function that solves the 2D vorticity equation in a bounded domain as a set of two coupled PDE's. In
+/* Function that solves the 2D vorticity equation in a periodic domain as a set of two coupled PDE's. In
  * particular, an advection equation is advanced forwrd in time and for every time-step, we solve the 2D
  * Poisson equation using an iterative solver (Jacobi method). */
 void periodic_solver_2d::periodic_leapfrog(){
@@ -120,7 +120,7 @@ void periodic_solver_2d::periodic_leapfrog(){
 
         t += this->dt;
 
-        if (n % 2000 == 0){
+        if (n % 50 == 0){
             this->write_state_to_file(t, psi_curr);
         }
     }

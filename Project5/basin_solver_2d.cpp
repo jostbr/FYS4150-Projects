@@ -136,7 +136,7 @@ void basin_solver_2d::basin_leapfrog(){
 
         t += this->dt;
 
-        if (n % 200 == 0){
+        if (n % 50 == 0){
             this->write_state_to_file(t, psi_curr);
         }
     }
