@@ -22,8 +22,8 @@ int main(){
     TEST_set_initial_condition_periodic();
     std::cout << "===============================================\n" << std::endl;
 
-    //run_1d_simulations();
-    run_2d_simulations();
+    run_1d_simulations();
+    //run_2d_simulations();
 
     std::cout << "Sup?" << std::endl;
 
@@ -62,6 +62,9 @@ void run_1d_simulations(){
         init_zeta_gaussian[i] = (4.0*((x - 0.5)/(sigma*sigma))*((x - 0.5)/(sigma*sigma)) - 2.0/(sigma*sigma))
                 *exp(-((x-0.5)/sigma)*((x-0.5)/sigma));
     }
+
+    /* Comment or decomment blocks below to choose what case to run. */
+    /* ============================================================= */
 
 //    std::string fileout_01 = "sine_basin_euler.txt";
 //    basin_solver_1d be_solver(dx, N_x, dt, T, fileout_01);
@@ -129,6 +132,9 @@ void run_2d_simulations(){
             init_zeta[i*N_y + j] = -16.0*pi*pi*sin(4.0*pi*x);
         }
     }
+
+    /* Comment or decomment blocks below to choose what case to run. */
+    /* ============================================================= */
 
 //    std::string fileout_05 = "results_2d.txt";
 //    basin_solver_2d b2d_solver(dx, dy, N_x, N_y, dt, T, fileout_05);

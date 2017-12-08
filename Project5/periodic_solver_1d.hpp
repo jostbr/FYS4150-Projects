@@ -1,6 +1,7 @@
 
 #ifndef PERIODIC_SOLVER_1D_HPP
 #define PERIODIC_SOLVER_1D_HPP
+#define ARMA_DONT_PRINT_ERRORS
 
 # include <iostream>
 # include <cmath>

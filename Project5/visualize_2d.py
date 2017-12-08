@@ -96,4 +96,4 @@ psi = psi.reshape((psi.shape[0], 41, 41))
 #anim = animate_pcolormesh(x, y, t, psi)
 anim = animate_contourf(x, y, t, psi, "periodic_2d")
 
-#plt.show()
+plt.show()
